@@ -1,3 +1,4 @@
+bash ./scripts/run_integration.sh
 testing: warning: no tests to run
 PASS
 ok  	github.com/ZoneCNH/postgresx/contracts	0.021s [no tests to run]

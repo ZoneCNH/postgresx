@@ -49,11 +49,6 @@ integration:
 evidence:
 	bash ./scripts/generate_manifest.sh
 
-evidence:
-	bash ./scripts/ci/write_evidence.sh "$(VERSION)"
-
-run-integration: integration
-
 release-check:
 	bash ./scripts/ci/release_check.sh
 

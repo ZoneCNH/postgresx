@@ -14,9 +14,10 @@ if rg -n 'github.com/ZoneCNH/(configx|observex)|github.com/bytechainx/(configx|o
   exit 1
 fi
 
-GOWORK=off go list -deps ./pkg/postgresx | rg -q '^github.com/ZoneCNH/foundationx/pkg/foundationx$' || {
+deps="$(GOWORK=off go list -deps ./pkg/postgresx)"
+if ! printf '%s\n' "$deps" | rg -q '^github.com/ZoneCNH/foundationx/pkg/foundationx$'; then
   echo "pkg/postgresx does not resolve foundationx API dependency" >&2
   exit 1
-}
+fi
 
 echo "foundationx API check passed"
