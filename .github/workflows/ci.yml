@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: postgresx_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgresx_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGDATABASE: postgresx_test
+      PGHOST: localhost
+      PGPASS: postgres
+      PGPORT: "5432"
+      PGUSER: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build PostgreSQL test DSN
+        run: |
+          scheme=postgres
+          printf 'POSTGRES_TEST_DSN=%s://%s:%s@%s:%s/%s?sslmode=disable\n' \
+            "$scheme" "$PGUSER" "$PGPASS" "$PGHOST" "$PGPORT" "$PGDATABASE" >> "$GITHUB_ENV"
+      - run: go mod download
+      - run: ./scripts/ci/lint.sh
+      - run: ./scripts/ci/test.sh
+      - run: go test -race ./...
+      - run: ./scripts/ci/secret_scan.sh
+      - run: ./scripts/ci/migration_up_down_up.sh

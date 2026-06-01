@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bytechainx/postgresx/contracts/health.schema.json",
+  "title": "Postgresx Health Status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "status", "message", "checked_at", "latency_ms", "metadata"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "unhealthy"]
+    },
+    "message": {
+      "type": "string"
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "pool_stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_conns",
+        "idle_conns",
+        "acquired_conns",
+        "constructing_conns",
+        "max_conns"
+      ],
+      "properties": {
+        "total_conns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "idle_conns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "acquired_conns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "constructing_conns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_conns": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

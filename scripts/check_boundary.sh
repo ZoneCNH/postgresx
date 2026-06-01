@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+if ! command -v rg >/dev/null 2>&1; then
+  echo "rg is required for boundary checks" >&2
+  exit 1
+fi
+
+GO="${GO:-go}"
+status=0
+
+if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/(bytechainx|ZoneCNH)/x\.go'; then
+  echo "boundary violation: postgresx must not depend on x.go" >&2
+  status=1
+fi
+
+scan_paths=()
+while IFS= read -r file; do
+  scan_paths+=("$file")
+done < <(find . -maxdepth 1 -name '*.go' -not -path './.git/*' -print)
+for dir in contracts internal examples testkit; do
+  if [[ -e "$dir" ]]; then
+    scan_paths+=("$dir")
+  fi
+done
+
+if [[ "${#scan_paths[@]}" -gt 0 ]] && rg -n \
+  'MacroRegime|MarketRegime|TradingSignal|BTCUSDT|ETHUSDT|Kline|OrderBook|Position|RiskGate|MarketData|MacroData' \
+  "${scan_paths[@]}"; then
+  echo "boundary violation: business-domain terms found in postgresx library code" >&2
+  status=1
+fi
+
+if [[ "$status" -ne 0 ]]; then
+  exit "$status"
+fi
+
+echo "boundary check passed"

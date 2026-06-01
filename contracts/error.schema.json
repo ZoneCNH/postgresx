@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bytechainx/postgresx/contracts/error.schema.json",
+  "title": "Postgresx Error",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "message", "retryable"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "config",
+        "validation",
+        "connection",
+        "unavailable",
+        "timeout",
+        "auth",
+        "conflict",
+        "rate_limit",
+        "canceled",
+        "not_found",
+        "already_exists",
+        "internal"
+      ]
+    },
+    "op": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "retryable": {
+      "type": "boolean"
+    }
+  }
+}
