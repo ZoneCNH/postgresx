@@ -30,7 +30,7 @@ for path in "${required[@]}"; do
   fi
 done
 
-if rg -n 'github.com/[b]ytechainx|github.com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)|go get github.com/ZoneCNH/postgresx/pkg/postgresx' \
+if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)|go get github[.]com/ZoneCNH/postgresx/pkg/postgresx' \
   README.md docs contracts release scripts .github --glob '!docs/goal.md' --glob '!docs/evidence/20260601/*'; then
   echo "release evidence contains stale module/package references" >&2
   exit 1

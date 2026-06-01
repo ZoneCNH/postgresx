@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-postgresx must support migration execution and dirty-state checks without owning consumer schemas. application and future services need to evolve their own business tables independently.
+postgresx must support migration execution and dirty-state checks without owning consumer schemas. Applications and future services need to evolve their own business tables independently.
 
 ## Decision
 

@@ -33,7 +33,7 @@ if [[ "${#scan_paths[@]}" -gt 0 ]] && rg -n \
   status=1
 fi
 
-if rg -n 'github.com/[b]ytechainx|github.com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)' \
+if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)' \
   go.mod go.sum pkg contracts internal examples testkit scripts .github README.md \
   --glob '!docs/goal.md'; then
   echo "boundary violation: stale module/package reference found" >&2

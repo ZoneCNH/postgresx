@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The v1.0 scope explicitly excludes ORM features. application services and other consumers own domain repositories, SQL, and migrations, while postgresx provides the foundation layer.
+The v1.0 scope explicitly excludes ORM features. Application services and other consumers own domain repositories, SQL, and migrations, while postgresx provides the foundation layer.
 
 ## Decision
 

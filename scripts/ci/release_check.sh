@@ -8,7 +8,7 @@ GO="${GO:-go}"
 version="${1:-${VERSION:-v0.1.0}}"
 
 GOWORK=off make ci
-make integration
+GOWORK=off make integration
 
 module="$(GOWORK=off "$GO" list -m)"
 if [[ "$module" != "github.com/ZoneCNH/postgresx" ]]; then

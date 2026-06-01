@@ -40,7 +40,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   port=""
   for _ in {1..45}; do
     port="$(docker port "$container" 5432/tcp 2>/dev/null | awk -F: 'END {print $NF}')"
-    if [[ -n "$port" ]] && docker exec "$container" pg_isready -U "$db_user" -d "$db_name" >/dev/null 2>&1; then
+    if [[ -n "$port" ]]; then
       break
     fi
     sleep 1
@@ -50,6 +50,22 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     echo "Docker PostgreSQL did not publish a port" >&2
     exit 1
   fi
+
+  # The official image briefly starts a bootstrap server before restarting into
+  # the final externally reachable server. Wait for the final startup marker,
+  # then for readiness, to avoid racing integration tests against that restart.
+  for _ in {1..45}; do
+    if docker logs "$container" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up'; then
+      break
+    fi
+    sleep 1
+  done
+  for _ in {1..45}; do
+    if docker exec "$container" pg_isready -U "$db_user" -d "$db_name" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
 
   scheme="postgres"
   export POSTGRES_TEST_DSN="${scheme}://${db_user}:${db_secret}@127.0.0.1:${port}/${db_name}?sslmode=disable"
