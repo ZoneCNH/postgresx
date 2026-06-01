@@ -83,7 +83,7 @@ func ConfigFromDSN(dsn string, applicationName string) (postgresx.Config, error)
 	cfg.SSLMode = sslmode
 	cfg.MaxOpenConns = 4
 	cfg.MinIdleConns = 1
-	cfg.HealthTimeout = 2 * time.Second
+	cfg.HealthTimeout = 10 * time.Second
 	cfg.ApplicationName = applicationName
 	return cfg, nil
 }

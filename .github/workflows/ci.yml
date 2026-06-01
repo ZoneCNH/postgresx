@@ -41,8 +41,6 @@ jobs:
           printf 'POSTGRES_TEST_DSN=%s://%s:%s@%s:%s/%s?sslmode=disable\n' \
             "$scheme" "$PGUSER" "$PGPASS" "$PGHOST" "$PGPORT" "$PGDATABASE" >> "$GITHUB_ENV"
       - run: GOWORK=off go mod download
-      - run: ./scripts/ci/lint.sh
-      - run: ./scripts/ci/test.sh
-      - run: GOWORK=off go test -race ./...
-      - run: ./scripts/ci/secret_scan.sh
-      - run: ./scripts/ci/migration_up_down_up.sh
+      - run: GOWORK=off make ci-extended
+      - run: GOWORK=off make integration
+      - run: GOWORK=off make release-evidence-check

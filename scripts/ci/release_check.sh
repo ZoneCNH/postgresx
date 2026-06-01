@@ -5,13 +5,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 GO="${GO:-go}"
-version="${1:-${VERSION:-v0.1.0}}"
+VERSION="${VERSION:-v0.1.0}"
+export POSTGRESX_REQUIRE_INTEGRATION="${POSTGRESX_REQUIRE_INTEGRATION:-1}"
 
-GOWORK=off make ci
+GOWORK=off make ci-extended
 GOWORK=off make integration
+GOWORK=off make evidence VERSION="$VERSION"
+GOWORK=off make release-evidence-check
+GOWORK=off make release-final-check
 
 module="$(GOWORK=off "$GO" list -m)"
-if [[ "$module" != "github.com/ZoneCNH/postgresx/pkg/postgresx" ]]; then
+if [[ "$module" != "github.com/ZoneCNH/postgresx" ]]; then
   echo "unexpected module path: $module" >&2
   exit 1
 fi

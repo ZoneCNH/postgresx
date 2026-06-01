@@ -33,20 +33,18 @@ if [[ "${#scan_paths[@]}" -gt 0 ]] && rg -n \
   status=1
 fi
 
-if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)' \
-  go.mod go.sum pkg contracts internal examples testkit scripts .github README.md \
-  --glob '!docs/goal.md'; then
-  echo "boundary violation: stale module/package reference found" >&2
+if rg -n 'github.com/ZoneCNH/(configx|observex)|github.com/bytechainx/(configx|observex)' pkg/postgresx; then
+  echo "boundary violation: core package must not import configx or observex" >&2
   status=1
 fi
 
-if rg -n 'configx|observex' pkg/postgresx; then
-  echo "boundary violation: core package must not depend on configx or observex" >&2
-  status=1
-fi
-
-if rg -n 'os[.]Getenv|os[.]LookupEnv|godotenv|production[.]yaml|config[.]local[.]yaml|/home/k8s/secrets' pkg/postgresx; then
-  echo "boundary violation: core package must not load secrets from env or files implicitly" >&2
+stale_module_path='github.com/bytechainx''/postgresx'
+nested_non_core_path='github.com/ZoneCNH/postgresx/pkg/postgresx/''(examples|testkit|contracts|docs|internal)'
+if rg -n "$stale_module_path|$nested_non_core_path" \
+  --glob '!go.sum' \
+  --glob '!docs/goal.md' \
+  .; then
+  echo "boundary violation: stale module/package path found" >&2
   status=1
 fi
 

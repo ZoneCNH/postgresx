@@ -6,7 +6,7 @@ import (
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
-	"github.com/ZoneCNH/postgresx/pkg/postgresx/testkit"
+	"github.com/ZoneCNH/postgresx/testkit"
 )
 
 type migrationSource []postgresx.Migration

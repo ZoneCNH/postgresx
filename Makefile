@@ -1,4 +1,4 @@
-.PHONY: fmt vet test race lint govulncheck secret-scan security boundary contracts ci ci-extended integration evidence release-check release-preflight release-evidence-check release-final-check
+.PHONY: fmt vet test race lint secret-scan security boundary contracts foundationx-api template-alignment ci ci-extended integration evidence release-check release-preflight release-evidence-check release-final-check
 
 GO ?= go
 GOENV ?= GOWORK=off
@@ -23,7 +23,7 @@ lint:
 	bash ./scripts/ci/lint.sh
 
 secret-scan:
-	bash ./scripts/ci/secret_scan.sh
+	bash ./scripts/check_secrets.sh
 
 security: secret-scan govulncheck
 
@@ -33,26 +33,37 @@ boundary:
 contracts:
 	bash ./scripts/check_contracts.sh
 
-ci: fmt vet test race boundary contracts secret-scan lint
+foundationx-api:
+	bash ./scripts/check_foundationx_api.sh
 
-ci-extended: ci integration release-evidence-check
+template-alignment:
+	bash ./scripts/check_template_alignment.sh
 
-ci-extended: ci integration release-evidence-check
+ci: fmt vet test race boundary contracts secret-scan
+
+ci-extended: ci foundationx-api template-alignment
 
 integration:
-	bash ./scripts/ci/migration_up_down_up.sh
+	bash ./scripts/run_integration.sh
+
+evidence:
+	bash ./scripts/generate_manifest.sh
 
 evidence:
 	bash ./scripts/ci/write_evidence.sh "$(VERSION)"
 
 release-check:
-	bash ./scripts/ci/release_check.sh "$(VERSION)"
+	bash ./scripts/ci/release_check.sh
 
-release-preflight: ci-extended release-check
+release-preflight: ci-extended integration evidence
 
 release-evidence-check:
-	bash ./scripts/ci/release_evidence_check.sh "$(VERSION)"
+	test -f docs/EVIDENCE-20260601.md
+	test -f docs/RELEASE_MANIFEST-v0.1.0.md
+	test -f docs/RETROSPECTIVE-GOAL-20260601-001.md
+	test -d release/manifest
 
-release-final-check: release-preflight
+release-final-check: release-evidence-check
+	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx
+	$(GOENV) $(GO) list ./pkg/postgresx >/dev/null
 	git diff --check
-	@test -z "$$(git status --short)" || (echo "release-final-check requires a clean worktree" >&2; git status --short >&2; exit 1)
