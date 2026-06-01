@@ -7,10 +7,10 @@ checkout is not integrated with `postgresx`.
 
 Current evidence:
 
-- `/home/x.go/go.mod` does not require `github.com/bytechainx/postgresx`.
-- With `/home/go.work` active, `go list -m github.com/bytechainx/postgresx`
+- `/home/x.go/go.mod` does not require `github.com/ZoneCNH/postgresx/pkg/postgresx`.
+- With `/home/go.work` active, `go list -m github.com/ZoneCNH/postgresx/pkg/postgresx`
   returns the sibling workspace module.
-- With `GOWORK=off`, `go list -m github.com/bytechainx/postgresx` in
+- With `GOWORK=off`, `go list -m github.com/ZoneCNH/postgresx/pkg/postgresx` in
   `/home/x.go` fails because the module is not a known dependency.
 - `/home/x.go/pkg/adapter/db/postgres/postgres.go` still imports and owns
   `github.com/jackc/pgx/v5/pgxpool` directly.
@@ -63,22 +63,22 @@ go test ./...
 Current `/home/x.go` recheck:
 
 ```sh
-go list -m github.com/bytechainx/postgresx
-GOWORK=off go list -m github.com/bytechainx/postgresx
+go list -m github.com/ZoneCNH/postgresx/pkg/postgresx
+GOWORK=off go list -m github.com/ZoneCNH/postgresx/pkg/postgresx
 rg -n "postgresx|collection_status|sqlc" go.mod internal/market_data/server/state pkg/adapter/db/postgres migrations
 ```
 
-With `/home/go.work` active, `go list -m github.com/bytechainx/postgresx` returns
+With `/home/go.work` active, `go list -m github.com/ZoneCNH/postgresx/pkg/postgresx` returns
 the workspace module:
 
 ```text
-github.com/bytechainx/postgresx
+github.com/ZoneCNH/postgresx/pkg/postgresx
 ```
 
 With `GOWORK=off`, x.go's own module currently reports:
 
 ```text
-go: module github.com/bytechainx/postgresx: not a known dependency
+go: module github.com/ZoneCNH/postgresx: not a known dependency
 ```
 
 ## Configuration

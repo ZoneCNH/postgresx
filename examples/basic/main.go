@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/bytechainx/postgresx"
-	"github.com/bytechainx/postgresx/examples/internal/exampleconfig"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
+	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
 )
 
 func main() {

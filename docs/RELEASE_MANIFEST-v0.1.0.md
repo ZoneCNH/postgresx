@@ -6,7 +6,7 @@ not yet verified.
 
 ## Included
 
-- Go module `github.com/bytechainx/postgresx`
+- Go module `github.com/ZoneCNH/postgresx/pkg/postgresx`
 - pgxpool client lifecycle
 - sqlc `DBTX`
 - transaction and retry helpers
@@ -35,11 +35,11 @@ not yet verified.
 
 ## Current x.go Recheck
 
-- `/home/x.go/go.mod` does not require `github.com/bytechainx/postgresx`.
+- `/home/x.go/go.mod` does not require `github.com/ZoneCNH/postgresx/pkg/postgresx`.
 - `/home/x.go/pkg/adapter/db/postgres/postgres.go` still imports
   `github.com/jackc/pgx/v5/pgxpool` directly.
-- `GOWORK=off go list -m github.com/bytechainx/postgresx` in `/home/x.go`
-  reports that `github.com/bytechainx/postgresx` is not a known dependency.
+- `GOWORK=off go list -m github.com/ZoneCNH/postgresx/pkg/postgresx` in `/home/x.go`
+  reports that `github.com/ZoneCNH/postgresx/pkg/postgresx` is not a known dependency.
 - No `sqlc.yaml` or `sqlc.yml` file is present under `/home/x.go` at max depth
   3, and the previously documented `collection_status` files are absent from
   the current checkout.

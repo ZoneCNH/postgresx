@@ -6,7 +6,7 @@ Accepted
 
 ## Decision
 
-`postgresx` is an independent Go module at `github.com/bytechainx/postgresx`.
+`postgresx` is an independent Go module at `github.com/ZoneCNH/postgresx/pkg/postgresx`.
 
 ## Consequences
 

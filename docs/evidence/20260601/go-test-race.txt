@@ -1,10 +1,10 @@
 Script started on 2026-06-01 05:37:13+08:00 [COMMAND="go test -race ./..." <not executed on terminal>]
-ok  	github.com/bytechainx/postgresx	(cached)
-?   	github.com/bytechainx/postgresx/examples/basic	[no test files]
-?   	github.com/bytechainx/postgresx/examples/migration	[no test files]
-?   	github.com/bytechainx/postgresx/examples/sqlc	[no test files]
-?   	github.com/bytechainx/postgresx/examples/transaction	[no test files]
-ok  	github.com/bytechainx/postgresx/internal/secretmask	(cached)
-?   	github.com/bytechainx/postgresx/testkit	[no test files]
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	(cached)
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/basic	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/migration	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/sqlc	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/transaction	[no test files]
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx/internal/secretmask	(cached)
+?   	github.com/ZoneCNH/postgresx/testkit	[no test files]
 
 Script done on 2026-06-01 05:37:13+08:00 [COMMAND_EXIT_CODE="0"]

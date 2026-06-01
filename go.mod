@@ -1,4 +1,4 @@
-module github.com/bytechainx/postgresx
+module github.com/ZoneCNH/postgresx
 
 go 1.26.3
 

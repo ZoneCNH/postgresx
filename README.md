@@ -12,7 +12,7 @@ It is not an ORM, does not own business schema, and does not depend on `x.go`.
 ## Install
 
 ```sh
-go get github.com/bytechainx/postgresx
+go get github.com/ZoneCNH/postgresx/pkg/postgresx
 ```
 
 ## Client

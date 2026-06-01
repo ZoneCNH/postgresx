@@ -61,7 +61,7 @@ is historical evidence from a prior local candidate, not current checkout state.
 - `docs/EVIDENCE-20260601.md` records the historical x.go `B-POSTGRESX-001`
   import-boundary test and repository-wide import-boundary gate run.
 - The current `/home/x.go/go.mod` does not record
-  `github.com/bytechainx/postgresx v0.1.0`.
+  `github.com/ZoneCNH/postgresx/pkg/postgresx v0.1.0`.
 
 ## Output Patch
 

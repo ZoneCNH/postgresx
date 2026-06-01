@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
-	"github.com/bytechainx/postgresx"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 type jsonObject map[string]any
