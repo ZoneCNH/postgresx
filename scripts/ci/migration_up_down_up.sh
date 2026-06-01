@@ -52,8 +52,8 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   fi
 
   # The official image briefly starts a bootstrap server before restarting into
-  # the final externally reachable server. Wait for the final startup marker,
-  # then for readiness, to avoid racing integration tests against that restart.
+  # the final externally reachable server. Wait for init completion, the second
+  # readiness log line, and TCP readiness to avoid racing tests against restart.
   for _ in {1..45}; do
     if docker logs "$container" 2>&1 | grep -q 'PostgreSQL init process complete; ready for start up'; then
       break
@@ -61,7 +61,14 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     sleep 1
   done
   for _ in {1..45}; do
-    if docker exec "$container" pg_isready -U "$db_user" -d "$db_name" >/dev/null 2>&1; then
+    ready_count="$(docker logs "$container" 2>&1 | grep -c 'database system is ready to accept connections' || true)"
+    if [[ "$ready_count" -ge 2 ]]; then
+      break
+    fi
+    sleep 1
+  done
+  for _ in {1..45}; do
+    if docker exec "$container" pg_isready -h 127.0.0.1 -p 5432 -U "$db_user" -d "$db_name" >/dev/null 2>&1; then
       break
     fi
     sleep 1
