@@ -1,7 +1,6 @@
-bash ./scripts/run_integration.sh
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/contracts	0.018s [no tests to run]
+ok  	github.com/ZoneCNH/postgresx/contracts	0.040s [no tests to run]
 ?   	github.com/ZoneCNH/postgresx/examples/basic	[no test files]
 ?   	github.com/ZoneCNH/postgresx/examples/health	[no test files]
 ?   	github.com/ZoneCNH/postgresx/examples/internal/exampleconfig	[no test files]
@@ -10,18 +9,15 @@ ok  	github.com/ZoneCNH/postgresx/contracts	0.018s [no tests to run]
 ?   	github.com/ZoneCNH/postgresx/examples/transaction	[no test files]
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/internal/secretmask	0.027s [no tests to run]
+ok  	github.com/ZoneCNH/postgresx/internal/secretmask	0.010s [no tests to run]
 === RUN   TestMigrationRunnerUpIntegration
-    integration_test.go:27: open postgres fixture: timeout: postgresx.Client.Ping: operation timed out
---- FAIL: TestMigrationRunnerUpIntegration (5.01s)
+--- PASS: TestMigrationRunnerUpIntegration (5.32s)
 === RUN   TestMigrationRunnerDetectsVersionNameConflictIntegration
---- PASS: TestMigrationRunnerDetectsVersionNameConflictIntegration (0.34s)
+--- PASS: TestMigrationRunnerDetectsVersionNameConflictIntegration (0.05s)
 === RUN   TestMigrationRunnerRollsBackFailedMigrationIntegration
---- PASS: TestMigrationRunnerRollsBackFailedMigrationIntegration (0.04s)
-FAIL
-FAIL	github.com/ZoneCNH/postgresx/pkg/postgresx	5.411s
+--- PASS: TestMigrationRunnerRollsBackFailedMigrationIntegration (0.05s)
+PASS
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	5.451s
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/testkit	0.011s [no tests to run]
-FAIL
-make: *** [Makefile:44: integration] Error 1
+ok  	github.com/ZoneCNH/postgresx/testkit	0.013s [no tests to run]

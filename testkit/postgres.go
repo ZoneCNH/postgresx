@@ -40,13 +40,35 @@ func StartPostgres(ctx context.Context, t testing.TB, opts Options) *Fixture {
 	if err != nil {
 		t.Fatalf("parse postgres fixture config: %v", err)
 	}
-	client, err := postgresx.Open(ctx, cfg)
+	client, err := openWithRetry(ctx, cfg, 15*time.Second)
 	if err != nil {
 		t.Fatalf("open postgres fixture: %v", err)
 	}
 	fixture := &Fixture{client: client}
 	t.Cleanup(fixture.Close)
 	return fixture
+}
+
+func openWithRetry(ctx context.Context, cfg postgresx.Config, timeout time.Duration) (*postgresx.Client, error) {
+	deadline := time.Now().Add(timeout)
+	var lastErr error
+	for {
+		client, err := postgresx.Open(ctx, cfg)
+		if err == nil {
+			return client, nil
+		}
+		lastErr = err
+		if (!foundationx.IsKind(err, foundationx.ErrorKindTimeout) && !foundationx.IsKind(err, foundationx.ErrorKindConnection)) || time.Now().After(deadline) {
+			return nil, lastErr
+		}
+		timer := time.NewTimer(250 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, lastErr
+		case <-timer.C:
+		}
+	}
 }
 
 // ConfigFromDSN converts a PostgreSQL URL into the explicit postgresx Config

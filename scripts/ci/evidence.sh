@@ -14,6 +14,9 @@ GO="${GO:-go}"
 # a DSN/Docker unless POSTGRESX_REQUIRE_INTEGRATION=1 is set.
 GOWORK=off "$GO" list -m all >"$OUT_DIR/dependencies.txt"
 GOWORK=off "$GO" vet ./... >"$OUT_DIR/go-vet.txt" 2>&1
+if [[ ! -s "$OUT_DIR/go-vet.txt" ]]; then
+  echo "go vet passed" >"$OUT_DIR/go-vet.txt"
+fi
 GOWORK=off "$GO" test ./... >"$OUT_DIR/go-test.txt" 2>&1
 GOWORK=off "$GO" test -race ./... >"$OUT_DIR/go-test-race.txt" 2>&1
 bash ./scripts/ci/secret_scan.sh >"$OUT_DIR/secret-scan.txt" 2>&1

@@ -73,6 +73,10 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     fi
     sleep 1
   done
+  # pg_isready can return immediately before the host-mapped connection path is
+  # fully stable on some Docker networking setups. A short bounded settle avoids
+  # a one-time first ping timeout while keeping the gate deterministic.
+  sleep 3
 
   scheme="postgres"
   export POSTGRES_TEST_DSN="${scheme}://${db_user}:${db_secret}@127.0.0.1:${port}/${db_name}?sslmode=disable"
