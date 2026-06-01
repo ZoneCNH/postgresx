@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 type sliceSource []postgresx.Migration

@@ -225,6 +225,6 @@ internal/sysinfo
 runtime/debug
 runtime/trace
 testing
-github.com/ZoneCNH/postgresx/testkit
+github.com/ZoneCNH/postgresx/pkg/postgresx/testkit
 
 Script done on 2026-06-01 05:29:22+08:00 [COMMAND_EXIT_CODE="0"]

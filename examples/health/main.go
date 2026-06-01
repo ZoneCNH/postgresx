@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
-	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 func main() {
