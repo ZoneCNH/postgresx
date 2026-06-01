@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
@@ -23,11 +24,15 @@ func (q *queries) Ping(ctx context.Context) error {
 
 func main() {
 	ctx := context.Background()
-	cfg, err := exampleconfig.FromEnv("postgresx-sqlc-example")
+	runtime, err := exampleconfig.FromEnv("postgresx-sqlc-example")
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := postgresx.Open(ctx, cfg)
+	if !runtime.Live {
+		fmt.Println("postgresx sqlc example dry-run: DBTX boundary available")
+		return
+	}
+	client, err := postgresx.Open(ctx, runtime.Config)
 	if err != nil {
 		log.Fatal(err)
 	}

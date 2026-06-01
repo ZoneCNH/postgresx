@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
@@ -10,11 +11,15 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg, err := exampleconfig.FromEnv("postgresx-transaction-example")
+	runtime, err := exampleconfig.FromEnv("postgresx-transaction-example")
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := postgresx.Open(ctx, cfg)
+	if !runtime.Live {
+		fmt.Println("postgresx transaction example dry-run: explicit transaction boundary prepared")
+		return
+	}
+	client, err := postgresx.Open(ctx, runtime.Config)
 	if err != nil {
 		log.Fatal(err)
 	}

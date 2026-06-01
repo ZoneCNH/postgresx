@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
@@ -11,11 +12,15 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg, err := exampleconfig.FromEnv("postgresx-health-example")
+	runtime, err := exampleconfig.FromEnv("postgresx-health-example")
 	if err != nil {
 		log.Fatal(err)
 	}
-	client, err := postgresx.Open(ctx, cfg)
+	if !runtime.Live {
+		fmt.Println("postgresx health example dry-run: explicit config loaded")
+		return
+	}
+	client, err := postgresx.Open(ctx, runtime.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
