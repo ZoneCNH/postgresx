@@ -4,14 +4,14 @@ Script started on 2026-06-01 05:34:52+08:00 [COMMAND="./scripts/ci/migration_up_
     migrator_integration_test.go:57: migration after up again: version=1 dirty=false
 --- PASS: TestMigratorUpDownUpIntegration (0.06s)
 PASS
-ok  	github.com/bytechainx/postgresx	0.092s
-?   	github.com/bytechainx/postgresx/examples/basic	[no test files]
-?   	github.com/bytechainx/postgresx/examples/migration	[no test files]
-?   	github.com/bytechainx/postgresx/examples/sqlc	[no test files]
-?   	github.com/bytechainx/postgresx/examples/transaction	[no test files]
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	0.092s
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/basic	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/migration	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/sqlc	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/transaction	[no test files]
 testing: warning: no tests to run
 PASS
-ok  	github.com/bytechainx/postgresx/internal/secretmask	0.018s [no tests to run]
-?   	github.com/bytechainx/postgresx/testkit	[no test files]
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx/internal/secretmask	0.018s [no tests to run]
+?   	github.com/ZoneCNH/postgresx/testkit	[no test files]
 
 Script done on 2026-06-01 05:34:56+08:00 [COMMAND_EXIT_CODE="0"]

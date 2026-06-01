@@ -74,7 +74,7 @@ net/url
 sort
 regexp/syntax
 regexp
-github.com/bytechainx/postgresx/internal/secretmask
+github.com/ZoneCNH/postgresx/pkg/postgresx/internal/secretmask
 bufio
 github.com/golang-migrate/migrate/v4/internal/url
 hash
@@ -215,16 +215,16 @@ github.com/jackc/pgx/v5/stdlib
 github.com/golang-migrate/migrate/v4/database/pgx/v5
 github.com/golang-migrate/migrate/v4/source/iofs
 github.com/golang-migrate/migrate/v4/source/file
-github.com/bytechainx/postgresx
-github.com/bytechainx/postgresx/examples/basic
-github.com/bytechainx/postgresx/examples/migration
-github.com/bytechainx/postgresx/examples/sqlc
-github.com/bytechainx/postgresx/examples/transaction
+github.com/ZoneCNH/postgresx/pkg/postgresx
+github.com/ZoneCNH/postgresx/pkg/postgresx/examples/basic
+github.com/ZoneCNH/postgresx/pkg/postgresx/examples/migration
+github.com/ZoneCNH/postgresx/pkg/postgresx/examples/sqlc
+github.com/ZoneCNH/postgresx/pkg/postgresx/examples/transaction
 flag
 internal/sysinfo
 runtime/debug
 runtime/trace
 testing
-github.com/bytechainx/postgresx/testkit
+github.com/ZoneCNH/postgresx/testkit
 
 Script done on 2026-06-01 05:29:22+08:00 [COMMAND_EXIT_CODE="0"]

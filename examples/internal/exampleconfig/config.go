@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
-	"github.com/bytechainx/postgresx"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 // FromEnv builds a postgresx Config from non-secret connection settings and a

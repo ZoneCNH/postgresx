@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
-	"github.com/bytechainx/postgresx"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 // Options controls StartPostgres.

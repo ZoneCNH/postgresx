@@ -11,7 +11,7 @@ make ci
 make integration
 
 module="$(GOWORK=off "$GO" list -m)"
-if [[ "$module" != "github.com/bytechainx/postgresx" ]]; then
+if [[ "$module" != "github.com/ZoneCNH/postgresx/pkg/postgresx" ]]; then
   echo "unexpected module path: $module" >&2
   exit 1
 fi

@@ -1,5 +1,5 @@
 Script started on 2026-06-01 05:26:15+08:00 [COMMAND="env GOWORK=off go list -m all" <not executed on terminal>]
-github.com/bytechainx/postgresx
+github.com/ZoneCNH/postgresx/pkg/postgresx
 cel.dev/expr v0.24.0
 cloud.google.com/go v0.121.6
 cloud.google.com/go/auth v0.16.4

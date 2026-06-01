@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bytechainx/postgresx"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 // FileMigrationSource loads migrations from files named

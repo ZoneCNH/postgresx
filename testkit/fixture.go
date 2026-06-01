@@ -3,7 +3,7 @@ package testkit
 import (
 	"context"
 
-	"github.com/bytechainx/postgresx"
+	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
 // Fixture contains a live PostgreSQL client for integration tests.

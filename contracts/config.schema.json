@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/bytechainx/postgresx/contracts/config.schema.json",
+  "$id": "https://github.com/ZoneCNH/postgresx/pkg/postgresx/contracts/config.schema.json",
   "title": "Postgresx Config",
   "type": "object",
   "additionalProperties": false,

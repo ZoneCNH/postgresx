@@ -144,7 +144,7 @@ postgresx 必须作为独立 Go module 发布，不得依赖 x.go，不得包含
 # 4. v1.1 与 v1.0 的关键差异
 
 ```text
-1. module path 从 github.com/bytechainx/postgresx 改为 github.com/ZoneCNH/postgresx
+1. module path 从 github.com/ZoneCNH/postgresx/pkg/postgresx 改为 github.com/ZoneCNH/postgresx
 2. foundationx import 从 github.com/bytechainx/foundationx 改为 github.com/ZoneCNH/foundationx/pkg/foundationx
 3. 不再手工创建 skeleton，必须通过 baselib-template/scripts/render_template.sh 渲染
 4. foundationx 不再是假设依赖，而是已完成的 L0 事实依赖
