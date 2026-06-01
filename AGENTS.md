@@ -2,9 +2,9 @@
 
 ## 项目结构与模块组织
 
-本仓库是 Go 模块 `github.com/bytechainx/postgresx`，核心代码位于根目录，包名为 `postgresx`。
-主要入口包括 `client.go`、`pool.go`、`tx.go`、`migrator.go`、`errors.go`、`retry.go` 和 `health.go`。
-内部实现放在 `internal/secretmask/`，可复用测试工具放在 `testkit/`。
+本仓库是 Go 模块 `github.com/ZoneCNH/postgresx`，核心代码位于 `pkg/postgresx/`，包名为 `postgresx`。
+主要入口包括 `client.go`、`pool.go`、`tx.go`、`migration.go`、`errors.go`、`query.go` 和 `health.go`。
+内部实现放在 `internal/secretmask/`，契约测试放在 `contracts/`，可复用测试工具放在 `testkit/`。
 示例程序在 `examples/basic/`、`examples/transaction/`、`examples/migration/` 和 `examples/sqlc/`。
 设计、ADR、版本矩阵和发布证据保存在 `docs/`。
 
@@ -20,7 +20,7 @@
 
 ## 编码风格与命名约定
 
-使用 Go 1.26.3。提交前保持 `gofmt` 后的制表符缩进和标准 Go import 分组。
+使用 `go.mod` 声明的 Go 版本。提交前保持 `gofmt` 后的制表符缩进和标准 Go import 分组。
 导出 API 使用清晰的 PascalCase 名称并补充文档注释；内部 helper 使用 camelCase。
 错误码、配置项和公共接口应保持向后兼容，避免让 `postgresx` 拥有业务 schema 或 ORM 行为。
 
