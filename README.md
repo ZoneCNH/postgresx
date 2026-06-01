@@ -1,18 +1,28 @@
 # postgresx
 
-`postgresx` is the PostgreSQL runtime foundation library for `x.go`.
+`postgresx` is the PostgreSQL runtime foundation library published as module
+`github.com/ZoneCNH/postgresx`, with its public core package at
+`github.com/ZoneCNH/postgresx/pkg/postgresx`.
 
-It provides the infrastructure layer around PostgreSQL: `pgxpool` lifecycle,
-configuration, sqlc-compatible execution, explicit transactions, retry policy,
-migration runner, error normalization, health checks, pool statistics,
-observability adapters, secret masking, and integration test helpers.
+It provides a small infrastructure layer around PostgreSQL: pgx pool lifecycle,
+configuration validation, sqlc-compatible execution, explicit transactions,
+retry policy, migration runner, error normalization, health checks, pool
+statistics, optional metrics/tracing adapters, DSN masking, and integration test
+helpers.
 
-It is not an ORM, does not own business schema, and does not depend on `x.go`.
+It is not an ORM, does not own business schema, does not load secrets from env or
+files implicitly, and does not provide a global database/singleton.
 
 ## Install
 
 ```sh
-go get github.com/ZoneCNH/postgresx/pkg/postgresx
+go get github.com/ZoneCNH/postgresx
+```
+
+## Import
+
+```go
+import "github.com/ZoneCNH/postgresx/pkg/postgresx"
 ```
 
 ## Client
@@ -20,7 +30,7 @@ go get github.com/ZoneCNH/postgresx/pkg/postgresx
 ```go
 client, err := postgresx.Open(ctx, postgresx.Config{
     DSN:             os.Getenv("POSTGRES_DSN"),
-    ApplicationName: "market-data",
+    ApplicationName: "my-service",
     MaxConns:        16,
 })
 if err != nil {
@@ -76,7 +86,9 @@ supports `Down(ctx, steps)` and `Version(ctx)`.
 
 ## Secret Masking
 
-Use `postgresx.MaskDSN` before logging configuration or connection failures.
+Callers supply secrets explicitly through `Config.DSN`, `OpenPool`, or
+`MigrationConfig`. Use `postgresx.MaskDSN` before logging configuration or
+connection failures.
 
 ```go
 log.Printf("postgres dsn=%s", postgresx.MaskDSN(os.Getenv("POSTGRES_DSN")))
@@ -85,8 +97,11 @@ log.Printf("postgres dsn=%s", postgresx.MaskDSN(os.Getenv("POSTGRES_DSN")))
 ## Verification
 
 ```sh
-make ci
-POSTGRES_TEST_DSN="$POSTGRES_TEST_DSN" make integration
+GOWORK=off make ci
+GOWORK=off make integration
+GOWORK=off make release-evidence-check
 ```
 
-`POSTGRES_TEST_DSN` is required only for live PostgreSQL integration tests.
+`POSTGRES_TEST_DSN` or `POSTGRESX_INTEGRATION_DSN` is required only for live
+PostgreSQL integration when Docker is unavailable. Release mode can require live
+integration with `POSTGRESX_REQUIRE_INTEGRATION=1`.
