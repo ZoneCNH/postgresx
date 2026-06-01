@@ -1,4 +1,4 @@
-# ADR-0001: Use pgx as the PostgreSQL Driver
+# ADR-0001: Use pgx
 
 ## Status
 

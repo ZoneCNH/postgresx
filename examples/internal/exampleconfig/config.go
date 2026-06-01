@@ -9,23 +9,32 @@ import (
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
-// FromEnv builds a postgresx Config from non-secret connection settings and a
-// secret supplied by the caller's environment.
-func FromEnv(applicationName string) (postgresx.Config, error) {
+// RuntimeConfig is the example boundary around postgresx.Config. The core
+// package never reads env; examples do so only to demonstrate caller-owned
+// configuration loading.
+type RuntimeConfig struct {
+	Config postgresx.Config
+	Live   bool
+}
+
+// FromEnv builds an example config. It returns Live=false unless the caller
+// explicitly sets POSTGRESX_EXAMPLE_LIVE=1, allowing `go run ./examples/...`
+// to act as a dry-run smoke check without requiring a database.
+func FromEnv(applicationName string) (RuntimeConfig, error) {
 	cfg := postgresx.DefaultConfig()
 	cfg.Host = getenv("POSTGRES_HOST", "localhost")
 	cfg.Database = getenv("POSTGRES_DATABASE", "postgres")
 	cfg.User = getenv("POSTGRES_USER", "postgres")
-	cfg.Password = foundationx.NewSecretString(firstEnv("POSTGRES_SECRET", "POSTGRES_PASSWORD"))
+	cfg.Password = foundationx.NewSecretString(getenv("POSTGRES_PASSWORD", "postgres"))
 	cfg.SSLMode = getenv("POSTGRES_SSLMODE", cfg.SSLMode)
 	cfg.ApplicationName = applicationName
 
 	port, err := strconv.Atoi(getenv("POSTGRES_PORT", "5432"))
 	if err != nil {
-		return postgresx.Config{}, fmt.Errorf("parse POSTGRES_PORT: %w", err)
+		return RuntimeConfig{}, fmt.Errorf("parse POSTGRES_PORT: %w", err)
 	}
 	cfg.Port = port
-	return cfg, nil
+	return RuntimeConfig{Config: cfg, Live: os.Getenv("POSTGRESX_EXAMPLE_LIVE") == "1"}, nil
 }
 
 func getenv(key string, fallback string) string {
@@ -33,13 +42,4 @@ func getenv(key string, fallback string) string {
 		return value
 	}
 	return fallback
-}
-
-func firstEnv(keys ...string) string {
-	for _, key := range keys {
-		if value := os.Getenv(key); value != "" {
-			return value
-		}
-	}
-	return ""
 }

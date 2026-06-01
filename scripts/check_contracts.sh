@@ -14,6 +14,8 @@ required_files=(
   "contracts/error.schema.json"
   "contracts/health.schema.json"
   "contracts/metrics.md"
+  "contracts/public_api.md"
+  "docs/api.md"
 )
 
 for file in "${required_files[@]}"; do
@@ -24,14 +26,9 @@ for file in "${required_files[@]}"; do
 done
 
 for schema in contracts/*.schema.json; do
-  rg -q '"\$schema"[[:space:]]*:' "$schema" || {
-    echo "$schema missing \$schema" >&2
-    exit 1
-  }
-  rg -q '"title"[[:space:]]*:' "$schema" || {
-    echo "$schema missing title" >&2
-    exit 1
-  }
+  rg -q '"\$schema"[[:space:]]*:' "$schema" || { echo "$schema missing \$schema" >&2; exit 1; }
+  rg -q '"\$id"[[:space:]]*:[[:space:]]*"https://github.com/ZoneCNH/postgresx/contracts/' "$schema" || { echo "$schema has unexpected \$id" >&2; exit 1; }
+  rg -q '"title"[[:space:]]*:' "$schema" || { echo "$schema missing title" >&2; exit 1; }
 done
 
 GO="${GO:-go}"

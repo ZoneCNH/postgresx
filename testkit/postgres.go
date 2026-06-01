@@ -116,3 +116,23 @@ func integrationDSN() string {
 	}
 	return os.Getenv("POSTGRES_TEST_DSN")
 }
+
+func openWithRetry(ctx context.Context, cfg postgresx.Config, timeout time.Duration) (*postgresx.Client, error) {
+	deadline := time.Now().Add(timeout)
+	var lastErr error
+	for {
+		client, err := postgresx.Open(ctx, cfg)
+		if err == nil {
+			return client, nil
+		}
+		lastErr = err
+		if time.Now().After(deadline) {
+			return nil, lastErr
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
+}

@@ -52,4 +52,20 @@ if [[ "$status" -ne 0 ]]; then
   exit "$status"
 fi
 
+scan_paths=(pkg contracts internal examples testkit)
+if rg -n 'MacroRegime|MarketRegime|TradingSignal|BTCUSDT|ETHUSDT|Kline|OrderBook|Position|RiskGate|MarketData|MacroData' "${scan_paths[@]}"; then
+  echo "boundary violation: business-domain terms found in postgresx code" >&2
+  status=1
+fi
+
+if find . -maxdepth 1 -name '*.go' -print -quit | grep -q .; then
+  echo "boundary violation: root Go files are not allowed; use pkg/postgresx" >&2
+  find . -maxdepth 1 -name '*.go' -print >&2
+  status=1
+fi
+
+if [[ "$status" -ne 0 ]]; then
+  exit "$status"
+fi
+
 echo "boundary check passed"

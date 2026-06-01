@@ -18,7 +18,11 @@ go get github.com/ZoneCNH/postgresx
 
 ## Client
 
+Callers provide explicit configuration. Secret loading belongs in the
+application boundary, not in `pkg/postgresx`.
+
 ```go
+password := foundationx.NewSecretString(driverPasswordFromYourConfigBoundary)
 client, err := postgresx.Open(ctx, postgresx.Config{
     DSN:             os.Getenv("POSTGRES_DSN"),
     ApplicationName: "postgresx-example",
@@ -27,14 +31,13 @@ client, err := postgresx.Open(ctx, postgresx.Config{
 if err != nil {
     return err
 }
-defer client.Close()
+defer client.Close(ctx)
 ```
 
 Applications that already build a `pgxpool.Config` can use `OpenPool(ctx, cfg)`.
 That path preserves application-owned pgx hooks and still returns the
 `postgresx.Client` lifecycle, health, stats, metrics, tracing, and sqlc API.
-Metrics and tracing adapters emit only when `Config.EnableMetrics` and
-`Config.EnableTracing` are enabled.
+Metrics and tracing adapters emit only when explicitly configured.
 
 ## sqlc
 
@@ -55,25 +58,13 @@ err := client.WithinTx(ctx, pgx.TxOptions{}, func(ctx context.Context, db postgr
 
 ## Migrations
 
-Applications own their migration files. `postgresx` only runs them.
+Applications own their migration files and schema. `postgresx` only runs SQL
+provided by the caller.
 
 ```go
-migrator, err := postgresx.NewMigrator(postgresx.MigrationConfig{
-    DatabaseURL:    os.Getenv("POSTGRES_DSN"),
-    MigrationsPath: "db/postgres/migrations",
-})
-if err != nil {
-    return err
-}
-defer migrator.Close()
-
-return migrator.Up(ctx)
+runner := postgresx.NewMigrationRunner(client)
+return runner.Up(ctx, appMigrationSource)
 ```
-
-`MigrationConfig.SourceURL` can be supplied directly for non-default migrate
-sources. `MigrationsPath` is converted to a `file://` source URL, and
-`MigrationsTable` is passed through to the pgx migrate driver. The migrator also
-supports `Down(ctx, steps)` and `Version(ctx)`.
 
 ## Secret Masking
 
@@ -82,7 +73,7 @@ Callers supply secrets explicitly through `Config.DSN`, `OpenPool`, or
 connection failures.
 
 ```go
-log.Printf("postgres dsn=%s", postgresx.MaskDSN(os.Getenv("POSTGRES_DSN")))
+log.Printf("postgres dsn=%s", postgresx.MaskDSN(rawDriverDSN))
 ```
 
 ## Verification
