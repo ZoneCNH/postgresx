@@ -30,6 +30,6 @@ if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/([b]ytechainx|ZoneCNH)/
   exit 1
 fi
 
-bash ./scripts/ci/release_evidence_check.sh "$version"
+bash ./scripts/ci/release_evidence_check.sh "$VERSION"
 
-echo "release check passed for $version"
+echo "release check passed for $VERSION"
