@@ -4,11 +4,19 @@ Status: local release candidate prepared for `github.com/ZoneCNH/postgresx`.
 
 ## Identity
 
-- Module: `github.com/ZoneCNH/postgresx`
-- Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
-- Version: `v0.1.0`
-- Date: 2026-06-01
-- Machine-readable manifest: `release/manifest/v0.1.0.json`
+- Go module `github.com/ZoneCNH/postgresx`
+- pgxpool client lifecycle
+- sqlc `DBTX`
+- transaction and retry helpers
+- migration runner
+- normalized errors with explicit SQLSTATE mappings
+- health and pool stats
+- metrics/tracing adapter interfaces
+- public `Mask` and `MaskDSN` secret masking
+- testkit and examples
+- CI scripts and GitHub Actions workflow
+- integration documentation describing the intended x.go adoption boundary and
+  current checkout status
 
 ## Release Contents
 
@@ -21,11 +29,14 @@ Status: local release candidate prepared for `github.com/ZoneCNH/postgresx`.
 
 ## Exclusions
 
-- No ORM or business schema ownership.
-- No implicit env/file secret loading.
-- No package-global DB/singleton.
-- No core dependency on application wiring packages such as `configx` or `observex`.
-- No dependency on application modules.
+- `/home/x.go/go.mod` does not require `github.com/ZoneCNH/postgresx/pkg/postgresx`.
+- `/home/x.go/pkg/adapter/db/postgres/postgres.go` still imports
+  `github.com/jackc/pgx/v5/pgxpool` directly.
+- `GOWORK=off go list -m github.com/ZoneCNH/postgresx/pkg/postgresx` in `/home/x.go`
+  reports that `github.com/ZoneCNH/postgresx/pkg/postgresx` is not a known dependency.
+- No `sqlc.yaml` or `sqlc.yml` file is present under `/home/x.go` at max depth
+  3, and the previously documented `collection_status` files are absent from
+  the current checkout.
 
 ## Required Gates
 

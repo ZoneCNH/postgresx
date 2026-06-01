@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ZoneCNH/postgresx/contracts/health.schema.json",
+  "$id": "https://github.com/ZoneCNH/postgresx/pkg/postgresx/contracts/health.schema.json",
   "title": "Postgresx Health Status",
   "type": "object",
   "additionalProperties": false,

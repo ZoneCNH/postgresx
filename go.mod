@@ -1,6 +1,6 @@
 module github.com/ZoneCNH/postgresx
 
-go 1.26.3
+go 1.23
 
 require github.com/jackc/pgx/v5 v5.9.2
 

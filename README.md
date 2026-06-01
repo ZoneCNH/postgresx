@@ -1,8 +1,6 @@
 # postgresx
 
-`postgresx` is the PostgreSQL runtime foundation library published as module
-`github.com/ZoneCNH/postgresx`, with its public core package at
-`github.com/ZoneCNH/postgresx/pkg/postgresx`.
+`postgresx` is the PostgreSQL runtime foundation library for Go services.
 
 It provides a small infrastructure layer around PostgreSQL: pgx pool lifecycle,
 configuration validation, sqlc-compatible execution, explicit transactions,
@@ -10,8 +8,7 @@ retry policy, migration runner, error normalization, health checks, pool
 statistics, optional metrics/tracing adapters, DSN masking, and integration test
 helpers.
 
-It is not an ORM, does not own business schema, does not load secrets from env or
-files implicitly, and does not provide a global database/singleton.
+It is not an ORM, does not own business schema, and does not depend on any consumer application.
 
 ## Install
 
@@ -19,18 +16,12 @@ files implicitly, and does not provide a global database/singleton.
 go get github.com/ZoneCNH/postgresx
 ```
 
-## Import
-
-```go
-import "github.com/ZoneCNH/postgresx/pkg/postgresx"
-```
-
 ## Client
 
 ```go
 client, err := postgresx.Open(ctx, postgresx.Config{
     DSN:             os.Getenv("POSTGRES_DSN"),
-    ApplicationName: "my-service",
+    ApplicationName: "postgresx-example",
     MaxConns:        16,
 })
 if err != nil {

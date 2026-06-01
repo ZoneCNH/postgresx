@@ -5,10 +5,10 @@ Script started on 2026-06-01 05:34:52+08:00 [COMMAND="./scripts/ci/migration_up_
 --- PASS: TestMigratorUpDownUpIntegration (0.06s)
 PASS
 ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	0.092s
-?   	github.com/ZoneCNH/postgresx/examples/basic	[no test files]
-?   	github.com/ZoneCNH/postgresx/examples/migration	[no test files]
-?   	github.com/ZoneCNH/postgresx/examples/sqlc	[no test files]
-?   	github.com/ZoneCNH/postgresx/examples/transaction	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/basic	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/migration	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/sqlc	[no test files]
+?   	github.com/ZoneCNH/postgresx/pkg/postgresx/examples/transaction	[no test files]
 testing: warning: no tests to run
 PASS
 ok  	github.com/ZoneCNH/postgresx/pkg/postgresx/internal/secretmask	0.018s [no tests to run]
