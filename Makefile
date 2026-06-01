@@ -41,7 +41,7 @@ template-alignment:
 
 ci: fmt vet test race boundary contracts secret-scan
 
-ci-extended: ci foundationx-api template-alignment
+ci-extended: ci lint security foundationx-api template-alignment
 
 integration:
 	bash ./scripts/run_integration.sh
@@ -55,12 +55,9 @@ release-check:
 release-preflight: ci-extended integration evidence
 
 release-evidence-check:
-	test -f docs/EVIDENCE-20260601.md
-	test -f docs/RELEASE_MANIFEST-v0.1.0.md
-	test -f docs/RETROSPECTIVE-GOAL-20260601-001.md
-	test -d release/manifest
+	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
-release-final-check: release-evidence-check
+release-final-check: ci-extended release-evidence-check
 	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx
 	$(GOENV) $(GO) list ./pkg/postgresx >/dev/null
 	git diff --check
