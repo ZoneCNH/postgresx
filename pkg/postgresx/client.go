@@ -54,7 +54,13 @@ func New(ctx context.Context, cfg Config, opts ...Option) (*Client, error) {
 		return nil, MapError(op, err)
 	}
 	client := &Client{pool: pool, cfg: cfg, opts: resolved}
-	if err := client.Ping(connectCtx); err != nil {
+	healthCtx := ctx
+	healthCancel := func() {}
+	if cfg.HealthTimeout > 0 {
+		healthCtx, healthCancel = context.WithTimeout(ctx, cfg.HealthTimeout)
+	}
+	defer healthCancel()
+	if err := client.Ping(healthCtx); err != nil {
 		pool.Close()
 		client.closed.Store(true)
 		return nil, MapError(op, err)
