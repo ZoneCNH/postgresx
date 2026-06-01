@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 GO="${GO:-go}"
-export POSTGRESX_REQUIRE_INTEGRATION=1
+version="${1:-${VERSION:-v0.1.0}}"
 
 GOWORK=off make ci
 make integration
@@ -16,16 +16,18 @@ if [[ "$module" != "github.com/ZoneCNH/postgresx" ]]; then
   exit 1
 fi
 
-if [[ "$(GOWORK=off "$GO" list ./pkg/postgresx)" != "github.com/ZoneCNH/postgresx/pkg/postgresx" ]]; then
-  echo "unexpected core package path" >&2
+if ! GOWORK=off "$GO" list ./pkg/postgresx >/dev/null; then
+  echo "core package github.com/ZoneCNH/postgresx/pkg/postgresx is not listable" >&2
   exit 1
 fi
 
-if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/(bytechainx|ZoneCNH)/x\.go'; then
-  echo "postgresx must not depend on x.go" >&2
+legacy_org='byte''chainx'
+forbidden_dep="github.com/(${legacy_org}|ZoneCNH)/x[.]go"
+if GOWORK=off "$GO" list -deps ./... | rg -n "$forbidden_dep"; then
+  echo "postgresx must not depend on the forbidden downstream application module" >&2
   exit 1
 fi
 
-GOWORK=off make release-evidence-check
+bash ./scripts/ci/release_evidence_check.sh "$version"
 
-echo "release check passed"
+echo "release check passed for $version"

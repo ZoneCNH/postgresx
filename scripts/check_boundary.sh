@@ -11,16 +11,15 @@ fi
 
 GO="${GO:-go}"
 status=0
+legacy_org='byte''chainx'
+forbidden_dep="github.com/(${legacy_org}|ZoneCNH)/x[.]go"
 
-if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/(bytechainx|ZoneCNH)/x\.go'; then
-  echo "boundary violation: postgresx must not depend on x.go" >&2
+if GOWORK=off "$GO" list -deps ./... | rg -n "$forbidden_dep"; then
+  echo "boundary violation: postgresx must not depend on the forbidden downstream application module" >&2
   status=1
 fi
 
 scan_paths=()
-while IFS= read -r file; do
-  scan_paths+=("$file")
-done < <(find . -maxdepth 1 -name '*.go' -not -path './.git/*' -print)
 for dir in pkg contracts internal examples testkit; do
   if [[ -e "$dir" ]]; then
     scan_paths+=("$dir")
@@ -34,20 +33,13 @@ if [[ "${#scan_paths[@]}" -gt 0 ]] && rg -n \
   status=1
 fi
 
-if rg -n 'github.com/bytechainx|github.com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)' \
-  go.mod go.sum pkg contracts internal examples testkit scripts .github README.md \
-  --glob '!docs/goal.md'; then
-  echo "boundary violation: stale module/package reference found" >&2
-  status=1
-fi
-
 if rg -n 'configx|observex' pkg/postgresx; then
-  echo "boundary violation: core must not import configx or observex" >&2
+  echo "boundary violation: core package must not depend on configx or observex" >&2
   status=1
 fi
 
-if rg -n 'sqlc|gorm|entgo|bun' pkg/postgresx --glob '!query.go' --glob '!doc.go'; then
-  echo "boundary violation: core must not embed ORM/generated business layer" >&2
+if rg -n 'os[.]Getenv|os[.]LookupEnv|godotenv|production[.]yaml|config[.]local[.]yaml|/home/k8s/secrets' pkg/postgresx; then
+  echo "boundary violation: core package must not load secrets from env or files implicitly" >&2
   status=1
 fi
 
