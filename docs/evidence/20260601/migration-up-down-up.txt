@@ -11,3 +11,14 @@ ok  	github.com/ZoneCNH/postgresx/contracts	0.021s [no tests to run]
 testing: warning: no tests to run
 PASS
 ok  	github.com/ZoneCNH/postgresx/internal/secretmask	0.018s [no tests to run]
+=== RUN   TestMigrationRunnerUpIntegration
+--- PASS: TestMigrationRunnerUpIntegration (5.19s)
+=== RUN   TestMigrationRunnerDetectsVersionNameConflictIntegration
+--- PASS: TestMigrationRunnerDetectsVersionNameConflictIntegration (0.06s)
+=== RUN   TestMigrationRunnerRollsBackFailedMigrationIntegration
+--- PASS: TestMigrationRunnerRollsBackFailedMigrationIntegration (0.04s)
+PASS
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	5.310s
+testing: warning: no tests to run
+PASS
+ok  	github.com/ZoneCNH/postgresx/testkit	0.029s [no tests to run]

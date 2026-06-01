@@ -1,6 +1,6 @@
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/contracts	0.014s [no tests to run]
+ok  	github.com/ZoneCNH/postgresx/contracts	0.021s [no tests to run]
 ?   	github.com/ZoneCNH/postgresx/examples/basic	[no test files]
 ?   	github.com/ZoneCNH/postgresx/examples/health	[no test files]
 ?   	github.com/ZoneCNH/postgresx/examples/internal/exampleconfig	[no test files]
@@ -9,17 +9,15 @@ ok  	github.com/ZoneCNH/postgresx/contracts	0.014s [no tests to run]
 ?   	github.com/ZoneCNH/postgresx/examples/transaction	[no test files]
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/internal/secretmask	0.012s [no tests to run]
+ok  	github.com/ZoneCNH/postgresx/internal/secretmask	0.018s [no tests to run]
 === RUN   TestMigrationRunnerUpIntegration
---- PASS: TestMigrationRunnerUpIntegration (5.32s)
+--- PASS: TestMigrationRunnerUpIntegration (5.19s)
 === RUN   TestMigrationRunnerDetectsVersionNameConflictIntegration
---- PASS: TestMigrationRunnerDetectsVersionNameConflictIntegration (0.44s)
+--- PASS: TestMigrationRunnerDetectsVersionNameConflictIntegration (0.06s)
 === RUN   TestMigrationRunnerRollsBackFailedMigrationIntegration
 --- PASS: TestMigrationRunnerRollsBackFailedMigrationIntegration (0.04s)
-FAIL
-FAIL	github.com/ZoneCNH/postgresx/pkg/postgresx	5.506s
+PASS
+ok  	github.com/ZoneCNH/postgresx/pkg/postgresx	5.310s
 testing: warning: no tests to run
 PASS
-ok  	github.com/ZoneCNH/postgresx/testkit	0.026s [no tests to run]
-FAIL
-make: *** [Makefile:44: integration] Error 1
+ok  	github.com/ZoneCNH/postgresx/testkit	0.029s [no tests to run]
