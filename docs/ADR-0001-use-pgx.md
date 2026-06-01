@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-postgresx needs a small, explicit PostgreSQL foundation for connection pooling, transactions, health checks, error normalization, metrics, tracing, migrations, and sqlc integration. The library must stay independent from x.go and must not become an ORM.
+postgresx needs a small, explicit PostgreSQL foundation for connection pooling, transactions, health checks, error normalization, metrics, tracing, migrations, and sqlc integration. The library must stay independent from application modules and must not become an ORM.
 
 ## Decision
 

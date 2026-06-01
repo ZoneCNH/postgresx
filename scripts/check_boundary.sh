@@ -14,8 +14,8 @@ status=0
 legacy_org='byte''chainx'
 forbidden_dep="github.com/(${legacy_org}|ZoneCNH)/x[.]go"
 
-if GOWORK=off "$GO" list -deps ./... | rg -n "$forbidden_dep"; then
-  echo "boundary violation: postgresx must not depend on the forbidden downstream application module" >&2
+if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/([b]ytechainx|ZoneCNH)/x\.go'; then
+  echo "boundary violation: postgresx must not depend on application module" >&2
   status=1
 fi
 
@@ -30,6 +30,13 @@ if [[ "${#scan_paths[@]}" -gt 0 ]] && rg -n \
   'MacroRegime|MarketRegime|TradingSignal|BTCUSDT|ETHUSDT|Kline|OrderBook|Position|RiskGate|MarketData|MacroData' \
   "${scan_paths[@]}"; then
   echo "boundary violation: business-domain terms found in postgresx library code" >&2
+  status=1
+fi
+
+if rg -n 'github.com/[b]ytechainx|github.com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)' \
+  go.mod go.sum pkg contracts internal examples testkit scripts .github README.md \
+  --glob '!docs/goal.md'; then
+  echo "boundary violation: stale module/package reference found" >&2
   status=1
 fi
 

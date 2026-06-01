@@ -10,5 +10,5 @@ Accepted
 
 ## Consequences
 
-`x.go` can import the library, but `postgresx` must never import `x.go`.
+Application modules can import the library, but `postgresx` must never import application modules.
 

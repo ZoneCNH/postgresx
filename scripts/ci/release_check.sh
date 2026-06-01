@@ -21,10 +21,8 @@ if ! GOWORK=off "$GO" list ./pkg/postgresx >/dev/null; then
   exit 1
 fi
 
-legacy_org='byte''chainx'
-forbidden_dep="github.com/(${legacy_org}|ZoneCNH)/x[.]go"
-if GOWORK=off "$GO" list -deps ./... | rg -n "$forbidden_dep"; then
-  echo "postgresx must not depend on the forbidden downstream application module" >&2
+if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/([b]ytechainx|ZoneCNH)/x\.go'; then
+  echo "postgresx must not depend on application module" >&2
   exit 1
 fi
 
