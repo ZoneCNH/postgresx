@@ -12,3 +12,4 @@ Accepted
 
 Application modules can import the library, but `postgresx` must never import application modules.
 
+`postgresx` is a standalone module under `github.com/ZoneCNH/postgresx` with core code in `pkg/postgresx`.

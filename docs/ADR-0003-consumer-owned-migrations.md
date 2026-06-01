@@ -1,4 +1,4 @@
-# ADR-0003: Consumers Own Business Migrations
+# ADR-0003: Consumer-owned migrations
 
 ## Status
 

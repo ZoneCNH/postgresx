@@ -64,4 +64,8 @@ if find . -maxdepth 1 -name '*.go' -print -quit | grep -q .; then
   status=1
 fi
 
-exit "$status"
+if [[ "$status" -ne 0 ]]; then
+  exit "$status"
+fi
+
+echo "boundary check passed"

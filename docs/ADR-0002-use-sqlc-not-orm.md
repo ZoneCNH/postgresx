@@ -1,4 +1,4 @@
-# ADR-0002: Use sqlc-Compatible Interfaces, Not an ORM
+# ADR-0002: Support sqlc-style callers, not ORM ownership
 
 ## Status
 

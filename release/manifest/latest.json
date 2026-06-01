@@ -1,0 +1,29 @@
+{
+  "boundaries": {
+    "business_schema_or_orm": "forbidden",
+    "configx_observex_core_dependency": "forbidden",
+    "consumer_module_dependency": "forbidden",
+    "core_env_file_secret_loading": "forbidden",
+    "global_database_singleton": "forbidden"
+  },
+  "commit": "01f2f47",
+  "contracts": [
+    "contracts/config.schema.json",
+    "contracts/error.schema.json",
+    "contracts/health.schema.json",
+    "contracts/metrics.md",
+    "contracts/public_api.md",
+    "docs/api.md"
+  ],
+  "core_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
+  "gates": [
+    "GOWORK=off make ci-extended",
+    "GOWORK=off make release-preflight VERSION=v0.1.0",
+    "GOWORK=off make evidence VERSION=v0.1.0",
+    "GOWORK=off make release-evidence-check VERSION=v0.1.0"
+  ],
+  "generated_at": "2026-06-01T06:24:19Z",
+  "go_version": "go1.26.3",
+  "module": "github.com/ZoneCNH/postgresx",
+  "version": "v0.1.0"
+}

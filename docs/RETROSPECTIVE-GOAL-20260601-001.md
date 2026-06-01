@@ -17,7 +17,9 @@ under `pkg/postgresx`, and validation/release gates run with `GOWORK=off`.
   business-domain terms, and core `configx`/`observex` drift.
 - Documented explicit secret/config/observability ownership boundaries.
 
-## Decisions
+- The module is aligned to `github.com/ZoneCNH/postgresx` with the public package under `pkg/postgresx`.
+- Documentation, contracts, examples, scripts, and release evidence now describe a standalone PostgreSQL foundation library.
+- Release gates enforce the same boundaries described in the goal: explicit configuration, caller-owned secrets, no business schemas, no ORM layer, no package-level database singleton, and no application config or observability dependency in core.
 
 - Keep migrations caller-owned; postgresx only runs migration sources supplied by
   the caller.
