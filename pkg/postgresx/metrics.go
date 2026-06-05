@@ -3,13 +3,13 @@ package postgresx
 import "context"
 
 const (
-	metricQueryTotal    = "postgresx_query_total"
-	metricQueryDuration = "postgresx_query_duration_seconds"
-	metricTxTotal       = "postgresx_tx_total"
-	metricTxDuration    = "postgresx_tx_duration_seconds"
-	metricHealthTotal   = "postgresx_health_total"
-	metricHealthLatency = "postgresx_health_latency_seconds"
-	metricPoolConns     = "postgresx_pool_connections"
+	metricQueryTotal    = "postgresx.query.total"
+	metricQueryDuration = "postgresx.query.duration_seconds"
+	metricTxTotal       = "postgresx.tx.total"
+	metricTxDuration    = "postgresx.tx.duration_seconds"
+	metricHealthTotal   = "postgresx.health.total"
+	metricHealthLatency = "postgresx.health.latency_seconds"
+	metricPoolConns     = "postgresx.pool.connections"
 )
 
 type noopLogger struct{}

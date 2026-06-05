@@ -85,6 +85,7 @@ func (c *Client) WithTxOptions(ctx context.Context, opts TxOptions, fn TxFunc) (
 	}
 	defer func() {
 		if recovered := recover(); recovered != nil {
+			outcome = "rollback"
 			_ = tx.Rollback(ctx)
 			panic(recovered)
 		}

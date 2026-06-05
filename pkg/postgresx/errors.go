@@ -62,15 +62,24 @@ func mapPgError(op string, pgErr *pgconn.PgError, cause error) error {
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "unique constraint violation", cause)
 	case "23503":
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "foreign key constraint violation", cause)
+	case "23502":
+		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "not null constraint violation", cause)
+	case "23514":
+		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "check constraint violation", cause)
 	case "40001":
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "serialization failure", cause).WithRetryable(true)
 	case "40P01":
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "deadlock detected", cause).WithRetryable(true)
+	case "55P03":
+		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "lock not available", cause).WithRetryable(true)
 	case "57014":
 		return foundationx.WrapError(foundationx.ErrorKindTimeout, op, "query canceled", cause).WithRetryable(true)
 	}
 	if strings.HasPrefix(pgErr.Code, "08") {
 		return foundationx.WrapError(foundationx.ErrorKindConnection, op, "connection failed", cause).WithRetryable(true)
+	}
+	if strings.HasPrefix(pgErr.Code, "53") {
+		return foundationx.WrapError(foundationx.ErrorKindUnavailable, op, "postgres resources unavailable", cause).WithRetryable(true)
 	}
 	if strings.HasPrefix(pgErr.Code, "57") {
 		return foundationx.WrapError(foundationx.ErrorKindUnavailable, op, "postgres unavailable", cause).WithRetryable(true)

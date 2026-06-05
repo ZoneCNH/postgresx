@@ -2,6 +2,7 @@ package postgresx
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -165,7 +166,28 @@ func (c *Client) QueryRow(ctx context.Context, sql string, args ...any) Row {
 	if err := c.ensureOpen(op); err != nil {
 		return errorRow{err: err}
 	}
-	return rowAdapter{row: c.pool.QueryRow(ctx, sql, args...), op: "postgresx.Client.QueryRow"}
+	return &metricRow{
+		row:       rowAdapter{row: c.pool.QueryRow(ctx, sql, args...), op: "postgresx.Client.QueryRow"},
+		metrics:   c.opts.metrics,
+		operation: "query_row",
+		start:     time.Now(),
+	}
+}
+
+type metricRow struct {
+	row       Row
+	metrics   Metrics
+	operation string
+	start     time.Time
+	once      sync.Once
+}
+
+func (r *metricRow) Scan(dest ...any) error {
+	err := r.row.Scan(dest...)
+	r.once.Do(func() {
+		recordQueryMetrics(r.metrics, r.operation, r.start, err)
+	})
+	return err
 }
 
 func recordQueryMetrics(metrics Metrics, operation string, start time.Time, err error) {
