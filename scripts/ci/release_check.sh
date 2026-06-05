@@ -10,9 +10,8 @@ export POSTGRESX_REQUIRE_INTEGRATION="${POSTGRESX_REQUIRE_INTEGRATION:-1}"
 
 GOWORK=off make ci-extended
 GOWORK=off make integration
-GOWORK=off make evidence VERSION="$VERSION"
-GOWORK=off make release-evidence-check
-GOWORK=off make release-final-check
+GOWORK=off make release-evidence-check VERSION="$VERSION"
+GOWORK=off make release-final-check VERSION="$VERSION"
 
 module="$(GOWORK=off "$GO" list -m)"
 if [[ "$module" != "github.com/ZoneCNH/postgresx" ]]; then
