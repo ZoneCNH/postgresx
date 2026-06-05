@@ -28,40 +28,11 @@
     ]
   },
   "evidence": [
-    "GOWORK=off make ci-extended",
-    "GOWORK=off make release-preflight VERSION=v0.1.0",
-    "GOWORK=off make evidence VERSION=v0.1.0",
-    "GOWORK=off make release-evidence-check VERSION=v0.1.0",
-    "XLIB_CONTEXT=release_verify GOWORK=off make release-final-check"
-  ],
-  "gates": {
-    "boundary": "required",
-    "contract": "required",
-    "docs": "required",
-    "fmt": "required",
-    "integration": "required-or-skip-with-reason",
-    "lint": "required",
-    "race": "required",
-    "release_final": "required",
-    "security": "required",
-    "test": "required",
-    "vet": "required"
-  },
-  "generated_at": "2026-06-05T00:41:36Z",
-  "integration": {
-    "evidence": "docs/evidence/20260601/postgres-integration.txt",
-    "status": "not_claimed"
-  },
-  "layer": "L2",
-  "module": "github.com/ZoneCNH/postgresx",
-  "package": "postgresx",
-  "provider_dependencies": {
-    "pgx": "github.com/jackc/pgx/v5@v5.9.2"
-  },
-  "role": "postgresql_infrastructure_adapter",
-  "schema_version": "1.0",
-  "source_digest": "sha256:ff9dbd63cbc7306d6e5a61898b73c7fa3d3260866460ad3632af928d9e25cf75",
-  "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "tree_sha": "de696a8c19982a1b45698725bc6d4e01213a8187",
-  "version": "v0.1.0"
+    "docs/EVIDENCE-20260601.md",
+    "docs/evidence/20260601/go-test.txt",
+    "docs/evidence/20260601/go-test-race.txt",
+    "docs/evidence/20260601/go-vet.txt",
+    "docs/evidence/20260601/secret-scan.txt",
+    "docs/evidence/20260601/no-consumer-deps.txt"
+  ]
 }
