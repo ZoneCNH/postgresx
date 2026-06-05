@@ -93,7 +93,7 @@ func TestMapErrorPreservesFoundationError(t *testing.T) {
 	original := foundationx.NewError(foundationx.ErrorKindValidation, "op", "bad input")
 	mapped := MapError("postgresx.test", original)
 
-	if mapped != original {
-		t.Fatalf("MapError() = %p, want original %p", mapped, original)
+	if !errors.Is(mapped, original) {
+		t.Fatalf("MapError() = %v, want original %v", mapped, original)
 	}
 }

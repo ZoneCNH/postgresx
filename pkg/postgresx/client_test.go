@@ -8,7 +8,7 @@ import (
 )
 
 func TestClosedClientOperationsReturnConnectionError(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	var client *Client
 
 	if _, err := client.Exec(ctx, "select 1"); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {

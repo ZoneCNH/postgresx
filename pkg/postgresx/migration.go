@@ -84,7 +84,6 @@ func (r *MigrationRunner) Up(ctx context.Context, source MigrationSource) error 
 			}
 			continue
 		}
-		migration := migration
 		if err := r.client.WithTx(ctx, func(ctx context.Context, tx Tx) error {
 			if _, err := tx.Exec(ctx, migration.UpSQL); err != nil {
 				return err

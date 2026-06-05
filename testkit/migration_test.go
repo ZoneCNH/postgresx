@@ -1,7 +1,6 @@
 package testkit
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -46,7 +45,7 @@ func TestFileMigrationSourceList(t *testing.T) {
 		}
 	}
 
-	migrations, err := (FileMigrationSource{Dir: dir}).List(context.Background())
+	migrations, err := (FileMigrationSource{Dir: dir}).List(t.Context())
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}

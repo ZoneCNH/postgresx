@@ -1,2949 +1,2417 @@
-# postgresx 完整可执行 Goal Prompt v1.1
+# postgresx L2 基础设施适配层标准工厂 Goal 可执行方案
 
-> 文件名：`postgresx_goal_executable_prompt_v1_1.md`  
-> 版本定位：Template-bound + Foundation-bound 实战执行版  
-> 目标模块：`github.com/ZoneCNH/postgresx`  
-> 模块定位：PostgreSQL 独立公共基础开发库 / L2 基础设施适配层  
-> 上游模板：`github.com/ZoneCNH/baselib-template`  
-> 上游契约：`github.com/ZoneCNH/foundationx`  
-> 上游包路径：`github.com/ZoneCNH/foundationx/pkg/foundationx`  
-> 适用项目：x.go、Market Data、Macro Data、Regime Engine、Trading Server、基础库体系  
-> 执行方法：Goal Runtime Prompt v3.1 + baselib-template + foundationx + Harness + AutoResearch + Self-improving + Evidence Protocol  
-> 生成日期：2026-06-01  
-> 时区：Asia/Tokyo  
-
----
-
-# 0. v1.1 更新目的
-
-`postgresx_goal_executable_prompt_v1_0.md` 是独立设计版。
-
-本文件是 v1.1，必须绑定当前已经完成的两个事实前置：
-
-```text
-1. github.com/ZoneCNH/baselib-template 已完成，作为基础库模板事实标准。
-2. github.com/ZoneCNH/foundationx 已完成，作为 L0 契约事实标准。
-```
-
-因此 v1.1 不再从零手工创建全部目录，而是必须优先从 `baselib-template` 渲染 `postgresx` 骨架，再在该骨架上实现 PostgreSQL 专属能力。
+> 生成日期：2026-06-04 Asia/Tokyo  
+> Goal ID：`GOAL-20260604-POSTGRESX-L2-FACTORY-001`  
+> 目标仓库：`github.com/ZoneCNH/postgresx`  
+> 标准源：`github.com/ZoneCNH/xlib-standard`  
+> L0 依赖：`github.com/ZoneCNH/kernel`  
+> L1 依赖：`configx / observex / testkitx / resiliencx / schedulex`  
+> 目标层级：L2 Infrastructure Adapter / PostgreSQL 基础设施适配库  
+> 执行协议：Goal Runtime Prompt v3.1  
+> 默认模式：Full Mode  
+> 目标版本：`v0.1.0` MVA → `v0.2.0` Contract Hardening → `v1.0.0` Stable API  
+> 完成声明格式：只能使用 `DONE with evidence:`  
+> 核心约束：禁止 main 直接开发；必须使用 git worktree；不得依赖 `x.go`；不得包含业务 repository / 业务表结构 / 应用事务编排；不得泄露 `/home/k8s/secrets/env/*` 真实内容、DSN、密码、token、SQL 参数或生产日志。
 
 ---
 
-# 1. 事实锚点
+## 0. 执行结论
 
-## 1.1 baselib-template 事实锚点
+`postgresx` 不应该只是对 `pgx` 或 `database/sql` 的薄包装。
 
-当前模板事实标准：
-
-```text
-Repository: github.com/ZoneCNH/baselib-template
-Module:     github.com/ZoneCNH/baselib-template
-Go:         1.23
-```
-
-`baselib-template` 提供：
+`postgresx` 的正确定位是：
 
 ```text
-pkg/{{PACKAGE_NAME}}
-internal/
-testkit/
-examples/
-contracts/
-docs/
-scripts/
-.agent/
-release/manifest/
-Makefile
-CI/Harness gate
-Release Evidence
+PostgreSQL infrastructure adapter contract layer
 ```
 
-生成具体基础库时，必须优先使用：
-
-```bash
-scripts/render_template.sh \
-  --module-name postgresx \
-  --module-path github.com/ZoneCNH/postgresx \
-  --package-name postgresx \
-  --out ../postgresx
-```
-
-## 1.2 foundationx 事实锚点
-
-当前 foundationx 事实标准：
+它的真实价值不是“帮业务执行 SQL”，而是把 PostgreSQL 这种外部基础设施的不确定性统一收敛为：
 
 ```text
-Repository: github.com/ZoneCNH/foundationx
-Module:     github.com/ZoneCNH/foundationx
-Package:    github.com/ZoneCNH/foundationx/pkg/foundationx
-Go:         1.23
-Layer:      L0 基础设施契约层
+显式配置
++ 可关闭连接生命周期
++ 连接池治理
++ context-first 查询与事务
++ PostgreSQL 错误分类
++ DSN / SQL 参数脱敏
++ health contract
++ metrics / logs / traces contract
++ fake / mockable testkit
++ opt-in integration evidence
++ release manifest
++ downstream adoption proof
++ self-improving patch
 ```
 
-foundationx 已提供：
+最终推荐路径：
 
 ```text
-ErrorKind
-Error
-NewError
-WrapError
-HealthStatus
-HealthChecker
-Lifecycle
-RetryPolicy
-Sanitizer
-SecretString
-Clock
-VersionInfo
+xlib-standard
+  = Standard Source / Generator / Harness / Evidence Runtime
+        ↓ governs / generates / audits
+kernel
+  = L0 primitive: error / lifecycle / clock / context / shutdown / validation / health
+        ↓ allowed dependency
+configx / observex / testkitx / resiliencx / schedulex
+  = L1 cross-cutting capabilities
+        ↓ allowed dependency
+postgresx
+  = L2 PostgreSQL infrastructure adapter
+        ↓ consumed by
+x.go / market-data / macro-data / engines / services
 ```
 
-postgresx 必须复用 foundationx，不得重新发明这些 L0 契约。
-
----
-
-# 2. 使用方式
-
-将本文完整交给 Agent Teams / Codex / Claude Code / Cursor Agent / GitHub Copilot Workspace 执行。
-
-执行前必须确认：
+第一阶段不要追求 ORM、migration engine、业务 repository 或分库分表。`v0.1.0` 的正确 MVA 是：
 
 ```text
-1. 当前目标是创建或完善独立 Go module：github.com/ZoneCNH/postgresx
-2. postgresx 是 PostgreSQL L2 基础设施适配库
-3. postgresx 必须从 github.com/ZoneCNH/baselib-template 渲染骨架
-4. postgresx 必须依赖 github.com/ZoneCNH/foundationx
-5. postgresx 必须 import github.com/ZoneCNH/foundationx/pkg/foundationx
-6. postgresx 可以依赖 PostgreSQL driver，例如 pgx/pgxpool
-7. postgresx 不允许依赖 x.go
-8. postgresx 不允许包含 x.go 业务表结构、业务模型、业务 topic、业务 key
-9. postgresx 不允许隐式读取 /home/k8s/secrets/env/*
-10. postgresx 不允许自动读取 .env、production.yaml、config.local.yaml
-11. postgresx 不允许强依赖 configx；configx 只能在 app bootstrap 或文档示例中作为可选组合
-12. postgresx 不允许定义全局 DB / 默认 Client / 单例连接池
-13. postgresx 不允许在日志、错误、Evidence、Release Manifest 中输出明文密码或 DSN
-14. 所有独立性验证必须包含 GOWORK=off
-15. 所有完成声明必须使用 DONE with evidence:
+module identity fixed
++ xlib-standard adoption artifacts
++ config schema
++ pgxpool client lifecycle
++ Ping / Health / Close
++ Exec / Query / QueryRow minimal contract
++ WithinTx transaction helper
++ pg error classification
++ pool/query/tx metrics
++ DSN and SQL params redaction
++ fake Queryer/Execer/Tx
++ integration opt-in with PostgreSQL
++ release manifest + checksum
++ downstream smoke adoption proof
++ retrospective patches
 ```
 
 ---
 
-# 3. Master Goal
+## 1. 当前事实基线
+
+### 1.1 当前 `postgresx` 仓库事实
+
+当前 `ZoneCNH/postgresx` 已存在为独立公开仓库，默认分支为 `main`。仓库当前体量极小，README 内容只有最小标题和项目名：
 
 ```text
-GOAL-20260601-POSTGRESX-001
-
-基于已完成的 github.com/ZoneCNH/baselib-template 和 github.com/ZoneCNH/foundationx，建立 github.com/ZoneCNH/postgresx 独立 PostgreSQL 公共基础开发库，为 x.go 及其未来服务提供可复用、可测试、可观测、可发布、可审计的 PostgreSQL 访问基础能力。
-
-postgresx 必须封装 PostgreSQL 连接池、配置校验、DSN 脱敏、Ping、HealthCheck、事务执行、Migration Runner、错误归一化、Metrics Hook、TestKit、Examples、CI/Harness/Evidence/Release 流程。
-
-postgresx 必须作为独立 Go module 发布，不得依赖 x.go，不得包含 Market Data / Macro Data / Regime / Trading 等业务语义，不得内置任何 x.go 业务 schema。
+# postgresx
+postgresx
 ```
 
----
+这意味着本阶段不是“修复一个成熟库”，而是从一个空骨架开始，把它纳入 `xlib-standard` 标准源控制下的 L2 基础设施适配层标准工厂。
 
-# 4. v1.1 与 v1.0 的关键差异
+### 1.2 当前 `xlib-standard` 事实
+
+`xlib-standard` 已经被定义为基础库标准与交付运行时仓库，职责包括：
 
 ```text
-1. module path 从 github.com/ZoneCNH/postgresx/pkg/postgresx 改为 github.com/ZoneCNH/postgresx
-2. foundationx import 从 github.com/bytechainx/foundationx 改为 github.com/ZoneCNH/foundationx/pkg/foundationx
-3. 不再手工创建 skeleton，必须通过 baselib-template/scripts/render_template.sh 渲染
-4. foundationx 不再是假设依赖，而是已完成的 L0 事实依赖
-5. 增加 GOWORK=off 独立模块验证
-6. 增加 make ci-extended
-7. 增加 make release-preflight VERSION=v0.1.0
-8. 增加 make release-evidence-check
-9. 增加 make release-final-check
-10. 增加 lint / govulncheck 必需 gate，不得伪造 skipped
-11. release/manifest/latest.json 是生成 artifact，不提交源码历史
-12. 增加 baselib-template contract alignment gate
-13. 增加 foundationx API compatibility gate
-14. 增加 configx boundary：postgresx core 不依赖 configx，但 docs 展示组合方式
+Standard Source
+Go Reference Template
+Generator
+Harness
+Evidence Runtime
 ```
 
----
+`xlib-standard` 还明确登记了 `postgresx` 作为生成库之一，并把 `postgresx` 列为 L2 目标库。
 
-# 5. 问题底层本质
+### 1.3 当前下游采纳事实
 
-postgresx 不是“把 pgxpool 包一层”。
-
-postgresx 的底层本质是：
+当前 `xlib-standard` 下游矩阵中，`postgresx` 的状态仍应按：
 
 ```text
-把 PostgreSQL 作为基础设施能力，抽象成稳定、可治理、可复用、可验证、可发布的工程资产。
+adoption_status = not_adopted
+evidence_state = not_run
 ```
 
-它解决的是以下结构性问题：
+解释。登记不等于采纳，骨架不等于实现，dry-run 不等于 release usable。没有当前 `postgresx` 仓库内的 gate 输出、manifest、checksum、artifact 和 adoption proof，不允许写：
 
 ```text
-1. 避免 x.go 各服务重复创建 PostgreSQL 连接池
-2. 避免各模块各自拼接 DSN 并泄露密码
-3. 避免事务处理、rollback、panic、context timeout 逻辑散落在业务代码中
-4. 避免 migration runner、health check、metrics 口径不统一
-5. 避免测试依赖本地手动 PostgreSQL
-6. 避免基础设施错误直接暴露 driver 细节给业务层
-7. 避免基础库绕过 baselib-template 的统一 Evidence 和 Release Gate
-8. 为 Agent Teams 提供可执行、可验证、可发布的基础库任务边界
+postgresx adopted
+postgresx release ready
+postgresx DONE
+postgresx usable by x.go
 ```
 
-核心价值：
+### 1.4 当前角色裁决
+
+`postgresx` 的角色固定为：
 
 ```text
-PostgreSQL 能力标准化 + foundationx 契约复用 + baselib-template Gate 继承 + Release Evidence 可证明。
+L2 数据库适配器库
 ```
 
----
-
-# 6. 不可再拆解的基本真理
-
-## 6.1 postgresx 是 L2，不是 L0
-
-允许依赖：
+必须包含：
 
 ```text
-github.com/ZoneCNH/foundationx
-PostgreSQL driver
-测试辅助库
+PostgreSQL profile
+连接配置
+连接池 lifecycle
+健康检查
+错误分类
+测试夹具
+release evidence
 ```
 
-禁止依赖：
+禁止包含：
 
 ```text
-x.go
-market_data
-macro_data
-regime_engine
-trading_server
-业务 schema
 业务 repository
-```
-
-## 6.2 postgresx 只理解 PostgreSQL，不理解业务
-
-postgresx 可以知道：
-
-```text
-Connection
-Pool
-Transaction
-Migration
-Query
-Exec
-Ping
-Health
-Timeout
-Retryable Error
-```
-
-postgresx 不应该知道：
-
-```text
-Kline
-BTCUSDT
-MacroRegime
-M1-M7
-S1-S7
-TradingSignal
-Order
-Position
-RiskGate
-```
-
-## 6.3 postgresx 只接收 Config，不加载 Config
-
-postgresx 不允许自动读取：
-
-```text
-/home/k8s/secrets/env/postgres.env
-.env
-config.local.yaml
-production.yaml
-```
-
-x.go 或 app bootstrap 可以使用 configx 显式读取配置，然后构造 `postgresx.Config`。
-
-正确链路：
-
-```text
-x.go bootstrap -> configx optional -> postgresx.Config -> postgresx.New(...)
-```
-
-错误链路：
-
-```text
-postgresx -> configx -> /home/k8s/secrets/env/postgres.env
-```
-
-## 6.4 没有 Evidence 不得声称完成
-
-完成声明必须是：
-
-```text
-DONE with evidence:
-- GOWORK=off go test ./...
-- GOWORK=off go test -race ./...
-- GOWORK=off make ci
-- GOWORK=off make ci-extended
-- GOWORK=off make release-check
-- GOWORK=off make release-preflight VERSION=v0.1.0
-- GOWORK=off make release-evidence-check
-- GOWORK=off make release-final-check
-- boundary gate passed
-- secret gate passed
-- integration PostgreSQL test passed
-- release manifest generated
+业务表结构
+业务 schema migration 默认执行
+应用 transaction 编排
+x.go 业务模型
+x.go 反向依赖
+生产密钥读取
 ```
 
 ---
 
-# 7. Scope
+## 2. 问题的底层本质
 
-## 7.1 In Scope
+`postgresx` 的底层问题不是“如何把 pgx 封装得更顺手”，而是：
+
+> 如何把 PostgreSQL 这种有状态、会失败、带认证、带事务、带连接池、带 SQL 注入/日志泄密风险的外部系统，转化成一个可配置、可测试、可观测、可降级、可发布证明、可被下游安全采纳的基础设施契约。
+
+如果没有 `postgresx` 这一层，上层业务会反复发明：
 
 ```text
-Template rendering from baselib-template
-go.mod module github.com/ZoneCNH/postgresx
-foundationx integration
-Config / Validate / Sanitize
-DSN builder / RedactedDSN
-pgxpool-based Client
-Ping
-Close idempotency
-Pool stats
-Exec / Query / QueryRow wrappers
-DBTX / Queryer interfaces
-WithTx transaction helper
-Transaction commit / rollback semantics
-Migration Runner
-schema_migrations table
-HealthCheck using foundationx.HealthStatus
-Error mapping to foundationx.Error
-Retryable classification
-Metrics hooks
-TestKit
-Docker / env-driven integration tests
-Examples
-CI / Harness / Release Manifest
-GOWORK=off verification
-Template contract alignment
-Foundationx API compatibility
-Configx boundary documentation
+DSN 配置
+连接池默认值
+statement timeout
+事务 begin/commit/rollback
+deadlock / serialization failure 重试判断
+unique violation 映射
+health 输出格式
+pool metrics
+SQL 参数脱敏
+integration test 连接方式
+release evidence
 ```
 
-## 7.2 Out of Scope
+这会形成 9 类结构债：
+
+| 债务 | 表现 | 后果 |
+|---|---|---|
+| 配置债 | 每个服务自定义 DSN/env/pool 字段 | 无法统一运维与审计 |
+| 生命周期债 | 隐藏全局 db、init() 连接、Close 不幂等 | 泄露连接与 goroutine |
+| 事务债 | 应用层散落 begin/commit/rollback | 数据一致性风险 |
+| 错误债 | pgx/pgconn 原始错误泄漏 | 重试、告警、熔断无法统一 |
+| 观测债 | 每个业务服务 metrics 名称不同 | dashboard/SLO 不可复用 |
+| 安全债 | DSN、password、SQL 参数进入日志或 manifest | 密钥泄漏 |
+| 测试债 | 单元测试依赖真实 PostgreSQL | CI 不稳定、不可复现 |
+| 发布债 | 没有 manifest/checksum/gate 输出 | 下游无法判断是否可采纳 |
+| 治理债 | 业务 repository 下沉到基础库 | L2 被业务污染 |
+
+所以 `postgresx` 的本质是：
 
 ```text
-x.go business schema
-market_data tables
-macro_data tables
-regime tables
-trading tables
-SQLC generated code
-Business repository
-ORM abstraction
-Read/write splitting
-Distributed transaction
-PostgreSQL HA orchestration
-Connection proxy
-Secret manager implementation
-Automatic production env loading
-Mandatory configx dependency
-```
-
-## 7.3 Optional / Deferred
-
-```text
-Prepared statement cache policy
-Read/write split
-Advisory lock
-COPY bulk import
-LISTEN/NOTIFY
-Replica lag check
-observex direct dependency
-configx compiled example
-```
-
-默认裁决：
-
-```text
-v0.1.0 不做 read/write split、不做 COPY、不做 LISTEN/NOTIFY、不强依赖 configx 或 observex。
+把 PostgreSQL 的失败语义、连接语义、事务语义和观测语义标准化。
 ```
 
 ---
 
-# 8. 目标仓库与模块
+## 3. 不可再拆解的基本真理
 
-## 8.1 Repository
-
-```text
-github.com/ZoneCNH/postgresx
-```
-
-## 8.2 go.mod
-
-```go
-module github.com/ZoneCNH/postgresx
-
-go 1.23
-```
-
-## 8.3 必需依赖
+### 3.1 分层真理
 
 ```text
-github.com/ZoneCNH/foundationx
+TRUTH-POSTGRESX-001  postgresx 是 L2 基础设施适配库，不是业务 repository 层。
+TRUTH-POSTGRESX-002  postgresx 可以依赖 L0 kernel 与 L1 configx/observex/testkitx/resiliencx/schedulex。
+TRUTH-POSTGRESX-003  postgresx 不得依赖其他 L2，例如 redisx/kafkax/taosx/ossx/clickhousex/natsx。
+TRUTH-POSTGRESX-004  postgresx 不得依赖 x.go、market-data、macro-data、regime-engine 或任何业务系统。
+TRUTH-POSTGRESX-005  postgresx 不得定义业务表、业务 SQL、业务 schema、业务 repository。
+TRUTH-POSTGRESX-006  postgresx 只提供 PostgreSQL 基础设施能力和契约。
+TRUTH-POSTGRESX-007  postgresx public API 必须 context-first。
+TRUTH-POSTGRESX-008  postgresx 不得隐藏全局 client，不得在 init() 中连接数据库。
+TRUTH-POSTGRESX-009  postgresx release 必须有 gate output、manifest、checksum、contract hash。
+TRUTH-POSTGRESX-010  postgresx downstream adoption 只能由当前下游命令证据证明。
 ```
 
-## 8.4 PostgreSQL driver 推荐
-
-推荐：
+### 3.2 PostgreSQL 失败语义真理
 
 ```text
-github.com/jackc/pgx/v5
-github.com/jackc/pgx/v5/pgxpool
+TRUTH-POSTGRESX-011  PostgreSQL 一定会失败：网络断开、认证失败、连接池耗尽、锁等待、deadlock、serialization failure、statement timeout、constraint violation 都必须被建模。
+TRUTH-POSTGRESX-012  pgconn.PgError 必须映射到统一 ErrorKind，不得原样泄漏给上层作为唯一判断依据。
+TRUTH-POSTGRESX-013  所有操作必须接受 context.Context。
+TRUTH-POSTGRESX-014  所有 query / exec / tx 必须有显式超时或依赖 caller context deadline。
+TRUTH-POSTGRESX-015  默认不自动重试写事务；事务重试必须显式开启并要求幂等语义。
+TRUTH-POSTGRESX-016  Close 必须幂等；Close 后操作必须返回稳定错误。
+TRUTH-POSTGRESX-017  连接池状态必须可观测。
 ```
 
-要求：
+### 3.3 安全与脱敏真理
 
 ```text
-具体版本必须由执行时 AutoResearch 确认，并写入 docs/adr/ADR-20260601-001-driver-selection.md。
+TRUTH-POSTGRESX-018  DSN、password、token、TLS key、SQL 参数不得进入 logs/errors/traces/manifest。
+TRUTH-POSTGRESX-019  SQL 文本也可能包含业务敏感信息；默认只记录 operation name / query name / hash，不记录 raw SQL。
+TRUTH-POSTGRESX-020  config.Sanitize() 必须是 release manifest、health、debug 输出的唯一配置出口。
+TRUTH-POSTGRESX-021  integration evidence 只能记录 sanitized endpoint、server version、database hash 或 safe name。
 ```
 
-## 8.5 configx 边界
-
-postgresx core 不依赖：
+### 3.4 测试与发布真理
 
 ```text
-github.com/ZoneCNH/configx
-```
-
-docs 可以说明组合方式：
-
-```text
-x.go bootstrap -> configx.LoadEnvFile -> configx.Decode -> postgresx.Config -> postgresx.New
-```
-
-如果未来加入 `examples/with_configx`：
-
-```text
-1. 必须放入独立文档或单独 module
-2. 不得让 postgresx core go.mod 必需依赖 configx
-3. 不得破坏 boundary gate
+TRUTH-POSTGRESX-022  单元测试不得依赖真实 PostgreSQL。
+TRUTH-POSTGRESX-023  fake Queryer/Execer/Tx 是 P0，不是 P1。
+TRUTH-POSTGRESX-024  integration test 必须 opt-in，并输出 pass/skip/fail evidence。
+TRUTH-POSTGRESX-025  没有 release-final-check，不允许 tag。
+TRUTH-POSTGRESX-026  没有 downstream adoption proof，不允许宣称可被 x.go 采纳。
+TRUTH-POSTGRESX-027  没有 retrospective patch，不允许宣称 self-improving 成立。
 ```
 
 ---
 
-# 9. Template Render Phase
+## 4. 被误认为真理的常见假设
 
-## 9.1 生成方式
+| 常见假设 | 为什么错 | 正确裁决 |
+|---|---|---|
+| postgresx 就是 pgx 的薄包装 | 薄包装不能统一配置、错误、观测、测试、发布证据 | postgresx 是 PostgreSQL contract adapter |
+| 直接暴露 pgxpool.Pool 最灵活 | 会把所有下游绑定到 pgx 类型和实现细节 | public API 提供稳定 interface；pgx 放 internal/driver 或 explicit escape hatch |
+| L2 应该顺手做 repository pattern | repository 是业务边界，不是基础设施边界 | repository 留给 L3/L4/L5/L6 |
+| 自动 migration 很方便 | 隐式生产启动动作风险极高 | migration 只能是可选 helper / explicit command，不进入 Open 默认路径 |
+| 事务 helper 应该自动重试所有错误 | 写事务自动重试可能重复副作用 | 只对明确幂等、明确错误类、明确 policy 开启 |
+| Ping 通过就表示数据库健康 | Ping 不代表 query、pool、权限、statement timeout 全部正常 | health 输出分多个 check |
+| 日志记录 SQL 和 args 方便排障 | SQL/args 可能包含敏感业务数据 | 默认记录 query name/hash，不记录 raw params |
+| 单元测试连一个本地 PostgreSQL 就够 | 不可复现、CI 慢、会引入环境耦合 | 单元 fake，integration opt-in |
+| 配置可以直接读 `/home/k8s/secrets/env/*` | 基础库不应隐式读取生产环境 | 只接受 caller 显式传入 config/secret source |
+| release 只要 go test 通过 | 无 manifest/checksum/contracts/evidence 不可审计 | release 必须 Full Gate |
 
-执行者必须先获取或引用已完成模板：
+---
 
-```bash
-git clone https://github.com/ZoneCNH/baselib-template.git
-cd baselib-template
-```
-
-渲染：
-
-```bash
-scripts/render_template.sh \
-  --module-name postgresx \
-  --module-path github.com/ZoneCNH/postgresx \
-  --package-name postgresx \
-  --out ../postgresx
-```
-
-进入目标仓库：
-
-```bash
-cd ../postgresx
-```
-
-验证初始模板：
-
-```bash
-GOWORK=off go mod tidy
-GOWORK=off go test ./...
-GOWORK=off make ci
-```
-
-## 9.2 渲染后必须替换的模板语义
-
-必须确认：
+## 5. 可以被打破的限制
 
 ```text
-{{MODULE_NAME}} 已替换为 postgresx
-{{MODULE_PATH}} 已替换为 github.com/ZoneCNH/postgresx
-{{PACKAGE_NAME}} 已替换为 postgresx
-pkg/{{PACKAGE_NAME}} 已变为 pkg/postgresx
-README / docs / contracts / scripts / .agent 中不再出现未渲染占位符
-```
-
-## 9.3 Template Alignment Gate
-
-新增 Gate：
-
-```bash
-grep -R "{{MODULE_NAME}}\|{{MODULE_PATH}}\|{{PACKAGE_NAME}}" . \
-  --exclude-dir=.git \
-  --exclude-dir=vendor && exit 1 || true
-```
-
-并检查：
-
-```text
-Makefile 继承模板 gate
-scripts/check_boundary.sh 存在
-scripts/check_secrets.sh 存在
-scripts/check_contracts.sh 存在
-scripts/generate_manifest.sh 存在
-.agent/ 目录存在
-contracts/ 目录存在
-release/manifest/ 目录存在
+LIMIT-POSTGRESX-001  不需要 Day 1 做 ORM。
+LIMIT-POSTGRESX-002  不需要 Day 1 做 migration engine。
+LIMIT-POSTGRESX-003  不需要 Day 1 支持读写分离、分库分表、sharding。
+LIMIT-POSTGRESX-004  不需要 Day 1 完整封装 PostgreSQL 所有高级特性。
+LIMIT-POSTGRESX-005  不需要暴露 provider SDK 类型才能好用。
+LIMIT-POSTGRESX-006  不需要 integration test 默认跑真实数据库。
+LIMIT-POSTGRESX-007  不需要把 x.go 的表结构放进 postgresx。
+LIMIT-POSTGRESX-008  不需要引入应用框架、ORM、DI 框架。
+LIMIT-POSTGRESX-009  不需要一次性 v1 稳定 API；先 v0.1 MVA，保留 ADR 与 API diff gate。
 ```
 
 ---
 
-# 10. 标准目录结构
+## 6. 从零设计的新方案
 
-渲染后目标结构应为：
+### 6.1 系统结构
 
 ```text
-postgresx/
-├── go.mod
-├── go.sum
-├── README.md
-├── CHANGELOG.md
-├── LICENSE
-├── Makefile
-├── .gitignore
-├── .golangci.yml
-├── pkg/
-│   └── postgresx/
-│       ├── doc.go
-│       ├── config.go
-│       ├── dsn.go
-│       ├── client.go
-│       ├── pool.go
-│       ├── query.go
-│       ├── tx.go
-│       ├── migration.go
-│       ├── health.go
-│       ├── metrics.go
-│       ├── errors.go
-│       ├── options.go
-│       ├── version.go
-│       └── *_test.go
-├── internal/
-│   ├── sanitize/
-│   ├── validation/
-│   └── pgtest/
-├── testkit/
-│   ├── container.go
-│   ├── config.go
-│   ├── fixture.go
-│   └── assert.go
-├── examples/
-│   ├── basic/
-│   ├── transaction/
-│   ├── migration/
-│   └── health/
+[Consumer: x.go / services / engines]
+        |
+        | imports
+        v
+[postgresx public package]
+        |
+        | uses interfaces/options/contracts
+        v
+[internal/driver/pgx]
+        |
+        | depends on selected provider SDK
+        v
+[PostgreSQL]
+```
+
+横切依赖：
+
+```text
+postgresx
+  -> kernel: error / lifecycle / context / health / validation primitives
+  -> configx: explicit config loading and redaction contract
+  -> observex: metrics/log/trace/health contract
+  -> testkitx: test-only fixtures and contract helpers
+  -> resiliencx: optional retry/timeout/breaker policy
+  -> schedulex: optional scheduled maintenance / background jobs, not P0
+```
+
+### 6.2 统一目录结构
+
+```text
+.
+├── .agent/
+│   ├── goal.md
+│   ├── spec.md
+│   ├── design.md
+│   ├── plan.md
+│   ├── traceability-matrix.md
+│   ├── risk-register.md
+│   ├── decision-log.md
+│   ├── evidence/
+│   ├── reviews/
+│   ├── release/
+│   └── retrospectives/
+├── .github/workflows/
+│   ├── ci.yml
+│   ├── release-check.yml
+│   └── security.yml
 ├── contracts/
+│   ├── api.contract.yaml
 │   ├── config.schema.json
-│   ├── error.schema.json
 │   ├── health.schema.json
-│   ├── metrics.md
-│   └── public_api.md
+│   ├── metrics.contract.yaml
+│   ├── errors.contract.yaml
+│   └── release-manifest.contract.yaml
 ├── docs/
 │   ├── spec.md
 │   ├── design.md
 │   ├── api.md
 │   ├── config.md
-│   ├── dsn.md
-│   ├── transactions.md
-│   ├── migrations.md
-│   ├── errors.md
 │   ├── health.md
 │   ├── observability.md
+│   ├── resilience.md
 │   ├── testing.md
-│   ├── xgo-integration.md
-│   ├── configx-boundary.md
+│   ├── integration.md
+│   ├── security.md
 │   ├── release.md
-│   └── adr/
-│       ├── ADR-20260601-001-driver-selection.md
-│       ├── ADR-20260601-002-transaction-semantics.md
-│       ├── ADR-20260601-003-migration-runner-scope.md
-│       ├── ADR-20260601-004-template-bound-skeleton.md
-│       └── ADR-20260601-005-config-loading-boundary.md
+│   ├── migration-boundary.md
+│   └── research/
+│       └── dependency-research.md
+├── examples/
+│   ├── basic/
+│   ├── health/
+│   ├── observability/
+│   ├── tx/
+│   └── integration/
+├── internal/
+│   ├── driver/pgx/
+│   ├── config/
+│   ├── errors/
+│   ├── health/
+│   ├── metrics/
+│   └── testutil/
+├── pkg/postgresx/
+│   ├── client.go
+│   ├── config.go
+│   ├── errors.go
+│   ├── health.go
+│   ├── metrics.go
+│   ├── options.go
+│   ├── query.go
+│   ├── tx.go
+│   └── doc.go
+├── testkit/
+│   ├── fake.go
+│   ├── recorder.go
+│   ├── assertions.go
+│   └── fixtures/
+├── release/manifest/
+│   └── .gitkeep
 ├── scripts/
-│   ├── check_boundary.sh
-│   ├── check_secrets.sh
-│   ├── check_contracts.sh
-│   ├── check_template_alignment.sh
-│   ├── check_foundationx_api.sh
-│   ├── run_integration.sh
-│   └── generate_manifest.sh
-├── release/
-│   └── manifest/
-│       ├── .gitkeep
-│       └── latest.json        # generated artifact, normally not committed
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── integration.yml
-│       ├── security.yml
-│       └── release.yml
-└── .agent/
-    ├── goal.md
-    ├── spec.md
-    ├── design.md
-    ├── plan.md
-    ├── tasks.md
-    ├── harness.md
-    ├── gates.md
-    ├── evidence.md
-    ├── review.md
-    ├── release.md
-    └── retrospective.md
+│   ├── boundary_check.sh
+│   ├── contract_check.sh
+│   ├── docs_check.sh
+│   ├── integration_check.sh
+│   ├── secret_scan.sh
+│   ├── generate_manifest.sh
+│   └── release_final_check.sh
+├── Makefile
+├── go.mod
+├── go.sum
+├── AGENTS.md
+├── CONSTITUTION.md
+├── README.md
+├── CHANGELOG.md
+├── LICENSE
+└── renovate.json
 ```
 
-说明：
+### 6.3 Public API 设计
 
-```text
-release/manifest/latest.json 与 release/manifest/v*.json 是 release gate 生成物。
-是否提交版本化 manifest 由仓库 release 规范裁决；不得手工伪造。
-```
-
----
-
-# 11. Public API 设计
-
-## 11.1 Config
-
-文件：
-
-```text
-pkg/postgresx/config.go
-```
-
-目标 API：
+P0 public API 不追求“漂亮”，只追求稳定、可测试、可观测、可证明。
 
 ```go
 package postgresx
 
-import (
-    "time"
+import "context"
 
-    "github.com/ZoneCNH/foundationx/pkg/foundationx"
-)
-
-type Config struct {
-    Host            string
-    Port            int
-    Database        string
-    User            string
-    Password        foundationx.SecretString
-    SSLMode         string
-    MaxOpenConns    int32
-    MinIdleConns    int32
-    MaxConnLifetime time.Duration
-    MaxConnIdleTime  time.Duration
-    ConnectTimeout  time.Duration
-    HealthTimeout   time.Duration
-    ApplicationName string
+type Client interface {
+    Name() string
+    Ping(ctx context.Context) error
+    Health(ctx context.Context) Health
+    Stats() PoolStats
+    Exec(ctx context.Context, query Query, args ...any) (CommandResult, error)
+    Query(ctx context.Context, query Query, args ...any) (Rows, error)
+    QueryRow(ctx context.Context, query Query, args ...any) Row
+    WithinTx(ctx context.Context, fn func(context.Context, Tx) error, opts ...TxOption) error
+    Close(ctx context.Context) error
 }
 
-type SanitizedConfig struct {
-    Host            string
-    Port            int
-    Database        string
-    User            string
-    Password        string
-    SSLMode         string
-    MaxOpenConns    int32
-    MinIdleConns    int32
-    MaxConnLifetime string
-    MaxConnIdleTime  string
-    ConnectTimeout  string
-    HealthTimeout   string
-    ApplicationName string
+type Query struct {
+    Name string // stable operation/query name
+    SQL  string // raw SQL allowed for execution, not logs by default
 }
 
-func DefaultConfig() Config
-func (c Config) Validate() error
-func (c Config) Sanitize() SanitizedConfig
-```
-
-要求：
-
-```text
-1. zero-value Config 必须 Validate 失败
-2. DefaultConfig 只给非敏感默认值
-3. Password 必须使用 foundationx.SecretString
-4. Validate 返回 foundationx.Error
-5. Sanitize 绝不返回明文密码
-6. 不允许 Config 自行读取 env
-7. 不允许 Config 自行读取 /home/k8s/secrets/env/*
-```
-
-## 11.2 DSN Builder
-
-文件：
-
-```text
-pkg/postgresx/dsn.go
-```
-
-目标 API：
-
-```go
-func (c Config) DSN() string
-func (c Config) RedactedDSN() string
-```
-
-要求：
-
-```text
-DSN 用于 driver 连接，可以包含密码
-RedactedDSN 用于日志、错误、Evidence，绝不包含密码
-```
-
-测试必须覆盖：
-
-```text
-DSN 包含必要字段
-RedactedDSN 不包含原始密码
-特殊字符经过正确转义
-```
-
-## 11.3 Options
-
-文件：
-
-```text
-pkg/postgresx/options.go
-```
-
-目标 API：
-
-```go
-type Option func(*options)
-
-type options struct {
-    logger  Logger
-    metrics Metrics
-    clock   foundationx.Clock
-}
-
-type Logger interface {
-    Debug(ctx context.Context, msg string, fields ...Field)
-    Info(ctx context.Context, msg string, fields ...Field)
-    Warn(ctx context.Context, msg string, fields ...Field)
-    Error(ctx context.Context, msg string, fields ...Field)
-}
-
-type Field struct {
-    Key   string
-    Value any
-}
-
-type Metrics interface {
-    IncCounter(name string, labels map[string]string)
-    ObserveHistogram(name string, value float64, labels map[string]string)
-    SetGauge(name string, value float64, labels map[string]string)
-}
-
-func WithLogger(logger Logger) Option
-func WithMetrics(metrics Metrics) Option
-func WithClock(clock foundationx.Clock) Option
-```
-
-v1.1 裁决：
-
-```text
-1. postgresx core 不强依赖 observex。
-2. observex 的具体 Logger/Metrics 可以在 x.go bootstrap 中注入，只要满足接口。
-3. 默认 logger / metrics 必须是 noop。
-4. nil logger / metrics 不得 panic。
-```
-
-## 11.4 Client
-
-文件：
-
-```text
-pkg/postgresx/client.go
-```
-
-目标 API：
-
-```go
-type Client struct {
-    // private fields
-}
-
-func New(ctx context.Context, cfg Config, opts ...Option) (*Client, error)
-func (c *Client) Ping(ctx context.Context) error
-func (c *Client) Close(ctx context.Context) error
-func (c *Client) Stats() PoolStats
-func (c *Client) Queryer() Queryer
-```
-
-要求：
-
-```text
-1. New 必须先 Validate Config
-2. New 必须使用 context timeout
-3. New 失败必须返回 foundationx.Error
-4. Close 必须幂等
-5. Close 不得 panic
-6. Stats 不暴露 driver 原始类型
-7. Queryer 返回最小查询接口
-```
-
-## 11.5 Query Interfaces
-
-文件：
-
-```text
-pkg/postgresx/query.go
-```
-
-目标 API：
-
-```go
-type CommandTag interface {
-    RowsAffected() int64
-}
-
-type Row interface {
-    Scan(dest ...any) error
-}
-
-type Rows interface {
-    Close()
-    Err() error
-    Next() bool
-    Scan(dest ...any) error
+type Tx interface {
+    Exec(ctx context.Context, query Query, args ...any) (CommandResult, error)
+    Query(ctx context.Context, query Query, args ...any) (Rows, error)
+    QueryRow(ctx context.Context, query Query, args ...any) Row
 }
 
 type Queryer interface {
-    Exec(ctx context.Context, sql string, args ...any) (CommandTag, error)
-    Query(ctx context.Context, sql string, args ...any) (Rows, error)
-    QueryRow(ctx context.Context, sql string, args ...any) Row
+    Query(ctx context.Context, query Query, args ...any) (Rows, error)
+    QueryRow(ctx context.Context, query Query, args ...any) Row
+}
+
+type Execer interface {
+    Exec(ctx context.Context, query Query, args ...any) (CommandResult, error)
 }
 ```
 
-要求：
-
-```text
-1. 业务 repository 只依赖 Queryer
-2. Queryer 可以由 Client 或 Tx 实现
-3. 不强制业务导入 pgx 类型
-4. 底层适配 pgx.CommandTag / pgx.Rows / pgx.Row
-```
-
-## 11.6 Transaction
-
-文件：
-
-```text
-pkg/postgresx/tx.go
-```
-
-目标 API：
-
-```go
-type Tx interface {
-    Queryer
-}
-
-type TxFunc func(ctx context.Context, tx Tx) error
-
-type TxOptions struct {
-    IsolationLevel string
-    ReadOnly       bool
-}
-
-func (c *Client) WithTx(ctx context.Context, fn TxFunc) error
-func (c *Client) WithTxOptions(ctx context.Context, opts TxOptions, fn TxFunc) error
-```
-
-事务语义：
-
-```text
-1. Begin 失败返回 error
-2. fn 返回 nil -> commit
-3. fn 返回 error -> rollback
-4. rollback 失败需要被记录，但主错误以 fn error 为主
-5. commit 失败返回 commit error
-6. fn panic -> rollback，然后继续 panic
-7. context cancel -> rollback
-8. 不做嵌套事务自动识别
-```
-
-Panic 策略必须写入：
-
-```text
-docs/adr/ADR-20260601-002-transaction-semantics.md
-```
-
-## 11.7 Migration Runner
-
-文件：
-
-```text
-pkg/postgresx/migration.go
-```
-
-目标 API：
-
-```go
-type Migration struct {
-    Version int64
-    Name    string
-    UpSQL   string
-    DownSQL string
-}
-
-type MigrationSource interface {
-    List(ctx context.Context) ([]Migration, error)
-}
-
-type MigrationRunner struct {
-    client *Client
-}
-
-func NewMigrationRunner(client *Client) *MigrationRunner
-func (r *MigrationRunner) Up(ctx context.Context, source MigrationSource) error
-func (r *MigrationRunner) Applied(ctx context.Context) ([]AppliedMigration, error)
-
-type AppliedMigration struct {
-    Version   int64
-    Name      string
-    AppliedAt time.Time
-}
-```
-
-Schema migration table：
-
-```sql
-CREATE TABLE IF NOT EXISTS schema_migrations (
-    version BIGINT PRIMARY KEY,
-    name TEXT NOT NULL,
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-```
-
-要求：
-
-```text
-1. postgresx 不拥有业务 migration 文件
-2. migration 文件由调用方传入
-3. migration 必须按 version 升序执行
-4. 每个 migration 在事务中执行
-5. 已执行 version 不重复执行
-6. 同 version 不同 name 必须报 conflict
-7. migration runner 必须有 integration test
-```
-
-v0.1.0 非目标：
-
-```text
-down migration 执行
-checksum 管理
-复杂 migration DSL
-自动扫描业务目录
-```
-
-## 11.8 Health Check
-
-文件：
-
-```text
-pkg/postgresx/health.go
-```
-
-目标 API：
-
-```go
-func (c *Client) Name() string
-func (c *Client) Check(ctx context.Context) foundationx.HealthStatus
-```
-
-要求：
-
-```text
-1. Client 实现 foundationx.HealthChecker
-2. Check 使用 HealthTimeout
-3. 成功返回 healthy
-4. 超时返回 degraded 或 unhealthy，策略文档化
-5. 连接不可用返回 unhealthy
-6. Metadata 包含 host/database/pool stats，但不得包含 password/dsn 明文
-```
-
-## 11.9 PoolStats
-
-文件：
-
-```text
-pkg/postgresx/pool.go
-```
-
-目标 API：
-
-```go
-type PoolStats struct {
-    TotalConns        int32
-    IdleConns         int32
-    AcquiredConns     int32
-    ConstructingConns int32
-    MaxConns          int32
-}
-```
-
-要求：
-
-```text
-1. 不直接暴露 pgxpool.Stat
-2. 字段命名保持稳定
-3. metrics 使用该结构
-```
-
-## 11.10 Error Mapping
-
-文件：
-
-```text
-pkg/postgresx/errors.go
-```
-
-目标 API：
-
-```go
-func MapError(op string, err error) error
-func IsRetryable(err error) bool
-```
-
-映射原则：
-
-```text
-context.Canceled -> foundationx.ErrorKindCanceled
-context.DeadlineExceeded -> foundationx.ErrorKindTimeout
-认证失败 -> foundationx.ErrorKindAuth
-连接失败 -> foundationx.ErrorKindConnection
-唯一键冲突 -> foundationx.ErrorKindConflict
-not found / no rows -> foundationx.ErrorKindNotFound
-其他 driver 错误 -> foundationx.ErrorKindInternal
-```
-
-要求：
-
-```text
-1. 返回 foundationx.Error
-2. 保留 Cause
-3. 设置 Retryable
-4. 不泄露 DSN 和密码
-```
-
----
-
-# 12. Spec
-
-```text
-SPEC-postgresx-v1.1
-```
-
-## REQ-POSTGRESX-001：Template-bound module
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-001-001: postgresx 由 baselib-template/scripts/render_template.sh 生成
-AC-REQ-POSTGRESX-001-002: go.mod module 为 github.com/ZoneCNH/postgresx
-AC-REQ-POSTGRESX-001-003: 不存在 {{MODULE_NAME}} / {{MODULE_PATH}} / {{PACKAGE_NAME}} 占位符
-AC-REQ-POSTGRESX-001-004: pkg/postgresx 存在
-AC-REQ-POSTGRESX-001-005: GOWORK=off go test ./... 通过
-```
-
-## REQ-POSTGRESX-002：Foundationx compatibility
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-002-001: go.mod 依赖 github.com/ZoneCNH/foundationx
-AC-REQ-POSTGRESX-002-002: import 使用 github.com/ZoneCNH/foundationx/pkg/foundationx
-AC-REQ-POSTGRESX-002-003: Config.Password 使用 foundationx.SecretString
-AC-REQ-POSTGRESX-002-004: errors 使用 foundationx.Error / ErrorKind
-AC-REQ-POSTGRESX-002-005: HealthCheck 返回 foundationx.HealthStatus
-AC-REQ-POSTGRESX-002-006: Client 实现 foundationx.HealthChecker
-```
-
-## REQ-POSTGRESX-003：依赖边界
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-003-001: 允许依赖 foundationx
-AC-REQ-POSTGRESX-003-002: 允许依赖 pgx/pgxpool
-AC-REQ-POSTGRESX-003-003: 不允许依赖 x.go
-AC-REQ-POSTGRESX-003-004: 不允许出现 Market Data / Macro Data / Regime / Trading 业务模型
-AC-REQ-POSTGRESX-003-005: postgresx core 不依赖 configx
-AC-REQ-POSTGRESX-003-006: postgresx core 不依赖 observex
-```
-
-## REQ-POSTGRESX-004：Config
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-004-001: Config 包含 Host/Port/Database/User/Password/SSLMode/Pool/Timeout 字段
-AC-REQ-POSTGRESX-004-002: Config.Validate 覆盖必填字段
-AC-REQ-POSTGRESX-004-003: Config.Sanitize 不泄露密码
-AC-REQ-POSTGRESX-004-004: DefaultConfig 不包含敏感值
-AC-REQ-POSTGRESX-004-005: zero-value Config Validate 失败
-AC-REQ-POSTGRESX-004-006: Config 不读取 env/file/secret path
-```
-
-## REQ-POSTGRESX-005：DSN
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-005-001: DSN 可用于连接 PostgreSQL
-AC-REQ-POSTGRESX-005-002: RedactedDSN 不包含原始密码
-AC-REQ-POSTGRESX-005-003: 特殊字符正确转义
-AC-REQ-POSTGRESX-005-004: DSN 不被日志默认输出
-```
-
-## REQ-POSTGRESX-006：Client / Pool
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-006-001: New(ctx, cfg, opts...) 创建连接池
-AC-REQ-POSTGRESX-006-002: New 失败返回 foundationx.Error
-AC-REQ-POSTGRESX-006-003: Ping 可验证连接
-AC-REQ-POSTGRESX-006-004: Close 幂等
-AC-REQ-POSTGRESX-006-005: Stats 返回 PoolStats
-AC-REQ-POSTGRESX-006-006: GOWORK=off go test -race ./... 通过
-```
-
-## REQ-POSTGRESX-007：Queryer
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-007-001: 定义 Queryer interface
-AC-REQ-POSTGRESX-007-002: Client 实现 Queryer
-AC-REQ-POSTGRESX-007-003: Tx 实现 Queryer
-AC-REQ-POSTGRESX-007-004: 业务 repository 可以只依赖 Queryer
-```
-
-## REQ-POSTGRESX-008：Transaction
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-008-001: WithTx 支持成功 commit
-AC-REQ-POSTGRESX-008-002: WithTx 在 fn error 时 rollback
-AC-REQ-POSTGRESX-008-003: WithTx 在 panic 时 rollback
-AC-REQ-POSTGRESX-008-004: WithTx 在 context cancel 时 rollback
-AC-REQ-POSTGRESX-008-005: commit 失败返回错误
-AC-REQ-POSTGRESX-008-006: transaction semantics 写入 ADR
-```
-
-## REQ-POSTGRESX-009：Migration Runner
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-009-001: 创建 schema_migrations 表
-AC-REQ-POSTGRESX-009-002: 按 version 升序执行 migration
-AC-REQ-POSTGRESX-009-003: 已执行 migration 不重复执行
-AC-REQ-POSTGRESX-009-004: 同 version 不同 name 返回 conflict
-AC-REQ-POSTGRESX-009-005: migration 在事务中执行
-AC-REQ-POSTGRESX-009-006: integration test 覆盖
-```
-
-## REQ-POSTGRESX-010：Health
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-010-001: Client 实现 foundationx.HealthChecker
-AC-REQ-POSTGRESX-010-002: Check 返回 healthy/degraded/unhealthy
-AC-REQ-POSTGRESX-010-003: Check 包含 latency
-AC-REQ-POSTGRESX-010-004: Metadata 不包含密码/DSN
-AC-REQ-POSTGRESX-010-005: 连接失败时 unhealthy
-```
-
-## REQ-POSTGRESX-011：Error Mapping
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-011-001: context.Canceled 映射 canceled
-AC-REQ-POSTGRESX-011-002: context.DeadlineExceeded 映射 timeout
-AC-REQ-POSTGRESX-011-003: no rows 映射 not_found
-AC-REQ-POSTGRESX-011-004: unique violation 映射 conflict
-AC-REQ-POSTGRESX-011-005: auth error 映射 auth
-AC-REQ-POSTGRESX-011-006: connection error 映射 connection/unavailable
-AC-REQ-POSTGRESX-011-007: 保留 Cause
-```
-
-## REQ-POSTGRESX-012：Configx Boundary
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-012-001: postgresx core 不 import configx
-AC-REQ-POSTGRESX-012-002: docs/configx-boundary.md 说明 configx 只在 app bootstrap 使用
-AC-REQ-POSTGRESX-012-003: docs/xgo-integration.md 展示 configx + postgresx 组合
-AC-REQ-POSTGRESX-012-004: examples 不引入 configx 编译依赖，除非独立 module 或 build tag 明确隔离
-```
-
-## REQ-POSTGRESX-013：Harness / Release
-
-Acceptance Criteria：
-
-```text
-AC-REQ-POSTGRESX-013-001: GOWORK=off make ci 通过
-AC-REQ-POSTGRESX-013-002: GOWORK=off make ci-extended 通过
-AC-REQ-POSTGRESX-013-003: GOWORK=off make release-check 通过
-AC-REQ-POSTGRESX-013-004: GOWORK=off make release-preflight VERSION=v0.1.0 通过
-AC-REQ-POSTGRESX-013-005: GOWORK=off make release-evidence-check 通过
-AC-REQ-POSTGRESX-013-006: GOWORK=off make release-final-check 通过
-AC-REQ-POSTGRESX-013-007: lint/security 工具缺失不得伪造 passed
-AC-REQ-POSTGRESX-013-008: release manifest 生成且不含 secret
-```
-
----
-
-# 13. Plan
-
-```text
-PLAN-GOAL-20260601-POSTGRESX-001-v1.1
-```
-
-## Phase 0：Context Recovery
-
-目标：
-
-```text
-确认 baselib-template、foundationx、postgresx、configx 边界和当前事实状态。
-```
-
-输出：
-
-```text
-.agent/context.md
-```
-
-必须记录：
-
-```text
-baselib-template 已完成
-foundationx 已完成
-postgresx 从模板渲染
-foundationx 是 L0
-postgresx 是 L2
-configx 是 L1 配置加载库，但 postgresx core 不依赖 configx
-x.go 读取 /home/k8s/secrets/env/* 后显式构造 postgresx.Config
-```
-
-## Phase 1：Render from baselib-template
-
-目标：
-
-```text
-使用 scripts/render_template.sh 渲染 postgresx。
-```
-
-输出：
-
-```text
-github.com/ZoneCNH/postgresx skeleton
-```
-
-## Phase 2：Template Alignment
-
-目标：
-
-```text
-确认模板占位符、路径、package、Makefile、scripts、contracts、.agent 完整。
-```
-
-## Phase 3：Foundationx Integration
-
-目标：
-
-```text
-接入 github.com/ZoneCNH/foundationx/pkg/foundationx。
-```
-
-输出：
-
-```text
-go.mod
-foundationx API compatibility tests
-```
-
-## Phase 4：PostgreSQL Driver ADR
-
-目标：
-
-```text
-AutoResearch pgx/pgxpool 当前版本与语义，写入 ADR。
-```
-
-输出：
-
-```text
-docs/adr/ADR-20260601-001-driver-selection.md
-```
-
-## Phase 5：Core Config + DSN
-
-目标：
-
-```text
-实现 Config / Validate / Sanitize / DSN / RedactedDSN。
-```
-
-## Phase 6：Client + Pool + Queryer
-
-目标：
-
-```text
-实现 New / Ping / Close / Stats / Queryer。
-```
-
-## Phase 7：Transaction
-
-目标：
-
-```text
-实现 WithTx / WithTxOptions / Tx interface。
-```
-
-## Phase 8：Migration Runner
-
-目标：
-
-```text
-实现 schema_migrations 和 Up。
-```
-
-## Phase 9：Health + Error + Metrics
-
-目标：
-
-```text
-实现 HealthCheck、driver error mapping、metrics hooks。
-```
-
-## Phase 10：TestKit + Integration
-
-目标：
-
-```text
-实现可重复运行的 PostgreSQL 集成测试。
-```
-
-## Phase 11：Docs + ADR + Configx Boundary
-
-目标：
-
-```text
-补齐 README、docs、ADR、contracts、configx-boundary、xgo-integration。
-```
-
-## Phase 12：Harness + Release
-
-目标：
-
-```text
-GOWORK=off make ci
-GOWORK=off make ci-extended
-GOWORK=off make release-check
-GOWORK=off make release-preflight VERSION=v0.1.0
-GOWORK=off make release-evidence-check
-GOWORK=off make release-final-check
-```
-
-## Phase 13：Retrospective
-
-目标：
-
-```text
-输出 self-improving patch，供 redisx/kafkax/taosx/configx/observex 复用。
-```
-
----
-
-# 14. Task Breakdown
-
-## TASK-POSTGRESX-001：从 baselib-template 渲染 postgresx
-
-操作：
-
-```bash
-git clone https://github.com/ZoneCNH/baselib-template.git
-cd baselib-template
-
-scripts/render_template.sh \
-  --module-name postgresx \
-  --module-path github.com/ZoneCNH/postgresx \
-  --package-name postgresx \
-  --out ../postgresx
-
-cd ../postgresx
-```
-
-验收：
-
-```text
-go.mod 存在
-module 为 github.com/ZoneCNH/postgresx
-pkg/postgresx 存在
-README/docs/contracts/scripts/.agent 存在
-不存在未渲染占位符
-```
-
-证据：
-
-```text
-EVID-TASK-POSTGRESX-001-20260601-001: tree output
-EVID-TASK-POSTGRESX-001-20260601-002: go env GOMOD
-EVID-TASK-POSTGRESX-001-20260601-003: check_template_alignment output
-```
-
-## TASK-POSTGRESX-002：初始模板独立验证
-
-命令：
-
-```bash
-GOWORK=off go mod tidy
-GOWORK=off go test ./...
-GOWORK=off make ci
-```
-
-证据：
-
-```text
-EVID-TASK-POSTGRESX-002-20260601-001: GOWORK=off go test output
-EVID-TASK-POSTGRESX-002-20260601-002: GOWORK=off make ci output
-```
-
-## TASK-POSTGRESX-003：接入 foundationx
-
-操作：
-
-```bash
-GOWORK=off go get github.com/ZoneCNH/foundationx
-```
-
-要求：
-
-```text
-所有 import 使用 github.com/ZoneCNH/foundationx/pkg/foundationx
-不得使用 bytechainx 路径
-不得复制 foundationx 代码
-```
-
-证据：
-
-```text
-EVID-TASK-POSTGRESX-003-20260601-001: go.mod diff
-EVID-TASK-POSTGRESX-003-20260601-002: foundationx API compatibility test output
-```
-
-## TASK-POSTGRESX-004：AutoResearch pgx/pgxpool 并写 ADR
-
-操作：
-
-```text
-确认 pgx/v5 当前稳定版本
-确认 pgxpool Config / Stat / error behavior
-确认 PostgreSQL SQLSTATE 错误码处理方式
-写入 ADR-20260601-001-driver-selection.md
-```
-
-证据：
-
-```text
-EVID-TASK-POSTGRESX-004-20260601-001: ADR driver selection
-EVID-TASK-POSTGRESX-004-20260601-002: go.mod diff
-```
-
-## TASK-POSTGRESX-005：实现 Config
-
-文件：
-
-```text
-pkg/postgresx/config.go
-pkg/postgresx/config_test.go
-```
-
-实现：
-
-```text
-Config
-SanitizedConfig
-DefaultConfig
-Validate
-Sanitize
-```
-
-测试：
-
-```text
-TestDefaultConfig
-TestConfigValidateZeroValueFails
-TestConfigValidateMissingHost
-TestConfigValidateInvalidPort
-TestConfigValidateMissingDatabase
-TestConfigValidateMissingUser
-TestConfigValidateMissingPassword
-TestConfigSanitizeMasksPassword
-TestConfigDoesNotReadEnv
-```
-
-## TASK-POSTGRESX-006：实现 DSN / RedactedDSN
-
-文件：
-
-```text
-pkg/postgresx/dsn.go
-pkg/postgresx/dsn_test.go
-```
-
-测试：
-
-```text
-TestDSNBuildsPostgresURL
-TestDSNEscapesSpecialChars
-TestRedactedDSNMasksPassword
-TestRedactedDSNDoesNotContainRawPassword
-```
-
-## TASK-POSTGRESX-007：实现 Options / Noop Logger / Noop Metrics
-
-文件：
-
-```text
-pkg/postgresx/options.go
-pkg/postgresx/metrics.go
-```
-
-测试：
-
-```text
-TestOptionsDefaultNoop
-TestWithLogger
-TestWithMetrics
-TestWithClock
-TestNilLoggerDoesNotPanic
-```
-
-## TASK-POSTGRESX-008：实现 Client / Pool
-
-文件：
-
-```text
-pkg/postgresx/client.go
-pkg/postgresx/pool.go
-pkg/postgresx/client_test.go
-```
-
-测试：
-
-```text
-TestNewInvalidConfigFails
-TestCloseIdempotent
-TestStatsZeroSafe
-TestNewPingCloseIntegration
-```
-
-## TASK-POSTGRESX-009：实现 Queryer 适配
-
-文件：
-
-```text
-pkg/postgresx/query.go
-pkg/postgresx/query_test.go
-```
-
-测试：
-
-```text
-TestClientImplementsQueryer
-TestQueryerExecIntegration
-TestQueryerQueryIntegration
-TestQueryerQueryRowIntegration
-```
-
-## TASK-POSTGRESX-010：实现 Transaction
-
-文件：
-
-```text
-pkg/postgresx/tx.go
-pkg/postgresx/tx_test.go
-docs/adr/ADR-20260601-002-transaction-semantics.md
-```
-
-测试：
-
-```text
-TestWithTxCommit
-TestWithTxRollbackOnError
-TestWithTxRollbackOnPanic
-TestWithTxContextCanceled
-TestTxImplementsQueryer
-```
-
-## TASK-POSTGRESX-011：实现 Migration Runner
-
-文件：
-
-```text
-pkg/postgresx/migration.go
-pkg/postgresx/migration_test.go
-docs/adr/ADR-20260601-003-migration-runner-scope.md
-```
-
-测试：
-
-```text
-TestMigrationRunnerCreatesSchemaMigrations
-TestMigrationRunnerAppliesInOrder
-TestMigrationRunnerSkipsApplied
-TestMigrationRunnerDetectsVersionNameConflict
-TestMigrationRunnerRollbackOnFailure
-```
-
-## TASK-POSTGRESX-012：实现 Error Mapping
-
-文件：
-
-```text
-pkg/postgresx/errors.go
-pkg/postgresx/errors_test.go
-```
-
-测试：
-
-```text
-TestMapErrorContextCanceled
-TestMapErrorContextDeadlineExceeded
-TestMapErrorNoRows
-TestMapErrorUniqueViolation
-TestMapErrorPreservesCause
-TestIsRetryable
-```
-
-## TASK-POSTGRESX-013：实现 HealthCheck
-
-文件：
-
-```text
-pkg/postgresx/health.go
-pkg/postgresx/health_test.go
-```
-
-测试：
-
-```text
-TestClientImplementsFoundationHealthChecker
-TestHealthCheckHealthy
-TestHealthCheckUnhealthyWhenClosedOrUnavailable
-TestHealthCheckMetadataSanitized
-TestHealthCheckLatency
-```
-
-## TASK-POSTGRESX-014：实现 Metrics Hook
-
-文件：
-
-```text
-pkg/postgresx/metrics.go
-pkg/postgresx/metrics_test.go
-```
-
-测试：
-
-```text
-TestMetricsNoopDoesNotPanic
-TestMetricsRecordsPing
-TestMetricsRecordsTx
-TestMetricsLabelsNoSecrets
-```
-
-## TASK-POSTGRESX-015：实现 TestKit
-
-文件：
-
-```text
-testkit/container.go
-testkit/config.go
-testkit/fixture.go
-testkit/assert.go
-```
-
-能力：
-
-```text
-StartPostgres
-ConfigFromContainer
-ConfigFromEnv
-CreateTempSchema
-DropTempSchema
-RequireIntegration
-```
-
-要求：
-
-```text
-1. 若 Docker 可用，启动临时 PostgreSQL
-2. 若设置 POSTGRESX_INTEGRATION_DSN，则使用外部 PostgreSQL
-3. 若二者都不可用，普通 PR 可明确 skip；release-final-check 不得 skip
-4. 不输出明文密码
-```
-
-## TASK-POSTGRESX-016：编写 Examples
-
-目录：
-
-```text
-examples/basic
-examples/transaction
-examples/migration
-examples/health
-```
-
-要求：
-
-```text
-1. examples 不包含真实密码
-2. examples 支持通过环境变量读取测试 DSN 或分字段配置
-3. examples 文档说明仅用于本地/测试
-4. examples 不强依赖 configx
-```
-
-## TASK-POSTGRESX-017：增加 Template Alignment Gate
-
-文件：
-
-```text
-scripts/check_template_alignment.sh
-```
-
-检查：
-
-```text
-无模板占位符
-核心目录存在
-关键 scripts 存在
-contracts 存在
-.agent 存在
-```
-
-## TASK-POSTGRESX-018：增加 Foundationx API Compatibility Gate
-
-文件：
-
-```text
-scripts/check_foundationx_api.sh
-```
-
-检查：
-
-```text
-go list -m github.com/ZoneCNH/foundationx
-grep -R "github.com/ZoneCNH/foundationx/pkg/foundationx" pkg internal testkit
-grep -R "github.com/bytechainx" . 不得出现
-```
-
-## TASK-POSTGRESX-019：更新 Boundary Gate
-
-文件：
-
-```text
-scripts/check_boundary.sh
-```
-
-必须检查：
-
-```text
-不依赖 x.go
-不依赖 configx core
-不依赖 observex core
-不出现业务术语
-不出现 bytechainx 旧路径
-```
-
-## TASK-POSTGRESX-020：编写 Configx Boundary 文档
-
-文件：
-
-```text
-docs/configx-boundary.md
-docs/xgo-integration.md
-docs/adr/ADR-20260601-005-config-loading-boundary.md
-```
-
-必须说明：
-
-```text
-1. postgresx 只定义 Config，不加载 Config
-2. postgresx 不依赖 configx
-3. postgresx 不读取 /home/k8s/secrets/env/*
-4. configx 负责显式读取 env/envfile/json/map
-5. x.go 或 app bootstrap 负责 Decode RuntimeConfig
-6. x.go 或 app bootstrap 再构造 postgresx.Config
-```
-
-## TASK-POSTGRESX-021：更新 Release / Evidence Gate
-
-必须支持：
-
-```bash
-GOWORK=off make ci
-GOWORK=off make ci-extended
-GOWORK=off make release-check
-GOWORK=off make release-preflight VERSION=v0.1.0
-GOWORK=off make evidence
-GOWORK=off make release-evidence-check
-GOWORK=off make release-final-check
-```
-
-要求：
-
-```text
-lint/security 工具缺失不得伪造 passed
-release manifest 不含 secret
-release manifest 与当前仓库事实一致
-release-final-check 要求工作区 clean
-```
-
-## TASK-POSTGRESX-022：Retrospective
-
-输出：
-
-```text
-.agent/retrospective.md
-.agent/patch_prompt.md
-.agent/patch_harness.md
-.agent/patch_rule.md
-```
-
-必须回答：
-
-```text
-1. postgresx 哪些模式可以复制到 redisx/kafkax/taosx？
-2. baselib-template 哪些 gate 需要回补？
-3. foundationx API 是否足够支持 L2 库？
-4. configx 是否仍应保持在 app bootstrap 层？
-5. TestKit 是否可抽象到 testkitx？
-6. Integration gate 是否可复用？
-```
-
----
-
-# 15. Harness Gates
-
-## Gate 1：Template Alignment
-
-```bash
-GOWORK=off ./scripts/check_template_alignment.sh
-```
-
-## Gate 2：Foundationx API Compatibility
-
-```bash
-GOWORK=off ./scripts/check_foundationx_api.sh
-```
-
-## Gate 3：Format
-
-```bash
-GOWORK=off go fmt ./...
-```
-
-## Gate 4：Vet
-
-```bash
-GOWORK=off go vet ./...
-```
-
-## Gate 5：Unit Test
-
-```bash
-GOWORK=off go test ./...
-```
-
-## Gate 6：Race Test
-
-```bash
-GOWORK=off go test -race ./...
-```
-
-## Gate 7：Boundary
-
-```bash
-GOWORK=off ./scripts/check_boundary.sh
-```
-
-必须检查：
-
-```text
-不依赖 github.com/ZoneCNH/x.go
-不依赖 x.go/internal
-不依赖 github.com/ZoneCNH/configx
-不依赖 github.com/ZoneCNH/observex
-不出现 github.com/bytechainx
-不出现业务词汇
-```
-
-## Gate 8：Secret
-
-```bash
-GOWORK=off ./scripts/check_secrets.sh
-```
-
-必须无疑似密钥。
-
-## Gate 9：Contract
-
-```bash
-GOWORK=off ./scripts/check_contracts.sh
-```
-
-检查：
-
-```text
-contracts/config.schema.json
-contracts/error.schema.json
-contracts/health.schema.json
-contracts/metrics.md
-contracts/public_api.md
-docs/api.md
-```
-
-## Gate 10：Integration
-
-```bash
-GOWORK=off ./scripts/run_integration.sh
-```
-
-必须验证真实 PostgreSQL。
-
-## Gate 11：Examples
-
-```bash
-GOWORK=off go run ./examples/basic
-GOWORK=off go run ./examples/transaction
-GOWORK=off go run ./examples/migration
-GOWORK=off go run ./examples/health
-```
-
-## Gate 12：CI Extended
-
-```bash
-GOWORK=off make ci-extended
-```
-
-## Gate 13：Release Preflight
-
-```bash
-GOWORK=off make release-preflight VERSION=v0.1.0
-```
-
-## Gate 14：Evidence
-
-```bash
-GOWORK=off make evidence
-GOWORK=off make release-evidence-check
-```
-
-## Gate 15：Final Release
-
-```bash
-GOWORK=off make release-final-check
-```
-
-要求：
-
-```text
-工作区 clean
-manifest 新鲜
-所有必需 gate passed
-不得伪造 skipped
-```
-
----
-
-# 16. Boundary Gate 脚本模板
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-echo "checking postgresx boundary..."
-
-FORBIDDEN_DEPS=(
-  "github.com/ZoneCNH/x.go"
-  "github.com/ZoneCNH/x.go/internal"
-  "github.com/bytechainx"
-  "github.com/ZoneCNH/configx"
-  "github.com/ZoneCNH/observex"
-)
-
-DEPS="$(GOWORK=off go list -deps ./...)"
-
-for dep in "${FORBIDDEN_DEPS[@]}"; do
-  if echo "$DEPS" | grep -q "$dep"; then
-    echo "ERROR: forbidden dependency found: $dep"
-    exit 1
-  fi
-done
-
-FORBIDDEN_TERMS=(
-  "BTCUSDT"
-  "ETHUSDT"
-  "Kline"
-  "OrderBook"
-  "MarketData"
-  "MacroData"
-  "MacroRegime"
-  "MarketRegime"
-  "TradingSignal"
-  "Position"
-  "RiskGate"
-  "M1"
-  "M2"
-  "S1"
-  "S2"
-)
-
-for term in "${FORBIDDEN_TERMS[@]}"; do
-  if grep -R "$term" ./pkg ./internal ./testkit --exclude-dir=.git; then
-    echo "ERROR: forbidden business term found: $term"
-    exit 1
-  fi
-done
-
-echo "postgresx boundary check passed"
-```
-
----
-
-# 17. Template Alignment 脚本模板
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-echo "checking template alignment..."
-
-if grep -R "{{MODULE_NAME}}\|{{MODULE_PATH}}\|{{PACKAGE_NAME}}" .   --exclude-dir=.git   --exclude-dir=vendor; then
-  echo "ERROR: unresolved template placeholders found"
-  exit 1
-fi
-
-required_paths=(
-  "pkg/postgresx"
-  "internal"
-  "testkit"
-  "examples"
-  "contracts"
-  "docs"
-  "scripts"
-  ".agent"
-  "release/manifest"
-  "Makefile"
-)
-
-for path in "${required_paths[@]}"; do
-  if [ ! -e "$path" ]; then
-    echo "ERROR: missing template path: $path"
-    exit 1
-  fi
-done
-
-echo "template alignment check passed"
-```
-
----
-
-# 18. Foundationx API 脚本模板
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-echo "checking foundationx API compatibility..."
-
-GOWORK=off go list -m github.com/ZoneCNH/foundationx >/dev/null
-
-if ! grep -R "github.com/ZoneCNH/foundationx/pkg/foundationx" ./pkg ./internal ./testkit --exclude-dir=.git; then
-  echo "ERROR: foundationx package import not found"
-  exit 1
-fi
-
-if grep -R "github.com/bytechainx" . --exclude-dir=.git --exclude-dir=vendor; then
-  echo "ERROR: old bytechainx import path found"
-  exit 1
-fi
-
-echo "foundationx API compatibility check passed"
-```
-
----
-
-# 19. Configx Boundary 文档片段
-
-`docs/configx-boundary.md` 必须包含：
-
-```markdown
-# Config Loading Boundary
-
-postgresx core does not load configuration files.
-
-## Correct dependency direction
-
-x.go bootstrap -> configx -> postgresx.Config -> postgresx.New
-
-## Forbidden dependency direction
-
-postgresx -> configx -> /home/k8s/secrets/env/postgres.env
-
-## Rules
-
-1. postgresx defines Config.
-2. postgresx validates Config.
-3. postgresx sanitizes Config.
-4. postgresx does not read env.
-5. postgresx does not read env files.
-6. postgresx does not import configx.
-7. x.go or app bootstrap may use configx.
-8. x.go owns business runtime config.
-```
-
-示例：
-
-```go
-result, err := configx.LoadEnvFile(ctx, "/home/k8s/secrets/env/postgres.env")
-if err != nil {
-    return err
-}
-
-var runtimeCfg PostgresRuntimeConfig
-if err := configx.Decode(result, &runtimeCfg); err != nil {
-    return err
-}
-
-pgCfg := postgresx.DefaultConfig()
-pgCfg.Host = runtimeCfg.Host
-pgCfg.Port = runtimeCfg.Port
-pgCfg.Database = runtimeCfg.Database
-pgCfg.User = runtimeCfg.User
-pgCfg.Password = runtimeCfg.Password
-pgCfg.SSLMode = runtimeCfg.SSLMode
-
-client, err := postgresx.New(ctx, pgCfg)
-```
-
-注意：
-
-```text
-此示例应位于 docs，不应让 postgresx core go.mod 强依赖 configx。
-```
-
----
-
-# 20. Release Manifest 规则
-
-v1.1 必须继承 baselib-template release Evidence 规则：
-
-```text
-release/manifest/latest.json 是生成产物
-release manifest 记录 module、commit、tree SHA、源码摘要、contract 指纹、依赖清单、工具版本、生成时间、工作区状态和 gate 结果
-make release-evidence-check 验证 manifest 与当前仓库事实一致
-make release-final-check 要求工作区 clean
-```
-
-Manifest 不得包含：
+原则：
+
+```text
+- Query.Name 是日志、metrics、trace 的主标识。
+- Query.SQL 只用于执行；默认不进入日志。
+- args 默认永不记录。
+- Tx helper 不暴露业务 repository。
+- provider SDK 类型默认不出现在 public API。
+- 如必须提供 escape hatch，必须单独 ADR：ADR-POSTGRESX-PGX-ESCAPE-HATCH。
+```
+
+### 6.4 Config Contract
+
+P0 配置字段：
+
+```yaml
+name: postgresx
+provider: postgres
+database:
+  dsn: optional explicit DSN
+  host: localhost
+  port: 5432
+  database: app
+  username: app
+  password: explicit secret value or secret source reference
+  sslmode: disable|prefer|require|verify-ca|verify-full
+  application_name: postgresx
+pool:
+  min_conns: 0
+  max_conns: 10
+  max_conn_lifetime: 1h
+  max_conn_idle_time: 30m
+  health_check_period: 1m
+timeouts:
+  connect_timeout: 5s
+  query_timeout: 30s
+  tx_timeout: 60s
+  statement_timeout: 30s
+resilience:
+  retry:
+    enabled: false
+    max_attempts: 2
+    idempotent_only: true
+  circuit_breaker:
+    enabled: false
+observability:
+  metrics_enabled: true
+  traces_enabled: true
+  log_sql: false
+  log_args: false
+  query_name_required: true
+integration:
+  enabled: false
+  allow_external_dsn: false
+```
+
+硬约束：
+
+```text
+- DefaultConfig() 不得指向生产 endpoint。
+- Validate() 必须拒绝空 endpoint、非法 pool、非法 timeout、危险 logging 配置。
+- Sanitize() 必须屏蔽 password、DSN credentials、TLS key、raw SQL args。
+- config.schema.json 必须覆盖所有 P0 字段。
+- examples/config 必须通过 schema validation。
+```
+
+### 6.5 Error Contract
+
+统一错误维度：
+
+```text
+ErrorKind:
+  UNKNOWN
+  CONFIG_INVALID
+  AUTH_FAILED
+  NETWORK_UNREACHABLE
+  CONNECTION_FAILED
+  TIMEOUT
+  CONTEXT_CANCELED
+  POOL_EXHAUSTED
+  QUERY_FAILED
+  TRANSACTION_FAILED
+  SERIALIZATION_FAILED
+  DEADLOCK_DETECTED
+  LOCK_NOT_AVAILABLE
+  UNIQUE_VIOLATION
+  FOREIGN_KEY_VIOLATION
+  CHECK_VIOLATION
+  NOT_NULL_VIOLATION
+  RESOURCE_NOT_FOUND
+  PERMISSION_DENIED
+  UNSUPPORTED_OPERATION
+  SHUTDOWN
+```
+
+PostgreSQL SQLSTATE 映射 P0：
+
+| SQLSTATE / Class | PostgreSQL 语义 | ErrorKind | Retry |
+|---|---|---|---|
+| `23505` | unique_violation | UNIQUE_VIOLATION | no |
+| `23503` | foreign_key_violation | FOREIGN_KEY_VIOLATION | no |
+| `23514` | check_violation | CHECK_VIOLATION | no |
+| `23502` | not_null_violation | NOT_NULL_VIOLATION | no |
+| `40001` | serialization_failure | SERIALIZATION_FAILED | conditional |
+| `40P01` | deadlock_detected | DEADLOCK_DETECTED | conditional |
+| `55P03` | lock_not_available | LOCK_NOT_AVAILABLE | conditional |
+| `57014` | query_canceled | TIMEOUT or CONTEXT_CANCELED | conditional |
+| `42P01` | undefined_table | RESOURCE_NOT_FOUND | no |
+| `42501` | insufficient_privilege | PERMISSION_DENIED | no |
+| `28P01` | invalid_password | AUTH_FAILED | no |
+| `08xxx` | connection exception class | CONNECTION_FAILED | yes |
+| pool acquire timeout | pool exhausted | POOL_EXHAUSTED | conditional |
+
+错误输出必须包含：
+
+```text
+module=postgresx
+provider=postgres
+operation
+query_name
+error_kind
+retryable
+sqlstate if safe
+redacted_message
+```
+
+禁止包含：
 
 ```text
 password
+raw DSN
+SQL args
+raw SQL by default
+TLS key
+secret path contents
+```
+
+### 6.6 Health Contract
+
+Health 输出必须匹配 `contracts/health.schema.json`：
+
+```json
+{
+  "name": "postgresx",
+  "status": "pass|warn|fail",
+  "provider": "postgres",
+  "version": "optional",
+  "checks": [
+    {
+      "name": "ping",
+      "status": "pass|warn|fail",
+      "latency_ms": 3,
+      "last_success_at": "2026-06-04T00:00:00Z",
+      "error_kind": "TIMEOUT",
+      "message": "redacted"
+    },
+    {
+      "name": "pool",
+      "status": "pass|warn|fail",
+      "latency_ms": 0,
+      "message": "acquired=1 idle=4 total=5"
+    }
+  ],
+  "observed_at": "2026-06-04T00:00:00Z"
+}
+```
+
+P0 checks：
+
+```text
+ping
+pool_stats
+last_error
+version optional
+```
+
+P1 checks：
+
+```text
+readiness_query with query_name
+replication role optional
+server parameter sanity optional
+```
+
+### 6.7 Metrics Contract
+
+公共 metrics：
+
+```text
+l2_operation_total{module="postgresx",provider="postgres",operation,result,error_kind}
+l2_operation_duration_seconds{module="postgresx",provider="postgres",operation,result}
+l2_retry_total{module="postgresx",provider="postgres",operation,error_kind}
+l2_health_status{module="postgresx",provider="postgres",status}
+```
+
+postgresx 专属 metrics：
+
+```text
+postgresx_pool_acquired{pool}
+postgresx_pool_idle{pool}
+postgresx_pool_total{pool}
+postgresx_pool_max{pool}
+postgresx_pool_acquire_count_total{pool,result}
+postgresx_pool_acquire_duration_seconds{pool,result}
+postgresx_query_total{query_name,result,error_kind}
+postgresx_query_duration_seconds{query_name,result}
+postgresx_tx_total{result,error_kind}
+postgresx_tx_duration_seconds{result}
+postgresx_tx_rollback_total{reason}
+```
+
+label 基数限制：
+
+```text
+- query_name 必须是受控枚举或显式命名，不允许 raw SQL。
+- database name 默认 hash 或 sanitized safe name。
+- user、password、dsn、host with credentials 不允许作为 label。
+```
+
+### 6.8 Trace / Log Attributes Contract
+
+标准 attrs：
+
+```text
+l2.module = postgresx
+l2.provider = postgres
+db.system = postgresql
+db.operation = query|exec|tx|ping|health
+db.query_name = <safe name>
+db.sql_hash = optional sha256
+db.result = success|error
+db.error_kind = <ErrorKind>
+db.retry_count = <n>
+db.timeout_ms = <n>
+postgresx.pool.acquired = <n>
+postgresx.pool.idle = <n>
+```
+
+禁止 attrs：
+
+```text
+db.statement.raw
+db.params.raw
+password
+dsn.raw
 token
 secret
-raw DSN
-authorization
-private key
+tls.key
 ```
 
-Release 声明必须包含：
+### 6.9 Transaction Contract
+
+`WithinTx` P0 语义：
 
 ```text
-DONE with evidence:
-- release manifest path
-- commit
-- GOWORK=off gate outputs
-- integration evidence
-- known risks
+1. BeginTx 成功后执行 fn。
+2. fn 返回 nil：commit。
+3. fn 返回 error：rollback，并返回原 error；rollback error 进入 joined/suppressed safe error。
+4. fn panic：rollback，然后 re-panic；不得吞 panic。
+5. commit error：返回 TRANSACTION_FAILED 或具体 pg error mapping。
+6. rollback error：不得覆盖主错误，必须保留可审计信息。
+7. context canceled：尝试 rollback，返回 CONTEXT_CANCELED 或 TIMEOUT。
+8. 默认不做自动 retry。
+9. 只有 caller 显式选择 retry policy，且 Tx 标记 idempotent，才允许对 SERIALIZATION_FAILED / DEADLOCK_DETECTED 做有限 retry。
 ```
 
----
-
-# 21. Traceability Matrix
-
-| Requirement | Acceptance Criteria | Design | Task | Test | Evidence | Status |
-|---|---|---|---|---|---|---|
-| REQ-POSTGRESX-001 | AC-001-* | Template Design | TASK-001/002 | template alignment | EVID-001/002 | TODO |
-| REQ-POSTGRESX-002 | AC-002-* | Foundationx Integration | TASK-003 | API compatibility | EVID-003 | TODO |
-| REQ-POSTGRESX-003 | AC-003-* | Boundary | TASK-019 | boundary gate | EVID-019 | TODO |
-| REQ-POSTGRESX-004 | AC-004-* | Config | TASK-005 | config_test.go | EVID-005 | TODO |
-| REQ-POSTGRESX-005 | AC-005-* | DSN | TASK-006 | dsn_test.go | EVID-006 | TODO |
-| REQ-POSTGRESX-006 | AC-006-* | Client/Pool | TASK-008 | client_test.go | EVID-008 | TODO |
-| REQ-POSTGRESX-007 | AC-007-* | Queryer | TASK-009 | query_test.go | EVID-009 | TODO |
-| REQ-POSTGRESX-008 | AC-008-* | Transaction | TASK-010 | tx_test.go | EVID-010 | TODO |
-| REQ-POSTGRESX-009 | AC-009-* | Migration | TASK-011 | migration_test.go | EVID-011 | TODO |
-| REQ-POSTGRESX-010 | AC-010-* | Health | TASK-013 | health_test.go | EVID-013 | TODO |
-| REQ-POSTGRESX-011 | AC-011-* | Error Map | TASK-012 | errors_test.go | EVID-012 | TODO |
-| REQ-POSTGRESX-012 | AC-012-* | Configx Boundary | TASK-020 | docs review | EVID-020 | TODO |
-| REQ-POSTGRESX-013 | AC-013-* | Release Gates | TASK-021 | release-final-check | EVID-021 | TODO |
-
----
-
-# 22. Risk Register
-
-## RISK-POSTGRESX-001：模板漂移
-
-风险：
+P0 Tx options：
 
 ```text
-postgresx 手工修改后偏离 baselib-template 的目录、gate、release evidence 规则。
+IsolationLevel
+ReadOnly
+Deferrable
+Timeout
+QueryNamePrefix
 ```
 
-缓解：
+### 6.10 Migration Boundary
+
+P0 只允许：
 
 ```text
-check_template_alignment.sh
-Retrospective 回补 template patch
-```
-
-## RISK-POSTGRESX-002：foundationx API 假设错误
-
-风险：
-
-```text
-postgresx 使用了 foundationx 不存在或已变化的 API。
-```
-
-缓解：
-
-```text
-check_foundationx_api.sh
-GOWORK=off go test
-ADR 记录 foundationx 版本
-```
-
-## RISK-POSTGRESX-003：configx 被错误拉入 core
-
-风险：
-
-```text
-postgresx 为方便读取 envfile 直接依赖 configx。
-```
-
-缓解：
-
-```text
-Config loading boundary ADR
-Boundary Gate 禁止 configx core import
-docs-only integration example
-```
-
-## RISK-POSTGRESX-004：DSN 泄露密码
-
-风险：
-
-```text
-错误、日志、Evidence 输出原始 DSN。
-```
-
-缓解：
-
-```text
-Config.Sanitize
-RedactedDSN
-Secret Gate
-DSN redaction tests
-```
-
-## RISK-POSTGRESX-005：Migration Runner 越界
-
-风险：
-
-```text
-postgresx 变成业务 migration 管理系统。
-```
-
-缓解：
-
-```text
-只提供 runner，不拥有 migration 内容。
-不扫描 x.go 目录。
-```
-
-## RISK-POSTGRESX-006：Integration Gate 被跳过
-
-风险：
-
-```text
-PR 中集成测试 skip，release 却误认为通过。
-```
-
-缓解：
-
-```text
-release-final-check 不允许 integration skip
-manifest 明确记录 integration status
-```
-
----
-
-# 23. Decision Log
-
-## DEC-20260601-001：Template-bound skeleton
-
-决策：
-
-```text
-postgresx v1.1 必须从 baselib-template 渲染。
-```
-
-原因：
-
-```text
-复用已经完成的目录结构、Harness、Evidence、Release Gate。
-```
-
-## DEC-20260601-002：Foundationx-bound contracts
-
-决策：
-
-```text
-postgresx 必须复用 foundationx 的 Error / Health / Secret / Clock 契约。
-```
-
-原因：
-
-```text
-避免 L2 库重新定义 L0 语义。
-```
-
-## DEC-20260601-003：Configx 不进入 postgresx core
-
-决策：
-
-```text
-postgresx core 只接收 Config，不加载 Config。
-```
-
-原因：
-
-```text
-保持 L2 基础设施库边界，防止配置加载副作用进入数据库库。
-```
-
-## DEC-20260601-004：GOWORK=off 是强制 gate
-
-决策：
-
-```text
-所有独立模块 gate 使用 GOWORK=off。
-```
-
-原因：
-
-```text
-防止父级 workspace 影响独立 module 真实性。
-```
-
-## DEC-20260601-005：Release Evidence 不可伪造
-
-决策：
-
-```text
-lint/security/tool missing 不得伪造 passed。
-```
-
-原因：
-
-```text
-Release Manifest 必须反映真实门禁状态。
-```
-
----
-
-# 24. AutoResearch Protocol
-
-触发条件：
-
-```text
-1. pgx/pgxpool 当前推荐版本不确定
-2. pgxpool Config 字段行为不确定
-3. pgx 错误码结构不确定
-4. PostgreSQL unique violation SQLSTATE 不确定
-5. testcontainers-go 用法不确定
-6. GitHub Actions PostgreSQL service 行为不确定
-7. baselib-template render_template.sh 参数或行为变化
-8. foundationx API 与 README 不一致
-9. configx 集成边界不明确
-```
-
-输出必须写入：
-
-```text
-docs/adr/ADR-YYYYMMDD-NNN-<topic>.md
+- docs/migration-boundary.md 说明边界。
+- examples/integration 可以演示创建临时测试表。
+- integration test 可以在临时数据库/临时 schema 中创建测试表。
 ```
 
 禁止：
 
 ```text
-1. 不经 ADR 直接引入新依赖
-2. 不经测试直接改变事务语义
-3. 不经 Review 直接扩大 Public API
-4. 不经 ADR 让 postgresx core 依赖 configx
+- Open() 默认执行 migration。
+- package init 自动 migration。
+- 在 core 包中内置 x.go 业务表。
+- 提供业务 schema。
 ```
 
----
-
-# 25. Review Checklist
-
-Review 前必须确认：
+P1 可选：
 
 ```text
-[ ] postgresx 从 baselib-template 渲染
-[ ] module path 是 github.com/ZoneCNH/postgresx
-[ ] 无未替换模板占位符
-[ ] 无 github.com/bytechainx 旧路径
-[ ] 依赖 github.com/ZoneCNH/foundationx
-[ ] import github.com/ZoneCNH/foundationx/pkg/foundationx
-[ ] 不依赖 x.go
-[ ] 不依赖 configx core
-[ ] 不依赖 observex core
-[ ] 不包含业务模型
-[ ] 不读取 /home/k8s/secrets/env/*
-[ ] Config Validate 完整
-[ ] Password 使用 foundationx.SecretString
-[ ] RedactedDSN 不泄露密码
-[ ] Client Close 幂等
-[ ] Queryer 最小接口可用
-[ ] WithTx commit/rollback/panic 语义清晰
-[ ] Migration Runner 不拥有业务 migration
-[ ] HealthCheck 使用 foundationx.HealthStatus
-[ ] Error Mapping 保留 Cause
-[ ] TestKit 可运行真实 PostgreSQL
-[ ] docs/configx-boundary.md 完整
-[ ] GOWORK=off make ci 通过
-[ ] GOWORK=off make ci-extended 通过
-[ ] GOWORK=off make release-check 通过
-[ ] GOWORK=off make release-preflight VERSION=v0.1.0 通过
-[ ] GOWORK=off make release-evidence-check 通过
-[ ] GOWORK=off make release-final-check 通过
-[ ] release manifest 生成且不含 secret
+- migration runner adapter interface
+- migration lock helper
+- advisory lock helper
+```
+
+必须通过 ADR 才能进入 public API。
+
+---
+
+## 7. Goal Runtime v3.1 对象模型
+
+### 7.1 Master Goal
+
+```text
+GOAL-20260604-POSTGRESX-L2-FACTORY-001
+Title: Upgrade postgresx into xlib-standard governed L2 PostgreSQL adapter factory
+Mode: Full
+Owner: ZoneCNH
+Layer: L2
+Target Repo: github.com/ZoneCNH/postgresx
+Standard Source: github.com/ZoneCNH/xlib-standard
+State Machine:
+  INIT → CONTEXT_READY → GOAL_READY → SPEC_READY → DESIGN_READY → PLAN_READY
+  → TASKS_READY → EXECUTING → VERIFYING → REVIEWING → RELEASING
+  → RETROSPECTING → DONE
+Exception States:
+  BLOCKED / FAILED / NEEDS_RESEARCH / NEEDS_DECISION / NEEDS_REPLAN
+  / NEEDS_ROLLBACK / NEEDS_HUMAN_APPROVAL / INCONSISTENT_STATE
+```
+
+### 7.2 Specs
+
+```text
+SPEC-POSTGRESX-L2-v1.0
+SPEC-POSTGRESX-CONFIG-v1.0
+SPEC-POSTGRESX-ERRORS-v1.0
+SPEC-POSTGRESX-HEALTH-v1.0
+SPEC-POSTGRESX-METRICS-v1.0
+SPEC-POSTGRESX-TX-v1.0
+SPEC-POSTGRESX-TESTKIT-v1.0
+SPEC-POSTGRESX-RELEASE-v1.0
+```
+
+### 7.3 Designs
+
+```text
+DESIGN-POSTGRESX-L2-v1.0
+DESIGN-POSTGRESX-PGX-DRIVER-v1.0
+DESIGN-POSTGRESX-TX-v1.0
+DESIGN-POSTGRESX-EVIDENCE-v1.0
+```
+
+### 7.4 ADRs
+
+```text
+ADR-20260604-POSTGRESX-001  postgresx is L2 adapter, not ORM or repository.
+ADR-20260604-POSTGRESX-002  Use pgx/v5 as P0 provider SDK after AutoResearch.
+ADR-20260604-POSTGRESX-003  Provider SDK types remain internal by default.
+ADR-20260604-POSTGRESX-004  Query.Name required for observability; raw SQL not logged by default.
+ADR-20260604-POSTGRESX-005  Unit tests use fake Queryer/Execer; real PostgreSQL only opt-in.
+ADR-20260604-POSTGRESX-006  Tx retry is explicit and idempotency-gated.
+ADR-20260604-POSTGRESX-007  Migration is boundary/helper, not startup behavior.
+ADR-20260604-POSTGRESX-008  Release requires downstream adoption proof before “usable by x.go” claim.
 ```
 
 ---
 
-# 26. Release Protocol
+## 8. Requirements 与 Acceptance Criteria
 
-## 26.1 v0.1.0 发布前
+### 8.1 P0 Requirements
 
-执行：
+| ID | Requirement | Priority |
+|---|---|---|
+| REQ-POSTGRESX-001 | module path 必须为 `github.com/ZoneCNH/postgresx` | P0 |
+| REQ-POSTGRESX-002 | README/AGENTS/CONSTITUTION/docs 必须声明 L2 PostgreSQL adapter 身份 | P0 |
+| REQ-POSTGRESX-003 | 禁止 `x.go`、业务系统、其他 L2 imports | P0 |
+| REQ-POSTGRESX-004 | 必须实现 Config/DefaultConfig/Validate/Sanitize | P0 |
+| REQ-POSTGRESX-005 | 必须提供 `contracts/config.schema.json` | P0 |
+| REQ-POSTGRESX-006 | 必须提供 pgxpool lifecycle：Open/Ping/Health/Stats/Close | P0 |
+| REQ-POSTGRESX-007 | Close 必须幂等且可测试 | P0 |
+| REQ-POSTGRESX-008 | 必须提供 Exec/Query/QueryRow minimal wrapper | P0 |
+| REQ-POSTGRESX-009 | 必须提供 Queryer/Execer/Tx interface | P0 |
+| REQ-POSTGRESX-010 | 必须提供 WithinTx helper 并覆盖 commit/rollback/panic/context 语义 | P0 |
+| REQ-POSTGRESX-011 | 必须映射常见 pg SQLSTATE 到 ErrorKind | P0 |
+| REQ-POSTGRESX-012 | DSN/password/SQL args 必须脱敏 | P0 |
+| REQ-POSTGRESX-013 | 必须提供 health schema + golden tests | P0 |
+| REQ-POSTGRESX-014 | 必须提供 metrics contract + emission tests | P0 |
+| REQ-POSTGRESX-015 | 单元测试必须不依赖真实 PostgreSQL | P0 |
+| REQ-POSTGRESX-016 | integration test 必须 opt-in 且记录 pass/skip/fail evidence | P0 |
+| REQ-POSTGRESX-017 | 必须生成 release manifest + sha256 | P0 |
+| REQ-POSTGRESX-018 | 必须有 downstream smoke adoption proof | P0 for stable, P1 for v0.1 |
+| REQ-POSTGRESX-019 | 必须输出 retrospective + Prompt/Harness/Rule Patch candidates | P0 |
+| REQ-POSTGRESX-020 | 完成声明必须使用 `DONE with evidence:` | P0 |
+
+### 8.2 P1 Requirements
+
+| ID | Requirement | Priority |
+|---|---|---|
+| REQ-POSTGRESX-021 | advisory lock helper | P1 |
+| REQ-POSTGRESX-022 | prepared statement cache config | P1 |
+| REQ-POSTGRESX-023 | tx retry helper with idempotency guard | P1 |
+| REQ-POSTGRESX-024 | migration lock boundary helper | P1 |
+| REQ-POSTGRESX-025 | query classifier / named query registry | P1 |
+| REQ-POSTGRESX-026 | benchmark smoke for pool/query/tx overhead | P1 |
+| REQ-POSTGRESX-027 | API diff gate before v0.2.0 | P1 |
+
+### 8.3 P2 Requirements
+
+| ID | Requirement | Priority |
+|---|---|---|
+| REQ-POSTGRESX-028 | read/write split optional package | P2 |
+| REQ-POSTGRESX-029 | logical replication helper only after ADR | P2 |
+| REQ-POSTGRESX-030 | transactional outbox optional package, not core | P2 |
+| REQ-POSTGRESX-031 | migration runner adapter interface | P2 |
+| REQ-POSTGRESX-032 | pool autotuning research | P2 |
+
+### 8.4 Acceptance Criteria
+
+```text
+AC-POSTGRESX-001  `go.mod` contains `module github.com/ZoneCNH/postgresx`.
+AC-POSTGRESX-002  README says `postgresx` is L2 PostgreSQL infrastructure adapter governed by xlib-standard.
+AC-POSTGRESX-003  `rg 'github.com/bytechainx/x.go|github.com/ZoneCNH/(redisx|kafkax|natsx|taosx|ossx|clickhousex)' --glob '*.go'` returns no forbidden production import.
+AC-POSTGRESX-004  `contracts/config.schema.json` validates examples.
+AC-POSTGRESX-005  Config.Sanitize redacts DSN credentials, password, token, TLS key.
+AC-POSTGRESX-006  `go test ./...` passes without PostgreSQL.
+AC-POSTGRESX-007  fake Queryer/Execer/Tx covers success/error/timeout paths.
+AC-POSTGRESX-008  WithinTx tests cover commit, rollback, panic rollback, context canceled, commit error, rollback error.
+AC-POSTGRESX-009  pg error mapping tests cover 23505, 40001, 40P01, 55P03, 57014, 42P01, 28P01, 08xxx.
+AC-POSTGRESX-010  health golden output validates against health schema.
+AC-POSTGRESX-011  metrics tests prove pool/query/tx metrics are emitted and declared.
+AC-POSTGRESX-012  secret scan and redaction tests pass.
+AC-POSTGRESX-013  `L2_INTEGRATION=postgres make integration-check` passes or records explicit skip reason.
+AC-POSTGRESX-014  release manifest and sha256 generated and excluded from source history when required by protocol.
+AC-POSTGRESX-015  downstream smoke example imports postgresx, uses fake/sanitized config, runs health, closes client.
+AC-POSTGRESX-016  retrospective generates Prompt Patch, Harness Patch, Rule Patch, New Issue Candidates.
+```
+
+---
+
+## 9. Traceability Matrix
+
+| Requirement | AC | Design | Task | Test | Evidence | Status |
+|---|---|---|---|---|---|---|
+| REQ-POSTGRESX-001 | AC-POSTGRESX-001 | DESIGN-POSTGRESX-L2 | TASK-POSTGRESX-001 | module check | EVID-POSTGRESX-001 | TODO |
+| REQ-POSTGRESX-002 | AC-POSTGRESX-002 | DESIGN-POSTGRESX-L2 | TASK-POSTGRESX-002 | docs-check | EVID-POSTGRESX-002 | TODO |
+| REQ-POSTGRESX-003 | AC-POSTGRESX-003 | Boundary Design | TASK-POSTGRESX-003 | boundary-check | EVID-POSTGRESX-003 | TODO |
+| REQ-POSTGRESX-004/005 | AC-POSTGRESX-004/005 | Config Design | TASK-POSTGRESX-004 | config schema/redaction tests | EVID-POSTGRESX-004 | TODO |
+| REQ-POSTGRESX-006/007 | AC-POSTGRESX-006 | Lifecycle Design | TASK-POSTGRESX-005 | lifecycle tests | EVID-POSTGRESX-005 | TODO |
+| REQ-POSTGRESX-008/009 | AC-POSTGRESX-007 | API Design | TASK-POSTGRESX-006 | fake contract tests | EVID-POSTGRESX-006 | TODO |
+| REQ-POSTGRESX-010 | AC-POSTGRESX-008 | Tx Design | TASK-POSTGRESX-007 | tx tests | EVID-POSTGRESX-007 | TODO |
+| REQ-POSTGRESX-011 | AC-POSTGRESX-009 | Error Design | TASK-POSTGRESX-008 | error mapping tests | EVID-POSTGRESX-008 | TODO |
+| REQ-POSTGRESX-012 | AC-POSTGRESX-005/012 | Security Design | TASK-POSTGRESX-009 | redaction/secret tests | EVID-POSTGRESX-009 | TODO |
+| REQ-POSTGRESX-013/014 | AC-POSTGRESX-010/011 | Observability Design | TASK-POSTGRESX-010 | health/metrics tests | EVID-POSTGRESX-010 | TODO |
+| REQ-POSTGRESX-016 | AC-POSTGRESX-013 | Integration Design | TASK-POSTGRESX-011 | integration-check | EVID-POSTGRESX-011 | TODO |
+| REQ-POSTGRESX-017 | AC-POSTGRESX-014 | Release Design | TASK-POSTGRESX-012 | release-final-check | EVID-POSTGRESX-012 | TODO |
+| REQ-POSTGRESX-018 | AC-POSTGRESX-015 | Adoption Design | TASK-POSTGRESX-013 | downstream smoke | EVID-POSTGRESX-013 | TODO |
+| REQ-POSTGRESX-019 | AC-POSTGRESX-016 | Retro Design | TASK-POSTGRESX-014 | retro check | EVID-POSTGRESX-014 | TODO |
+
+---
+
+## 10. Harness Gates
+
+### 10.1 Required Gates
 
 ```bash
-GOWORK=off make ci
-GOWORK=off make ci-extended
-GOWORK=off make release-check
-GOWORK=off make release-preflight VERSION=v0.1.0
+GOWORK=off make fmt
+GOWORK=off make vet
+GOWORK=off make lint
+GOWORK=off make test
+GOWORK=off make boundary-check
+GOWORK=off make contract-check
+GOWORK=off make docs-check
+GOWORK=off make security
 GOWORK=off make evidence
-GOWORK=off make release-evidence-check
-GOWORK=off make release-final-check
 ```
 
-必须通过：
+### 10.2 Extended Gates
+
+```bash
+GOWORK=off make race
+GOWORK=off make examples
+GOWORK=off make golden
+GOWORK=off make fuzz-smoke
+GOWORK=off make benchmark-smoke
+GOWORK=off make integration-check
+GOWORK=off make ci-extended
+```
+
+### 10.3 Release Gates
+
+```bash
+XLIB_CONTEXT=release_verify GOWORK=off make release-check
+XLIB_CONTEXT=release_verify GOWORK=off make release-final-check
+XLIB_CONTEXT=release_verify GOWORK=off make release-preflight VERSION=v0.1.0
+GOWORK=off go run ./cmd/goalcli score --min 9.8
+```
+
+如果 `postgresx` 仓库没有本地 `cmd/goalcli`，必须采用以下裁决之一：
 
 ```text
-fmt
-vet
-lint
-unit test
-race
-boundary
-security
-contracts
-docs
-examples
-integration
-manifest generation
-manifest evidence check
-clean workspace check
+1. 从 xlib-standard 生成/复制标准化 goalcli toolchain；
+2. 通过 xlib-standard 的 goalcli 对 postgresx 执行 repo path 参数化验证；
+3. 明确标记 BLOCKED，不得把 score gate 记录为 skipped passed。
 ```
 
-## 26.2 CHANGELOG
+### 10.4 Boundary Gate
 
-```markdown
-## v0.1.0 - 2026-06-01
+必须失败的情况：
 
-### Added
-- Created postgresx from github.com/ZoneCNH/baselib-template.
-- Added foundationx integration.
-- Added Config / Validate / Sanitize.
-- Added DSN and RedactedDSN builders.
-- Added pgxpool-based Client.
-- Added Ping, Close, and PoolStats.
-- Added Queryer abstraction.
-- Added WithTx and WithTxOptions transaction helper.
-- Added MigrationRunner.
-- Added HealthCheck with foundationx.HealthStatus.
-- Added error mapping to foundationx.Error.
-- Added metrics hook interface and noop metrics.
-- Added testkit for PostgreSQL integration tests.
-- Added template alignment gate.
-- Added foundationx API compatibility gate.
-- Added configx boundary documentation.
-- Added GOWORK=off release validation.
-
-### Security
-- Password uses foundationx.SecretString.
-- RedactedDSN masks passwords.
-- Secret Gate added.
-- Release Manifest must not contain secrets.
-
-### Boundary
-- postgresx core does not depend on x.go.
-- postgresx core does not depend on configx.
-- postgresx core does not depend on observex.
-- postgresx does not own business migrations.
-
-### Breaking Changes
-- None.
+```text
+- production code import github.com/bytechainx/x.go
+- production code import market-data/macro-data/regime-engine
+- production code import 其他 L2 adapter
+- production code import testkitx
+- core package import provider observability exporter vendor
+- README/docs/examples/release manifest 包含真实 password/token/DSN
+- package 定义隐藏 global client
+- init() 中连接数据库
 ```
 
-## 26.3 Release 声明
+建议脚本：
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+rg 'github.com/bytechainx/x.go|github.com/ZoneCNH/(redisx|kafkax|kafka|natsx|taosx|ossx|clickhousex)' --glob '*.go' && {
+  echo "forbidden dependency found"; exit 1;
+} || true
+
+rg 'var\s+Default(Client|DB|Pool)|func\s+init\(\).*Open|pgxpool\.Connect\(context\.Background\(\)' --glob '*.go' && {
+  echo "hidden global client or init connection found"; exit 1;
+} || true
+
+rg 'password=|postgres://[^ ]+:[^ ]+@|/home/k8s/secrets/env/.*=' README.md docs examples .agent release scripts --glob '!**/.git/**' && {
+  echo "possible secret leak found"; exit 1;
+} || true
+```
+
+### 10.5 Contract Gate
+
+必须验证：
+
+```text
+contracts/config.schema.json is valid
+contracts/health.schema.json is valid
+contracts/metrics.contract.yaml is parseable
+contracts/errors.contract.yaml is parseable
+examples configs match config schema
+health golden outputs match health schema
+metrics emitted by tests are declared
+error kinds in code are declared
+```
+
+### 10.6 Security Gate
+
+必须验证：
+
+```text
+secret scan
+redaction tests
+optional govulncheck when enabled
+no raw DSN/password/token in logs/errors/manifest
+no SQL args in logs/traces
+GitHub Actions pinned SHA when workflows added
+```
+
+### 10.7 Integration Gate
+
+Integration 必须 opt-in：
+
+```bash
+L2_INTEGRATION=postgres make integration-check
+```
+
+允许 skip 的原因：
+
+```text
+docker unavailable
+testcontainers unavailable
+POSTGRESX_TEST_DSN absent
+network unavailable
+provider image unavailable
+```
+
+不允许：
+
+```text
+silent skip
+默认连接生产数据库
+把真实 DSN 写入 evidence
+把 skip 写成 passed
+```
+
+Integration evidence JSON：
+
+```json
+{
+  "module": "postgresx",
+  "provider": "postgres",
+  "enabled": true,
+  "status": "pass|skip|fail",
+  "reason": "docker unavailable",
+  "server_version": "redacted-or-version",
+  "dsn": "redacted",
+  "checks": ["ping", "tx_commit", "tx_rollback"],
+  "generated_at": "2026-06-04T00:00:00Z"
+}
+```
+
+---
+
+## 11. Evidence Protocol
+
+### 11.1 必需 Evidence Artifacts
+
+```text
+release/manifest/latest.json
+release/manifest/latest.json.sha256
+.agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001/gate-output.txt
+.agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001/test-output.txt
+.agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001/contract-hashes.txt
+.agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001/integration-evidence.json
+.agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001/downstream-adoption.md
+.agent/reviews/REV-POSTGRESX-20260604-001.md
+.agent/retrospectives/RETRO-20260604-POSTGRESX-001.md
+```
+
+### 11.2 Manifest 最小字段
+
+```json
+{
+  "module": "github.com/ZoneCNH/postgresx",
+  "package": "postgresx",
+  "layer": "L2",
+  "role": "postgresql_infrastructure_adapter",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "standard_source_commit": "<sha>",
+  "kernel_version": "<version-or-sha>",
+  "l1_dependencies": {
+    "configx": "<version-or-sha>",
+    "observex": "<version-or-sha>",
+    "testkitx": "test-only:<version-or-sha>",
+    "resiliencx": "optional:<version-or-sha>",
+    "schedulex": "optional:<version-or-sha>"
+  },
+  "provider_dependencies": {
+    "pgx": "github.com/jackc/pgx/v5@<version>"
+  },
+  "commit": "<sha>",
+  "tree_sha": "<sha>",
+  "source_digest": "sha256:<digest>",
+  "contract_hashes": {
+    "api": "sha256:<digest>",
+    "config": "sha256:<digest>",
+    "health": "sha256:<digest>",
+    "metrics": "sha256:<digest>",
+    "errors": "sha256:<digest>"
+  },
+  "gates": {
+    "fmt": "passed",
+    "vet": "passed",
+    "lint": "passed",
+    "test": "passed",
+    "race": "passed",
+    "boundary": "passed",
+    "contract": "passed",
+    "docs": "passed",
+    "security": "passed",
+    "integration": "passed|skip-with-reason",
+    "release_final": "passed"
+  },
+  "integration": {
+    "status": "passed|skip-with-reason",
+    "evidence": ".agent/evidence/.../integration-evidence.json"
+  },
+  "downstream_adoption": {
+    "status": "not_claimed|passed",
+    "consumer": "examples/downstream/postgresx-consumer",
+    "evidence": ".agent/evidence/.../downstream-adoption.md"
+  },
+  "workflow": {
+    "workflow_run_id": "local-or-github-run-id",
+    "artifact_name": "postgresx-release-manifest",
+    "artifact_url": "local-or-url"
+  },
+  "generated_at": "2026-06-04T00:00:00Z"
+}
+```
+
+### 11.3 完成声明模板
 
 ```text
 DONE with evidence:
-- GOWORK=off go test ./... passed
-- GOWORK=off go test -race ./... passed
-- GOWORK=off make ci passed
-- GOWORK=off make ci-extended passed
-- GOWORK=off make release-check passed
-- GOWORK=off make release-preflight VERSION=v0.1.0 passed
-- GOWORK=off make release-evidence-check passed
-- GOWORK=off make release-final-check passed
-- integration tests passed against PostgreSQL
-- boundary gate passed
-- secret gate passed
-- release manifest generated
+- goal_id: GOAL-20260604-POSTGRESX-L2-FACTORY-001
+- repo: github.com/ZoneCNH/postgresx
+- branch: goal/GOAL-20260604-POSTGRESX-L2-FACTORY-001
+- commit: <sha>
+- tag: v0.1.0 or not created
+- gates:
+  - GOWORK=off make ci: passed
+  - GOWORK=off make boundary-check: passed
+  - GOWORK=off make contract-check: passed
+  - GOWORK=off make docs-check: passed
+  - GOWORK=off make security: passed
+  - L2_INTEGRATION=postgres make integration-check: passed|skip-with-reason
+  - XLIB_CONTEXT=release_verify GOWORK=off make release-final-check: passed
+- manifest: release/manifest/latest.json
+- manifest_sha256: release/manifest/latest.json.sha256
+- workflow_artifact: <url-or-local-path>
+- downstream_adoption: <proof path>
+- known_gaps: <none or explicit>
+- retrospective: .agent/retrospectives/RETRO-20260604-POSTGRESX-001.md
+```
+
+### 11.4 禁止声明
+
+```text
+- 禁止说 “tests pass” 但没有命令输出。
+- 禁止把 skipped integration 写成 passed。
+- 禁止把 README 更新写成 adoption。
+- 禁止 dirty workspace 下写 release ready。
+- 禁止把 local fake test 写成真实 PostgreSQL integration。
+- 禁止没有 downstream proof 时写 “x.go 可直接使用”。
 ```
 
 ---
 
-# 27. x.go 集成规范
+## 12. Worktree 执行标准
 
-x.go 错误方式：
+```bash
+# 0. 准备主仓库
+mkdir -p ~/code/ZoneCNH
+cd ~/code/ZoneCNH
 
-```go
-db, err := sql.Open("postgres", dsn)
+# 1. postgresx
+git clone git@github.com:ZoneCNH/postgresx.git postgresx || true
+cd ~/code/ZoneCNH/postgresx
+git checkout main
+git pull --ff-only
+
+# 2. 禁止在 main 开发
+git status --short
+
+# 3. 创建独立 worktree
+mkdir -p ~/code/ZoneCNH/.worktree
+git worktree add ~/code/ZoneCNH/.worktree/postgresx-l2-factory-20260604 \
+  -b goal/GOAL-20260604-POSTGRESX-L2-FACTORY-001 main
+
+cd ~/code/ZoneCNH/.worktree/postgresx-l2-factory-20260604
+
+# 4. 绑定标准源版本
+git clone git@github.com:ZoneCNH/xlib-standard.git ../xlib-standard-standard-source || true
+cd ../xlib-standard-standard-source
+git checkout main
+git pull --ff-only
+STANDARD_SOURCE_SHA=$(git rev-parse HEAD)
+
+cd ~/code/ZoneCNH/.worktree/postgresx-l2-factory-20260604
+
+# 5. 创建 evidence 目录
+mkdir -p .agent/evidence/GOAL-20260604-POSTGRESX-L2-FACTORY-001
 ```
 
-x.go 正确方式：
-
-```go
-pgCfg := postgresx.DefaultConfig()
-pgCfg.Host = runtimeCfg.Postgres.Host
-pgCfg.Port = runtimeCfg.Postgres.Port
-pgCfg.Database = runtimeCfg.Postgres.Database
-pgCfg.User = runtimeCfg.Postgres.User
-pgCfg.Password = runtimeCfg.Postgres.Password
-pgCfg.SSLMode = runtimeCfg.Postgres.SSLMode
-
-pgClient, err := postgresx.New(ctx, pgCfg)
-if err != nil {
-    return err
-}
-defer pgClient.Close(ctx)
-```
-
-业务 repository：
-
-```go
-type Repository struct {
-    db postgresx.Queryer
-}
-
-func NewRepository(db postgresx.Queryer) *Repository {
-    return &Repository{db: db}
-}
-```
-
-## configx 组合方式
+禁止：
 
 ```text
-configx 不是 postgresx core 依赖。
-configx 可以在 x.go bootstrap 使用。
-```
-
-示意：
-
-```go
-result, err := configx.LoadEnvFile(ctx, "/home/k8s/secrets/env/postgres.env")
-if err != nil {
-    return err
-}
-
-var runtimeCfg PostgresRuntimeConfig
-if err := configx.Decode(result, &runtimeCfg); err != nil {
-    return err
-}
-
-pgCfg := postgresx.DefaultConfig()
-pgCfg.Host = runtimeCfg.Host
-pgCfg.Port = runtimeCfg.Port
-pgCfg.Database = runtimeCfg.Database
-pgCfg.User = runtimeCfg.User
-pgCfg.Password = runtimeCfg.Password
-pgCfg.SSLMode = runtimeCfg.SSLMode
-
-client, err := postgresx.New(ctx, pgCfg)
-```
-
-x.go 必须保留：
-
-```text
-业务 schema
-业务 migration
-业务 repository
-业务 query
-业务配置加载
-```
-
-postgresx 只提供：
-
-```text
-连接
-事务
-migration runner
-health
-metrics hook
-error mapping
+- main 上直接 commit
+- 多个 Agent 共用一个 worktree
+- 把 .worktree/ 运行态提交
+- 把真实 secret/env 文件提交
+- 未跑 gate 创建 PR
+- 未有 evidence 声称 DONE
 ```
 
 ---
 
-# 28. Retrospective Protocol
+## 13. 任务拆解
+
+### 13.1 Phase 0：Context Recovery
+
+```text
+TASK-POSTGRESX-000  仓库事实盘点
+输出：
+- .agent/context/current-state.md
+- go.mod status
+- README status
+- Makefile status
+- .agent status
+- contracts status
+- CI status
+- xlib-standard source SHA
+验收：
+- 不把空仓库写成已实现
+- 不把 registered 写成 adopted
+```
+
+### 13.2 Phase 1：Identity Correction
+
+```text
+TASK-POSTGRESX-001  修正 go.mod
+TASK-POSTGRESX-002  修正 README
+TASK-POSTGRESX-003  添加 AGENTS.md
+TASK-POSTGRESX-004  添加 CONSTITUTION.md
+TASK-POSTGRESX-005  添加 docs/spec.md / docs/design.md / docs/api.md
+TASK-POSTGRESX-006  添加 .agent Goal Runtime v3.1 工件
+```
+
+验收：
+
+```bash
+rg 'xlib-standard|baselib-template|foundationx' README.md docs .agent
+# 只允许作为标准源或迁移语境出现，不允许作为当前仓库身份。
+```
+
+### 13.3 Phase 2：Contracts
+
+```text
+TASK-POSTGRESX-010  contracts/config.schema.json
+TASK-POSTGRESX-011  contracts/health.schema.json
+TASK-POSTGRESX-012  contracts/metrics.contract.yaml
+TASK-POSTGRESX-013  contracts/errors.contract.yaml
+TASK-POSTGRESX-014  contracts/api.contract.yaml
+TASK-POSTGRESX-015  contract-check script
+```
+
+验收：
+
+```bash
+GOWORK=off make contract-check
+```
+
+### 13.4 Phase 3：Core API + pgx Driver Isolation
+
+```text
+TASK-POSTGRESX-020  pkg/postgresx Config/Validate/Sanitize
+TASK-POSTGRESX-021  pkg/postgresx Client interfaces
+TASK-POSTGRESX-022  internal/driver/pgx implementation
+TASK-POSTGRESX-023  lifecycle Open/Ping/Health/Stats/Close
+TASK-POSTGRESX-024  Query/Exec/QueryRow wrapper
+TASK-POSTGRESX-025  provider type isolation check
+```
+
+验收：
+
+```bash
+GOWORK=off go test ./pkg/... ./internal/...
+GOWORK=off make boundary-check
+```
+
+### 13.5 Phase 4：Transaction Contract
+
+```text
+TASK-POSTGRESX-030  Tx interface
+TASK-POSTGRESX-031  WithinTx helper
+TASK-POSTGRESX-032  commit / rollback / panic / context tests
+TASK-POSTGRESX-033  Tx retry ADR and explicit opt-in guard
+```
+
+验收：
+
+```bash
+GOWORK=off go test ./... -run 'TestWithinTx'
+```
+
+### 13.6 Phase 5：Error Mapping + Redaction
+
+```text
+TASK-POSTGRESX-040  ErrorKind enum / classifier
+TASK-POSTGRESX-041  pgconn.PgError mapping
+TASK-POSTGRESX-042  pool/context/network errors mapping
+TASK-POSTGRESX-043  redacted error output
+TASK-POSTGRESX-044  SQL args never logged tests
+```
+
+验收：
+
+```bash
+GOWORK=off go test ./... -run 'TestErrorMapping|TestRedaction'
+GOWORK=off make security
+```
+
+### 13.7 Phase 6：Health + Observability
+
+```text
+TASK-POSTGRESX-050  Health model
+TASK-POSTGRESX-051  health golden fixtures
+TASK-POSTGRESX-052  pool/query/tx metrics
+TASK-POSTGRESX-053  log/trace attrs policy
+TASK-POSTGRESX-054  observex memory recorder tests
+```
+
+验收：
+
+```bash
+GOWORK=off make contract-check
+GOWORK=off go test ./... -run 'TestHealth|TestMetrics'
+```
+
+### 13.8 Phase 7：Fake/Testkit
+
+```text
+TASK-POSTGRESX-060  testkit FakeClient
+TASK-POSTGRESX-061  testkit FakeQueryer/FakeExecer
+TASK-POSTGRESX-062  testkit FakeTx
+TASK-POSTGRESX-063  FailureInjector / LatencyInjector
+TASK-POSTGRESX-064  ContractAssertions
+```
+
+验收：
+
+```bash
+GOWORK=off go test ./... 
+# 必须不需要真实 PostgreSQL。
+```
+
+### 13.9 Phase 8：Integration Opt-in
+
+```text
+TASK-POSTGRESX-070  integration_check.sh
+TASK-POSTGRESX-071  Docker/testcontainers or explicit external test DSN support
+TASK-POSTGRESX-072  Ping integration
+TASK-POSTGRESX-073  Tx commit/rollback integration
+TASK-POSTGRESX-074  integration evidence JSON
+```
+
+验收：
+
+```bash
+L2_INTEGRATION=postgres GOWORK=off make integration-check
+```
+
+### 13.10 Phase 9：Release Evidence
+
+```text
+TASK-POSTGRESX-080  release manifest template
+TASK-POSTGRESX-081  manifest generator
+TASK-POSTGRESX-082  manifest sha256
+TASK-POSTGRESX-083  release-evidence-check
+TASK-POSTGRESX-084  release-final-check
+```
+
+验收：
+
+```bash
+XLIB_CONTEXT=release_verify GOWORK=off make release-final-check
+```
+
+### 13.11 Phase 10：Downstream Adoption
+
+```text
+TASK-POSTGRESX-090  examples/downstream/postgresx-consumer
+TASK-POSTGRESX-091  compile proof
+TASK-POSTGRESX-092  fake health smoke
+TASK-POSTGRESX-093  optional x.go compile-only branch
+TASK-POSTGRESX-094  adoption evidence
+```
+
+验收：
+
+```bash
+GOWORK=off make downstream-smoke
+```
+
+### 13.12 Phase 11：Retrospective + Self-improving
+
+```text
+TASK-POSTGRESX-100  RETRO-20260604-POSTGRESX-001
+TASK-POSTGRESX-101  PATCH-PROMPT-20260604-POSTGRESX-001
+TASK-POSTGRESX-102  PATCH-HARNESS-20260604-POSTGRESX-001
+TASK-POSTGRESX-103  PATCH-RULE-20260604-POSTGRESX-001
+TASK-POSTGRESX-104  ISSUE-CANDIDATES-20260604-POSTGRESX
+```
+
+---
+
+## 14. AI / 自动化 / 研究增强介入位置
+
+### 14.1 gstack
+
+```text
+gstack/postgresx-l2
+  G0: Context Recovery
+  G1: Identity Correction
+  G2: Contracts
+  G3: API + Driver Isolation
+  G4: Tx Semantics
+  G5: Error Mapping + Redaction
+  G6: Health + Metrics
+  G7: Fake/Testkit
+  G8: Integration Opt-in
+  G9: Release Evidence
+  G10: Downstream Adoption
+  G11: Retrospective / Self-improving
+```
+
+### 14.2 superpowers
+
+| Agent | Superpower | 输出 |
+|---|---|---|
+| Repo Scanner | 扫描仓库结构与当前事实 | current-state.md |
+| Standard Sync Agent | 从 xlib-standard 同步标准包 | standard-source.md / adoption notes |
+| Boundary Auditor | 发现 forbidden imports、global client、secret 泄漏 | boundary evidence |
+| Contract Generator | 生成 config/health/metrics/errors contracts | contracts/** |
+| API Architect | 设计 context-first API / Tx contract | docs/api.md / pkg/postgresx |
+| Driver Agent | 隔离 pgx driver 实现 | internal/driver/pgx |
+| Error Taxonomist | SQLSTATE → ErrorKind | errors.contract.yaml |
+| Test Agent | fake/testkit/tx/redaction/race tests | test-output.txt |
+| Integration Agent | opt-in PostgreSQL integration | integration-evidence.json |
+| Evidence Agent | manifest/checksum/artifact | release/manifest |
+| Adoption Agent | downstream compile proof | downstream-adoption.md |
+| Retro Agent | failure → patch | Prompt/Harness/Rule Patch |
+
+### 14.3 Harness
+
+Harness 的核心裁决：
+
+```text
+PostgreSQL behavior is not trusted unless tests, contracts and evidence prove it.
+```
+
+每条规则必须形成：
+
+```text
+Rule -> Gate -> Evidence -> Release
+```
+
+### 14.4 Compound Engineering
+
+复利路径：
+
+```text
+一次 DSN 泄露风险
+  -> redaction test
+  -> secret gate
+  -> xlib-standard rule patch
+  -> 所有 L2 复用
+
+一次 Tx rollback bug
+  -> tx golden fixture
+  -> contract test
+  -> postgresx testkit
+  -> downstream repository 复用
+
+一次 pg error 未映射
+  -> ErrorKind patch
+  -> errors.contract.yaml
+  -> observability dashboard 更稳定
+```
+
+### 14.5 Self-improving
+
+每次失败必须输出：
+
+```text
+Failure
+  -> Root Cause
+  -> Missing Rule / Missing Gate / Missing Test
+  -> Patch Candidate
+  -> xlib-standard / postgresx rule update
+  -> Regression fixture
+  -> Next release gate stronger
+```
+
+### 14.6 AutoResearch
+
+必须触发 AutoResearch 的问题：
+
+```text
+- pgx/v5 当前最新 API、Go version、license、pool behavior 不确定。
+- pgconn.PgError SQLSTATE mapping 不确定。
+- pgxpool Close/Acquire/Stats 行为不确定。
+- Tx rollback / panic recover 行为与 context 交互不确定。
+- PostgreSQL Docker image / testcontainers 版本不确定。
+- GitHub Actions / services container 版本不确定。
+- govulncheck / pgx vulnerability 状态不确定。
+```
+
+输出模板：
+
+```md
+# RESEARCH-20260604-POSTGRESX-001
+
+## Question
+
+## Sources
+
+## Findings
+
+## Decision Needed
+
+## Proposed Patch
+
+## Evidence
+```
+
+---
+
+## 15. 可复利增长的系统架构
+
+```text
+xlib-standard
+  ├─ L2 postgres adapter standard
+  ├─ contract pack
+  ├─ harness pack
+  ├─ evidence protocol
+  ├─ release policy
+  └─ generator overlay
+        ↓
+postgresx
+  ├─ config contract
+  ├─ client lifecycle
+  ├─ transaction helper
+  ├─ error classifier
+  ├─ observability contract
+  ├─ fake/testkit
+  ├─ integration evidence
+  └─ release manifest
+        ↓
+downstream adoption
+  ├─ x.go compile proof
+  ├─ market-data config usage
+  ├─ macro-data state storage
+  ├─ engine metadata persistence
+  └─ service template adoption
+        ↓
+feedback
+  ├─ missing SQLSTATE
+  ├─ tx edge case
+  ├─ pool metric gap
+  ├─ config pain point
+  └─ secret redaction failure
+        ↓
+retrospective patches
+        ↓
+xlib-standard + postgresx improve
+```
+
+复利公式：
+
+```text
+Postgresx Leverage =
+  reusable_contract
+  * reusable_fake
+  * reusable_tx_semantics
+  * reusable_error_classifier
+  * downstream_adoption_count
+  * regression_memory
+  / manual_pg_boilerplate_cost
+```
+
+---
+
+## 16. 最小可行行动 MVA
+
+### 16.1 MVA 目标
+
+```text
+MVA-POSTGRESX-001  让 postgresx 从空仓库变成 xlib-standard 可审计的 L2 PostgreSQL adapter。
+```
+
+### 16.2 MVA 范围
+
+必须做：
+
+```text
+1. go.mod / README / docs / .agent 身份修正。
+2. contracts/config.schema.json。
+3. contracts/health.schema.json。
+4. contracts/metrics.contract.yaml。
+5. contracts/errors.contract.yaml。
+6. pkg/postgresx Config/Validate/Sanitize。
+7. Client interface + pgxpool implementation。
+8. Ping/Health/Stats/Close。
+9. Exec/Query/QueryRow minimal wrapper。
+10. WithinTx helper。
+11. Error mapping + redaction。
+12. Fake Queryer/Execer/Tx。
+13. Required gates。
+14. Integration opt-in。
+15. Release manifest + sha256。
+16. Downstream smoke example。
+17. Retrospective patches。
+```
+
+不做：
+
+```text
+- ORM。
+- 业务 repository。
+- 业务 migration。
+- x.go 生产接入。
+- 自动生产连接。
+- 默认真实 integration。
+- 读写分离。
+- 分库分表。
+- transactional outbox。
+```
+
+### 16.3 MVA 完成标准
+
+```text
+DONE with evidence:
+- postgresx identity corrected.
+- Config/health/metrics/errors contracts exist and pass contract-check.
+- Unit tests pass without PostgreSQL.
+- fake Queryer/Execer/Tx supports downstream tests.
+- WithinTx behavior is tested.
+- pg SQLSTATE mapping is tested.
+- DSN/password/SQL args redaction tests pass.
+- integration opt-in passes or records explicit skip reason.
+- release manifest + sha256 generated.
+- downstream smoke adoption proof exists.
+- retrospective patch generated.
+```
+
+---
+
+## 17. 1 天行动计划
+
+### Day 1 目标
+
+把 `postgresx` 从空 README 仓库升级为可执行的 L2 MVA 起点。
+
+### Day 1 步骤
+
+```text
+1. 创建 worktree：goal/GOAL-20260604-POSTGRESX-L2-FACTORY-001。
+2. 记录 current-state：README 只有项目名、无 go.mod/Makefile/.agent/contracts 时如实记录。
+3. 从 xlib-standard 固定 standard source commit。
+4. 创建 go.mod：module github.com/ZoneCNH/postgresx。
+5. 创建 README：声明 L2 PostgreSQL adapter 身份、边界、禁止项、Quickstart。
+6. 创建 AGENTS.md / CONSTITUTION.md：禁止 main、禁止 x.go、禁止 secret、DONE with evidence。
+7. 创建 .agent/goal/spec/design/plan/traceability/risk/decision。
+8. 创建 contracts/config.schema.json、health.schema.json、metrics.contract.yaml、errors.contract.yaml。
+9. 实现 Config/DefaultConfig/Validate/Sanitize。
+10. 实现 fake Queryer/Execer/Tx。
+11. 实现 WithinTx fake contract tests。
+12. 添加 Makefile required targets：fmt/vet/test/boundary/contract/docs/security。
+13. 跑 `GOWORK=off go test ./...`。
+14. 跑 boundary-check、contract-check、docs-check、security。
+15. 生成 Day 1 evidence 草案。
+```
+
+### Day 1 不做
+
+```text
+- 不连接真实 PostgreSQL。
+- 不做 migration。
+- 不把 x.go 表结构写入 examples。
+- 不写 raw production DSN。
+- 不创建 release tag。
+```
+
+---
+
+## 18. 7 天行动计划
+
+### Day 1：身份与契约
+
+```text
+- repo identity correction
+- .agent Goal Runtime v3.1 artifacts
+- contracts
+- fake/testkit MVA
+- required gates
+```
+
+### Day 2：pgx driver + lifecycle
+
+```text
+- AutoResearch pgx/v5
+- internal/driver/pgx
+- Open/Ping/Health/Stats/Close
+- context timeout
+- Close idempotency
+```
+
+### Day 3：Query / Exec / Error Mapping
+
+```text
+- Exec/Query/QueryRow wrapper
+- Query.Name policy
+- SQLSTATE mapping
+- redaction tests
+- query metrics
+```
+
+### Day 4：Transaction Contract
+
+```text
+- WithinTx real implementation
+- commit/rollback/panic/context behavior
+- Tx options
+- no default retry
+- optional explicit retry ADR
+```
+
+### Day 5：Observability + Security
+
+```text
+- health golden tests
+- pool/query/tx metrics
+- log/trace attrs
+- secret scan
+- SQL args redaction
+```
+
+### Day 6：Integration Opt-in + Downstream Smoke
+
+```text
+- PostgreSQL integration via Docker/testcontainers/shared CI service
+- integration evidence JSON
+- examples/downstream/postgresx-consumer
+- compile proof
+```
+
+### Day 7：Release Gate + Retrospective
+
+```text
+- release manifest
+- checksum
+- release-final-check
+- score >= 9.8 or blocked with reason
+- downstream adoption proof
+- retrospective patches
+- PR summary with DONE with evidence or NOT DONE yet
+```
+
+---
+
+## 19. 30 天行动计划
+
+### Week 1：v0.1.0 MVA
+
+```text
+目标：postgresx 可作为 L2 PostgreSQL adapter 的最小可证明版本。
+
+完成：
+- identity correction
+- config/health/metrics/errors contracts
+- pgxpool lifecycle
+- fake/testkit
+- WithinTx helper
+- error mapping
+- redaction
+- integration opt-in
+- release evidence
+- downstream smoke adoption
+```
+
+### Week 2：v0.2.0 Contract Hardening
+
+```text
+目标：把 tx/error/observability 从“可用”强化为“可长期复用”。
+
+完成：
+- API diff gate
+- richer SQLSTATE mapping
+- tx retry explicit policy
+- advisory lock helper design
+- prepared statement cache config
+- benchmark smoke
+- mutation fixtures for redaction and error mapping
+```
+
+### Week 3：Integration & Reliability Baseline
+
+```text
+目标：证明 postgresx 在真实 PostgreSQL 下行为稳定。
+
+完成：
+- PostgreSQL version matrix
+- Docker/testcontainers integration
+- pool exhaustion tests
+- context timeout tests
+- deadlock/serialization integration fixtures if feasible
+- race tests
+- benchmark baseline
+```
+
+### Week 4：Downstream Adoption + Release Train
+
+```text
+目标：让 postgresx 能被 x.go / data services 以 compile-proof 方式采纳，但不引入业务污染。
+
+完成：
+- x.go compile-only branch optional
+- market-data/macro-data storage adapter smoke optional
+- release v0.1.x / v0.2.x tag
+- xlib-standard downstream status update only with evidence
+- retrospective patch 回写 xlib-standard
+```
+
+---
+
+## 20. 衡量指标
+
+### 20.1 工程指标
+
+```text
+Required gates pass rate: 100%
+Unit tests without PostgreSQL: 100%
+Boundary violations: 0
+Secret findings: 0
+Raw DSN/password/SQL args leak: 0
+Release manifest generated: 100%
+Manifest checksum verified: 100%
+Integration silent skips: 0
+Downstream smoke compile proof: >= 1
+```
+
+### 20.2 API / Contract 指标
+
+```text
+Config schema coverage: 100% P0 fields
+Health schema golden coverage: 100%
+Metrics declared/emitted mismatch: 0
+ErrorKind mapping coverage for P0 SQLSTATE: 100%
+Public provider SDK leakage: 0 unless ADR-approved
+Breaking API changes before v1: tracked by API diff gate
+```
+
+### 20.3 PostgreSQL 行为指标
+
+```text
+Ping latency p50/p95/p99
+Query latency p50/p95/p99 by query_name
+Tx duration p50/p95/p99
+Tx rollback count by reason
+Pool acquired/idle/total/max
+Pool acquire duration
+Error rate by ErrorKind
+Retry count only when explicit policy enabled
+Health pass/warn/fail ratio
+```
+
+### 20.4 复利指标
+
+```text
+Time to bootstrap next DB adapter: target < 30 minutes
+postgresx fake reuse count in downstream tests
+Error mapping patch reuse by other SQL adapters
+Redaction regression count: decreasing
+Manual release checklist items: decreasing
+Failure converted to patch candidate: >= 95%
+```
+
+---
+
+## 21. 迭代优化机制
+
+每个 PR / release 必须回答：
+
+```text
+1. 哪个 gate 最有价值？
+2. 哪个问题是人工发现但 gate 没拦住？
+3. 哪个 pgx/PostgreSQL 行为与预期不一致？
+4. 哪个 SQLSTATE 需要升入 errors contract？
+5. 哪个 metrics label 基数过高？
+6. 哪个 config 字段应该进入 xlib-standard L2 common contract？
+7. 哪个 fake/testkit 能被下游复用？
+8. 哪个 integration test 不稳定？
+9. 哪个安全/脱敏规则应升级为 P0 gate？
+10. 哪些 P1/P2 能力需要新 Issue？
+```
 
 输出：
 
 ```text
-.agent/retrospective.md
+RETRO-20260604-POSTGRESX-001
+PATCH-PROMPT-20260604-POSTGRESX-001
+PATCH-HARNESS-20260604-POSTGRESX-001
+PATCH-RULE-20260604-POSTGRESX-001
+PATCH-GENERATOR-20260604-POSTGRESX-001
+ISSUE-CANDIDATES-20260604-POSTGRESX.md
 ```
 
-模板：
+---
+
+## 22. Change Propagation Matrix
+
+| 变更源 | 必须同步 |
+|---|---|
+| Config 字段变更 | config.schema.json、docs/config.md、examples、redaction tests、manifest |
+| ErrorKind 变更 | errors.contract.yaml、error tests、observability docs、downstream docs |
+| Health 输出变更 | health.schema.json、golden tests、docs/health.md、manifest contract |
+| Metrics 变更 | metrics.contract.yaml、observex tests、dashboard docs |
+| Public API 变更 | docs/api.md、api.contract.yaml、examples、downstream smoke、SemVer |
+| Tx 语义变更 | docs/design.md、tx tests、risk register、ADR |
+| Provider SDK 变更 | dependency research、go.mod、release manifest、security |
+| Integration 策略变更 | docs/integration.md、CI、integration-evidence schema |
+| Release manifest 变更 | release docs、evidence check、xlib-standard protocol |
+| xlib-standard rule 变更 | postgresx AGENTS/CONSTITUTION/Makefile/CI |
+| Downstream adoption 变更 | adoption evidence、downstream status、release notes |
+
+---
+
+## 23. Risk Register
+
+| Risk ID | 风险 | 影响 | 处理 |
+|---|---|---|---|
+| RISK-POSTGRESX-001 | pgx provider 类型泄漏到 public API | 下游被 SDK 锁死 | internal driver + ADR for escape hatch |
+| RISK-POSTGRESX-002 | Tx helper 吞 rollback/commit 错误 | 数据一致性风险 | explicit tx tests + joined error policy |
+| RISK-POSTGRESX-003 | 自动重试写事务 | 重复副作用 | 默认禁用，idempotency opt-in |
+| RISK-POSTGRESX-004 | DSN/SQL args 泄露 | 严重安全风险 | redaction gate + secret scan |
+| RISK-POSTGRESX-005 | integration 连接生产 DB | 数据破坏/泄密 | opt-in + sanitized evidence + allow_external_dsn=false default |
+| RISK-POSTGRESX-006 | pool 默认值不合理 | 连接耗尽或 DB 压垮 | conservative defaults + docs |
+| RISK-POSTGRESX-007 | Ping 伪健康 | 误判 readiness | multi-check health |
+| RISK-POSTGRESX-008 | migration helper 越界 | 变成业务 schema 库 | migration boundary ADR |
+| RISK-POSTGRESX-009 | metrics label 高基数 | 观测成本爆炸 | query_name controlled enum / SQL hash |
+| RISK-POSTGRESX-010 | release overclaim | 标准信任下降 | status no-overclaim + evidence protocol |
+
+---
+
+## 24. Rollback Protocol
+
+触发 rollback：
+
+```text
+- secret leak detected
+- release-final-check failed after manifest generation
+- public API 误暴露 pgx type
+- Tx helper 语义错误
+- integration accidentally touches production DB
+- manifest checksum mismatch
+- downstream smoke breaks
+```
+
+回滚步骤：
+
+```bash
+git status --short
+git log --oneline -n 10
+
+# 如果未提交
+git restore --staged .
+git restore .
+git clean -fdX
+
+# 如果已提交到 PR 分支
+git revert <bad_commit_sha>
+
+GOWORK=off make ci
+GOWORK=off make boundary-check
+GOWORK=off make security
+XLIB_CONTEXT=release_verify GOWORK=off make release-final-check
+```
+
+Rollback Evidence：
+
+```text
+ROLLBACK DONE with evidence:
+- bad_commit:
+- rollback_commit:
+- reason:
+- affected_files:
+- gates_rerun:
+- remaining_gaps:
+- preventive_patch:
+```
+
+---
+
+## 25. Human Approval Gates
+
+以下必须人工批准：
+
+```text
+- 改变 postgresx public API。
+- 暴露 pgx/pgconn/pgxpool 类型到 public API。
+- 引入 ORM。
+- 引入 migration runner。
+- 默认启用 tx retry。
+- 默认记录 raw SQL。
+- 默认记录 SQL args。
+- 默认连接真实 integration DB。
+- 接入 x.go production path。
+- 创建 v1.0.0 tag。
+- 修改 release evidence semantics。
+```
+
+审批记录：
+
+```text
+DEC-20260604-POSTGRESX-001
+- decision:
+- alternatives:
+- risk accepted:
+- owner:
+- expiry:
+- evidence:
+```
+
+---
+
+## 26. Failure Budget
+
+```text
+P0 gate failure: 0 allowed
+secret leakage: 0 allowed
+raw DSN leak: 0 allowed
+raw SQL args leak: 0 allowed
+main direct commit: 0 allowed
+x.go reverse dependency: 0 allowed
+other L2 dependency: 0 allowed
+release overclaim: 0 allowed
+skipped required gate marked passed: 0 allowed
+Tx semantic regression: 0 allowed before release
+docs/code drift: <= 1 release cycle
+```
+
+超过 failure budget：
+
+```text
+- block release
+- create retro
+- create rule/harness/prompt patch
+- require human decision
+```
+
+---
+
+## 27. Issue / PR / Commit / Release 规范
+
+### 27.1 Issue 模板
 
 ```markdown
-# postgresx Retrospective v1.1
+## Goal
+Implement postgresx L2 PostgreSQL adapter MVA.
 
-## Release
-- Version:
-- Commit:
-- Date:
+## Scope
+- Identity correction
+- Config contract
+- Client lifecycle
+- Query/Exec/Tx contract
+- Error mapping
+- Health contract
+- Observability contract
+- Fake/testkit
+- Integration opt-in
+- Release evidence
+- Downstream adoption
 
-## Template alignment
-- Was baselib-template sufficient?
-- What should be patched back into baselib-template?
+## Acceptance Criteria
+- [ ] go.mod module is github.com/ZoneCNH/postgresx
+- [ ] no x.go / other L2 imports
+- [ ] config/health/metrics/errors contracts pass
+- [ ] go test ./... passes without PostgreSQL
+- [ ] WithinTx behavior tested
+- [ ] pg SQLSTATE mapping tested
+- [ ] redaction tests pass
+- [ ] integration pass or explicit skip evidence
+- [ ] release manifest generated
+- [ ] downstream adoption proof exists
 
-## Foundationx compatibility
-- Which foundationx APIs were used?
-- Any missing L0 contracts?
+## Evidence Required
+DONE with evidence:
+- commit
+- gate output
+- manifest
+- checksum
+- integration evidence
+- downstream adoption
+- retrospective
+```
 
-## Configx boundary
-- Did postgresx avoid configx core dependency?
-- Is docs-only integration enough?
+### 27.2 PR 模板
 
-## What worked
--
+```markdown
+## What changed
 
-## What failed
--
+## Layer boundary
+- [ ] L2 only
+- [ ] no x.go import
+- [ ] no other L2 import
+- [ ] no business repository/schema
+- [ ] no production secret
 
-## API stability concerns
--
+## PostgreSQL semantics
+- [ ] Tx commit/rollback behavior tested
+- [ ] pg errors mapped
+- [ ] DSN/SQL args redacted
 
-## Boundary risks
--
+## Gates
+- [ ] make ci
+- [ ] make boundary-check
+- [ ] make contract-check
+- [ ] make docs-check
+- [ ] make security
+- [ ] make integration-check or skip evidence
+- [ ] make release-final-check
 
-## Security findings
--
+## Evidence
 
-## Test gaps
--
+## Downstream impact
 
-## Harness improvements
--
+## Retrospective patch
+```
 
-## Reusable patterns for other base libs
-- redisx:
-- kafkax:
-- taosx:
-- ossx:
-- configx:
-- observex:
-- testkitx:
+### 27.3 Commit 规范
 
-## Patch outputs
-- PATCH-PROMPT:
-- PATCH-HARNESS:
-- PATCH-RULE:
+```text
+feat(postgresx): add config contract and sanitizer
+feat(postgresx): add pgxpool lifecycle client
+feat(postgresx): add transaction helper contract
+fix(postgresx): redact dsn in error mapping
+test(postgresx): add fake tx rollback fixtures
+docs(postgresx): document migration boundary
+chore(postgresx): add release evidence manifest
+```
+
+### 27.4 Release 规范
+
+```text
+v0.1.0  First L2 PostgreSQL adapter MVA
+v0.2.0  Contract hardening + API diff gate + benchmark smoke
+v0.3.0  Integration matrix + downstream adoption expansion
+v1.0.0  Stable public API and compatibility promise
 ```
 
 ---
 
-# 29. Final DoD
+## 28. 交付清单
 
-## Task DoD
+### 28.1 xlib-standard 侧交付物
 
-```text
-代码实现完成
-单元测试完成
-integration 测试完成
-无业务语义污染
-无 x.go 依赖
-无 bytechainx 旧路径
-无 configx core 依赖
-无 observex core 依赖
-无密钥泄露
-GOWORK=off go fmt / go vet / go test / go test -race 通过
-```
-
-## Module DoD
+如果 `xlib-standard` 已经有 L2 标准包，则只需记录 source SHA 与 impact。若缺失，必须补：
 
 ```text
-Template render 完整
-Foundationx integration 完整
-Config 完整
-DSN 完整
-Client 完整
-Queryer 完整
-Tx 完整
-Migration Runner 完整
-Health 完整
-Error Mapping 完整
-Metrics Hook 完整
-TestKit 完整
-Examples 完整
-Configx Boundary Docs 完整
-Docs 完整
-ADR 完整
-Harness 完整
-Release Manifest 完整
+docs/standard/l2-adapter-standard.md
+templates/l2-adapter/postgresx.overlay.yaml
+contracts/l2/postgresx/config.schema.json
+contracts/l2/postgresx/health.schema.json
+contracts/l2/postgresx/metrics.contract.yaml
+contracts/l2/postgresx/errors.contract.yaml
+.agent/rules/l2-postgresx-boundary.md
+.agent/rules/l2-postgresx-evidence.md
 ```
 
-## Goal DoD
+### 28.2 postgresx 仓库交付物
 
 ```text
-postgresx 可作为 x.go PostgreSQL 基础库使用
-postgresx 从 baselib-template 生成并对齐
-postgresx 依赖 foundationx
-postgresx 不依赖 x.go
-postgresx 不包含业务 schema
-postgresx 不读取生产密钥
-postgresx 不强依赖 configx
-postgresx integration test 可验证真实 PostgreSQL
-postgresx v0.1.0 release evidence 完整
-retrospective patch 生成
+README.md
+AGENTS.md
+CONSTITUTION.md
+go.mod
+Makefile
+.agent/goal.md
+.agent/spec.md
+.agent/design.md
+.agent/plan.md
+.agent/traceability-matrix.md
+.agent/risk-register.md
+.agent/decision-log.md
+contracts/api.contract.yaml
+contracts/config.schema.json
+contracts/health.schema.json
+contracts/metrics.contract.yaml
+contracts/errors.contract.yaml
+docs/spec.md
+docs/design.md
+docs/api.md
+docs/config.md
+docs/health.md
+docs/observability.md
+docs/resilience.md
+docs/testing.md
+docs/integration.md
+docs/security.md
+docs/release.md
+docs/migration-boundary.md
+pkg/postgresx/*.go
+internal/driver/pgx/*.go
+internal/errors/*.go
+internal/health/*.go
+internal/metrics/*.go
+testkit/*.go
+examples/basic
+examples/health
+examples/tx
+examples/observability
+examples/downstream/postgresx-consumer
+scripts/boundary_check.sh
+scripts/contract_check.sh
+scripts/docs_check.sh
+scripts/integration_check.sh
+scripts/secret_scan.sh
+scripts/generate_manifest.sh
+release/manifest/latest.json generated
+release/manifest/latest.json.sha256 generated
+.agent/evidence/... generated
+.agent/retrospectives/... generated
 ```
 
-完成声明必须是：
+---
+
+## 29. Master Goal 可执行 Prompt
+
+下面这段可直接交给 Agent / Codex / goalkit 执行。
+
+```text
+You are executing GOAL-20260604-POSTGRESX-L2-FACTORY-001.
+
+Objective:
+Upgrade github.com/ZoneCNH/postgresx from a minimal standalone repository into an xlib-standard governed L2 PostgreSQL infrastructure adapter library with independent release, independent Evidence, shared L0/L1 contracts, Harness gates, Release Gate, downstream adoption proof, and Self-improving feedback.
+
+Execution protocol:
+Use Goal Runtime Prompt v3.1:
+Goal → Context Recovery → Spec → Design → Plan → Tasks → Execution → Verification → Evidence → Review → Release → Retrospective → Self-improving.
+
+Mode:
+Full.
+
+Hard constraints:
+1. Do not commit on main. Use git worktree.
+2. Do not import x.go, market-data, macro-data, regime-engine, or any business module.
+3. Do not import other L2 adapters from production code.
+4. Do not implement business repositories, business table schemas, or application transaction orchestration.
+5. Do not leak secrets, DSNs, passwords, tokens, SQL args, or /home/k8s/secrets/env/* contents.
+6. Do not expose pgx provider SDK types in public API unless an ADR explicitly approves it.
+7. Unit tests must pass without real PostgreSQL.
+8. Integration tests must be opt-in and produce pass/skip/fail evidence.
+9. Release requires manifest, checksum, gates, contract hashes, dependency versions, downstream adoption proof, and retrospective patches.
+10. Completion must be declared only as "DONE with evidence:".
+
+Current context to verify:
+- github.com/ZoneCNH/postgresx exists.
+- README may currently be minimal.
+- xlib-standard is the standard source.
+- xlib-standard downstream matrix registers postgresx as L2 with adoption not yet proven.
+- Do not claim adoption until current postgresx/downstream commands produce proof.
+
+Primary sequence:
+1. Inspect postgresx and xlib-standard.
+2. Produce current-state report.
+3. Create worktree branch goal/GOAL-20260604-POSTGRESX-L2-FACTORY-001.
+4. Correct repo identity: go.mod, README, AGENTS, CONSTITUTION, docs, .agent.
+5. Add contracts: config, health, metrics, errors, API.
+6. Implement Config/Validate/Sanitize.
+7. Implement Client interface and pgxpool driver isolation.
+8. Implement Ping/Health/Stats/Close.
+9. Implement Exec/Query/QueryRow minimal wrappers.
+10. Implement WithinTx with commit/rollback/panic/context semantics.
+11. Implement pg error mapping and redaction.
+12. Implement fake Queryer/Execer/Tx and testkit.
+13. Add required gates and scripts.
+14. Add integration opt-in for PostgreSQL.
+15. Generate release manifest and sha256.
+16. Add downstream smoke adoption example.
+17. Run gates.
+18. Produce evidence.
+19. Review release readiness.
+20. Generate retrospective patches.
+
+Required gates:
+- GOWORK=off make fmt
+- GOWORK=off make vet
+- GOWORK=off make lint
+- GOWORK=off make test
+- GOWORK=off make boundary-check
+- GOWORK=off make contract-check
+- GOWORK=off make docs-check
+- GOWORK=off make security
+- L2_INTEGRATION=postgres GOWORK=off make integration-check or explicit skip evidence
+- XLIB_CONTEXT=release_verify GOWORK=off make release-check
+- XLIB_CONTEXT=release_verify GOWORK=off make release-final-check
+- GOWORK=off go run ./cmd/goalcli score --min 9.8 or equivalent xlib-standard score gate
+
+Deliverables:
+- postgresx repo identity corrected.
+- Contracts complete.
+- Public API and fake/testkit complete.
+- pgx driver isolated.
+- Tx semantics implemented and tested.
+- Redaction and error mapping tested.
+- Integration opt-in evidence produced.
+- Release manifest and checksum produced.
+- Downstream smoke adoption proof produced.
+- Retrospective patches produced.
+
+Completion format:
+DONE with evidence:
+- goal_id:
+- repo:
+- worktree:
+- branch:
+- commit:
+- tag:
+- commands:
+- gates:
+- manifest:
+- manifest_sha256:
+- integration:
+- downstream_adoption:
+- known_gaps:
+- retrospective:
+```
+
+---
+
+## 30. 最终推荐路径
+
+最优路径不是“先把 pgx 封装完整”，而是：
+
+```text
+先身份，后契约；先 fake，后真实；先 evidence，后 release；先 smoke adoption，后 x.go production。
+```
+
+推荐顺序：
+
+```text
+1. 先修正 postgresx 仓库身份，避免所有 Evidence 证明错对象。
+2. 立刻建立 contracts/config/health/metrics/errors，让后续代码有机器可判定的目标。
+3. 先实现 fake/testkit 和 Tx contract tests，保证单元测试不依赖真实 PostgreSQL。
+4. 再接入 pgxpool driver，并隔离到 internal/driver/pgx。
+5. 用 error mapping 和 redaction gate 处理 PostgreSQL adapter 的最大风险。
+6. 用 integration opt-in 验证真实 PostgreSQL，但不让真实 DB 成为默认测试前提。
+7. 生成 release manifest 和 checksum，禁止无 Evidence 的完成声明。
+8. 用 downstream smoke example 证明可被消费。
+9. 将所有失败回写 xlib-standard 的 Prompt/Harness/Rule/Generator patch。
+10. v0.1.0 只交付 PostgreSQL adapter MVA；ORM、migration、outbox、读写分离全部进入 P1/P2 ADR。
+```
+
+最终目标状态：
+
+```text
+postgresx 不再是空骨架或零散 pgx 包装。
+postgresx 成为 xlib-standard 控制下、可测试、可观测、可发布证明、可下游采纳、可持续自我强化的 L2 PostgreSQL 基础设施适配产品。
+```
+
+---
+
+## 31. 最终完成标准
+
+真正完成时，必须能够写出：
 
 ```text
 DONE with evidence:
-- GOWORK=off go test ./... passed
-- GOWORK=off go test -race ./... passed
-- GOWORK=off make ci passed
-- GOWORK=off make ci-extended passed
-- GOWORK=off make release-check passed
-- GOWORK=off make release-preflight VERSION=v0.1.0 passed
-- GOWORK=off make release-evidence-check passed
-- GOWORK=off make release-final-check passed
-- boundary gate passed
-- secret gate passed
-- integration PostgreSQL test passed
-- release manifest generated
+- postgresx identity corrected.
+- no x.go or other L2 reverse dependency.
+- config/health/metrics/errors/API contracts passed.
+- unit/fake tests passed without PostgreSQL.
+- tx contract tests passed.
+- pg SQLSTATE error mapping tests passed.
+- DSN/password/SQL args redaction tests passed.
+- boundary/security/docs/contracts gates passed.
+- integration opt-in passed or explicit skip evidence recorded.
+- release manifest generated and checksum verified.
+- release-final-check passed.
+- downstream smoke adoption proof exists.
+- retrospective patches generated.
 ```
 
----
-
-# 30. 最小可行执行顺序
-
-Agent 执行时按以下顺序，不要跳步：
+只要其中任一项缺少证据，只能写：
 
 ```text
-1. clone baselib-template
-2. render postgresx from template
-3. run template alignment check
-4. run GOWORK=off go test ./...
-5. add foundationx dependency
-6. add foundationx API compatibility check
-7. AutoResearch pgx/pgxpool and write ADR
-8. implement Config + tests
-9. implement DSN + tests
-10. implement Options/Noop + tests
-11. implement Client/Pool + tests
-12. implement Queryer + integration tests
-13. implement WithTx + integration tests
-14. write transaction semantics ADR
-15. implement Migration Runner + integration tests
-16. write migration scope ADR
-17. implement Error Mapping + tests
-18. implement HealthCheck + tests
-19. implement Metrics Hook + tests
-20. implement TestKit
-21. write Examples
-22. write Configx Boundary docs
-23. update scripts
-24. update Makefile / CI
-25. run GOWORK=off make ci
-26. run GOWORK=off make ci-extended
-27. run GOWORK=off make release-check
-28. run GOWORK=off make release-preflight VERSION=v0.1.0
-29. run GOWORK=off make evidence
-30. run GOWORK=off make release-evidence-check
-31. run GOWORK=off make release-final-check
-32. write retrospective
-33. output DONE with evidence
-```
-
----
-
-# 31. 给 Agent 的最终执行指令
-
-```text
-你现在要执行 GOAL-20260601-POSTGRESX-001 v1.1。
-
-请严格按 Goal Runtime Prompt v3.1 执行：
-Goal → Context Recovery → Spec → Design → Plan → Tasks → Execution → Verification → Evidence → Review → Release → Retrospective → Self-improving。
-
-你必须创建或完善 github.com/ZoneCNH/postgresx。
-
-硬性约束：
-1. postgresx 必须从 github.com/ZoneCNH/baselib-template 渲染。
-2. postgresx module path 必须是 github.com/ZoneCNH/postgresx。
-3. postgresx 必须依赖 github.com/ZoneCNH/foundationx。
-4. postgresx 必须 import github.com/ZoneCNH/foundationx/pkg/foundationx。
-5. postgresx 可以依赖 pgx/pgxpool，但具体版本必须通过 AutoResearch 或 ADR 记录。
-6. postgresx 不允许依赖 github.com/ZoneCNH/x.go。
-7. postgresx 不允许出现 github.com/bytechainx 旧路径。
-8. postgresx 不允许包含 x.go 业务语义。
-9. postgresx 不允许包含业务表结构。
-10. postgresx 不允许隐式读取 /home/k8s/secrets/env/*。
-11. postgresx core 不允许依赖 configx。
-12. postgresx core 不允许依赖 observex。
-13. postgresx 不允许使用全局 DB / 单例 Client。
-14. postgresx 不允许在日志、错误、Evidence、Release Manifest 中输出明文密码或 DSN。
-15. 所有独立模块验证必须使用 GOWORK=off。
-16. 不允许没有 Evidence 就声称 DONE。
-
-必须实现：
-1. Template render from baselib-template
-2. Template alignment gate
-3. Foundationx API compatibility gate
-4. Config / Validate / Sanitize
-5. DSN / RedactedDSN
-6. Client / New / Ping / Close / Stats
-7. Queryer abstraction
-8. WithTx / WithTxOptions
-9. MigrationRunner
-10. HealthCheck with foundationx.HealthStatus
-11. Error Mapping to foundationx.Error
-12. Metrics Hook
-13. TestKit
-14. Integration Tests
-15. Examples
-16. Configx Boundary docs
-17. Harness scripts
-18. Makefile
-19. GitHub Actions
-20. Docs / ADR
-21. Release Manifest
-22. Retrospective patches
-
-执行完成后输出：
-
-DONE with evidence:
-- 具体命令
-- 具体测试结果
-- 具体文件路径
-- release manifest 路径
-- known risks
-- next recommended issue
-```
-
----
-
-# 32. 最终推荐路径
-
-postgresx v1.1 必须先做“模板绑定 + foundationx 绑定 + PostgreSQL 核心能力”：
-
-```text
-Template
-Foundationx
-Config
-DSN
-Pool
-Ping
-Close
-Queryer
-Tx
-Migration Runner
-Health
-Error
-Metrics Hook
-TestKit
-Evidence
-```
-
-暂不做：
-
-```text
-ORM
-业务 repository
-读写分离
-复杂 migration DSL
-PostgreSQL HA
-业务 schema
-强依赖 configx
-强依赖 observex
-```
-
-最重要的四条红线：
-
-```text
-1. 不偏离 baselib-template
-2. 不绕过 foundationx
-3. 不依赖 x.go / configx core / observex core
-4. 不泄露密钥
-```
-
-最小交付：
-
-```text
-v0.1.0 = Template-bound PostgreSQL 连接池 + 事务 + migration runner + health + error mapping + testkit + release evidence
+NOT DONE yet:
+- blocked_by:
+- missing_evidence:
+- next_action:
 ```

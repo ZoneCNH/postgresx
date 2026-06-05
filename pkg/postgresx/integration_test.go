@@ -23,11 +23,11 @@ func (s migrationSource) List(ctx context.Context) ([]postgresx.Migration, error
 }
 
 func TestMigrationRunnerUpIntegration(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	fixture := testkit.StartPostgres(ctx, t, testkit.Options{ApplicationName: "postgresx-migration-up"})
 	client := fixture.Client()
 	cleanupIntegrationSchema(ctx, t, client)
-	t.Cleanup(func() { cleanupIntegrationSchema(context.Background(), t, client) })
+	t.Cleanup(func() { cleanupIntegrationSchema(context.WithoutCancel(ctx), t, client) })
 
 	runner := postgresx.NewMigrationRunner(client)
 	source := migrationSource{
@@ -61,11 +61,11 @@ func TestMigrationRunnerUpIntegration(t *testing.T) {
 }
 
 func TestMigrationRunnerDetectsVersionNameConflictIntegration(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	fixture := testkit.StartPostgres(ctx, t, testkit.Options{ApplicationName: "postgresx-migration-conflict"})
 	client := fixture.Client()
 	cleanupIntegrationSchema(ctx, t, client)
-	t.Cleanup(func() { cleanupIntegrationSchema(context.Background(), t, client) })
+	t.Cleanup(func() { cleanupIntegrationSchema(context.WithoutCancel(ctx), t, client) })
 
 	runner := postgresx.NewMigrationRunner(client)
 	if err := runner.Up(ctx, migrationSource{{Version: 1, Name: "original", UpSQL: `SELECT 1`}}); err != nil {
@@ -79,11 +79,11 @@ func TestMigrationRunnerDetectsVersionNameConflictIntegration(t *testing.T) {
 }
 
 func TestMigrationRunnerRollsBackFailedMigrationIntegration(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	fixture := testkit.StartPostgres(ctx, t, testkit.Options{ApplicationName: "postgresx-migration-rollback"})
 	client := fixture.Client()
 	cleanupIntegrationSchema(ctx, t, client)
-	t.Cleanup(func() { cleanupIntegrationSchema(context.Background(), t, client) })
+	t.Cleanup(func() { cleanupIntegrationSchema(context.WithoutCancel(ctx), t, client) })
 
 	runner := postgresx.NewMigrationRunner(client)
 	err := runner.Up(ctx, migrationSource{{
