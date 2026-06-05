@@ -27,7 +27,6 @@ go.work.sum
 # Generated Evidence manifest. Recreate with `make evidence`; never commit latest.json.
 /reports/
 release/manifest/latest.json
-release/manifest/latest.json.sha256
 release/standard-impact/latest.md
 release/downstream-sync/latest.md
 release/debt/latest.json
