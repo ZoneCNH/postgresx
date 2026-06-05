@@ -1,13 +1,12 @@
 package testkit
 
 import (
-	"context"
 	"errors"
 	"testing"
 )
 
 func TestFakeQueryerCapturesCallsAndReturnsConfiguredResults(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	queryer := &FakeQueryer{
 		ExecTag:   FakeCommandTag{Rows: 2},
 		QueryRows: &FakeRows{Rows: [][]any{{1, "one"}, {2, "two"}}},
@@ -61,7 +60,7 @@ func TestFakeQueryerCapturesCallsAndReturnsConfiguredResults(t *testing.T) {
 }
 
 func TestFakeQueryerReturnsConfiguredErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	execErr := errors.New("exec failed")
 	queryErr := errors.New("query failed")
 	rowErr := errors.New("row failed")
