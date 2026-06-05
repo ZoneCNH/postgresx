@@ -2,6 +2,7 @@ package postgresx
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -62,13 +63,13 @@ func TestNonNilClosedClientOperationsReturnConnectionError(t *testing.T) {
 
 func TestMetricNamesMatchContract(t *testing.T) {
 	tests := map[string]string{
-		"query total":     metricQueryTotal,
-		"query duration":  metricQueryDuration,
-		"tx total":        metricTxTotal,
-		"tx duration":     metricTxDuration,
-		"health total":    metricHealthTotal,
-		"health latency":  metricHealthLatency,
-		"pool conns":      metricPoolConns,
+		"query total":    metricQueryTotal,
+		"query duration": metricQueryDuration,
+		"tx total":       metricTxTotal,
+		"tx duration":    metricTxDuration,
+		"health total":   metricHealthTotal,
+		"health latency": metricHealthLatency,
+		"pool conns":     metricPoolConns,
 	}
 
 	for name, got := range tests {
@@ -76,7 +77,7 @@ func TestMetricNamesMatchContract(t *testing.T) {
 			if got == "" {
 				t.Fatal("metric name is empty")
 			}
-			if got[0:10] != "postgresx." {
+			if !strings.HasPrefix(got, "postgresx.") {
 				t.Fatalf("metric name = %q, want postgresx dotted namespace", got)
 			}
 		})
@@ -125,9 +126,9 @@ func (staticRow) Scan(dest ...any) error {
 }
 
 type captureMetrics struct {
-	counterCalls     int
-	histogramCalls   int
-	lastCounterName  string
+	counterCalls      int
+	histogramCalls    int
+	lastCounterName   string
 	lastCounterLabels map[string]string
 }
 
