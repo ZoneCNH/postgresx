@@ -2,6 +2,7 @@ package contract_test
 
 import (
 	"context"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -105,11 +106,19 @@ func TestP0PoolContract(t *testing.T) {
 	if err := cfg.Validate(); err != nil {
 		t.Fatalf("Validate() error = %v", err)
 	}
-	if dsn := cfg.RedactedDSN(); strings.Contains(dsn, "contract-secret") || !strings.Contains(dsn, "xxxxx") {
-		t.Fatalf("RedactedDSN() = %q, want masked password", dsn)
+	dsn := cfg.RedactedDSN()
+	if strings.Contains(dsn, "contract-secret") {
+		t.Fatalf("RedactedDSN() = %q, leaked password", dsn)
+	}
+	parsed, err := url.Parse(dsn)
+	if err != nil {
+		t.Fatalf("parse RedactedDSN(): %v", err)
+	}
+	if masked, ok := parsed.User.Password(); !ok || masked != "***" {
+		t.Fatalf("RedactedDSN() password = %q, %v; want masked password", masked, ok)
 	}
 	sanitized := cfg.Sanitize()
-	if sanitized.Password != "xxxxx" {
+	if sanitized.Password != "***" {
 		t.Fatalf("Sanitize().Password = %q, want mask", sanitized.Password)
 	}
 
