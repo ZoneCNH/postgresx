@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-06-05T18:06:31Z",
+  "kind": "normalized.contract-check",
+  "layer": "L2",
+  "package": "postgresx",
+  "release_level_actual": "L2-T2",
+  "release_level_target": "L2-T2",
+  "required_contracts": [
+    "sql.exec",
+    "sql.query_row",
+    "sql.query_many",
+    "sql.not_found",
+    "sql.syntax_error",
+    "sql.unique_violation",
+    "sql.foreign_key_violation",
+    "sql.context_timeout",
+    "tx.commit",
+    "tx.rollback",
+    "tx.rollback_on_error",
+    "pool.exhaustion"
+  ],
+  "required_profiles": [
+    "unit",
+    "contract",
+    "integration"
+  ],
+  "schema_version": "1.0",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "status": "passed",
+  "version": "v0.1.0"
+}

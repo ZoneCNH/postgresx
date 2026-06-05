@@ -189,7 +189,7 @@ func TestPostgresErrorMappingIntegration(t *testing.T) {
 	if _, err := client.Exec(ctx, `CREATE TABLE postgresx_error_parents (id BIGINT PRIMARY KEY)`); err != nil {
 		t.Fatalf("create error parents table: %v", err)
 	}
-	if _, err := client.Exec(ctx, `CREATE TABLE postgresx_error_children (id BIGINT PRIMARY KEY, parent_id BIGINT NOT NULL REFERENCES postgresx_error_parents(id))`); err != nil {
+	if _, err := client.Exec(ctx, `CREATE TABLE postgresx_error_children (id BIGINT PRIMARY KEY, parent_id BIGINT NOT NULL REFERENCES postgresx_error_parents(id), code TEXT NOT NULL CHECK (length(code) > 1))`); err != nil {
 		t.Fatalf("create error children table: %v", err)
 	}
 	if _, err := client.Exec(ctx, `INSERT INTO postgresx_error_parents (id) VALUES ($1)`, int64(1)); err != nil {
@@ -197,16 +197,26 @@ func TestPostgresErrorMappingIntegration(t *testing.T) {
 	}
 
 	_, err := client.Exec(ctx, `INSERT INTO postgresx_error_parents (id) VALUES ($1)`, int64(1))
-	if !foundationx.IsKind(err, foundationx.ErrorKindConflict) {
-		t.Fatalf("duplicate key error = %v, want conflict", err)
+	if !foundationx.IsKind(err, foundationx.ErrorKindAlreadyExist) {
+		t.Fatalf("duplicate key error = %v, want already_exists", err)
 	}
 	if postgresx.IsRetryable(err) {
 		t.Fatalf("duplicate key retryable = true, want false")
 	}
 
-	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id) VALUES ($1, $2)`, int64(1), int64(999))
+	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(1), int64(999), "ok")
 	if !foundationx.IsKind(err, foundationx.ErrorKindConflict) {
 		t.Fatalf("foreign key error = %v, want conflict", err)
+	}
+
+	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(2), int64(1), nil)
+	if !foundationx.IsKind(err, foundationx.ErrorKindValidation) {
+		t.Fatalf("not null error = %v, want validation", err)
+	}
+
+	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(3), int64(1), "x")
+	if !foundationx.IsKind(err, foundationx.ErrorKindValidation) {
+		t.Fatalf("check constraint error = %v, want validation", err)
 	}
 }
 

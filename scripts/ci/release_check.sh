@@ -8,10 +8,16 @@ GO="${GO:-go}"
 VERSION="${VERSION:-v0.1.0}"
 export POSTGRESX_REQUIRE_INTEGRATION="${POSTGRESX_REQUIRE_INTEGRATION:-1}"
 
-GOWORK=off make ci-extended
-GOWORK=off make integration
-GOWORK=off make release-evidence-check VERSION="$VERSION"
-GOWORK=off make release-final-check VERSION="$VERSION"
+GOWORK=off make vet
+GOWORK=off make test-unit
+GOWORK=off make test-contract
+GOWORK=off make test-integration
+GOWORK=off make boundary
+GOWORK=off make contracts
+GOWORK=off make secret-scan
+GOWORK=off make foundationx-api
+GOWORK=off make template-alignment
+GOWORK=off make evidence VERSION="$VERSION"
 
 module="$(GOWORK=off "$GO" list -m)"
 if [[ "$module" != "github.com/ZoneCNH/postgresx" ]]; then
@@ -24,11 +30,16 @@ if ! GOWORK=off "$GO" list ./pkg/postgresx >/dev/null; then
   exit 1
 fi
 
-if GOWORK=off "$GO" list -deps ./... | rg -n 'github.com/([b]ytechainx|ZoneCNH)/x\.go'; then
+if GOWORK=off "$GO" list -deps ./pkg/postgresx | rg -n 'github.com/([b]ytechainx|ZoneCNH)/x\.go'; then
   echo "postgresx must not depend on application module" >&2
   exit 1
 fi
 
-bash ./scripts/ci/release_evidence_check.sh "$VERSION"
+if GOWORK=off "$GO" list -deps ./pkg/postgresx | rg -n 'github.com/ZoneCNH/(xlib-standard|testkitx|xlibgate)'; then
+  echo "postgresx runtime package must not depend on L2 test or gate tooling" >&2
+  exit 1
+fi
 
-echo "release check passed for $VERSION"
+python3 ./scripts/ci/l2_evidence.py --check --version "$VERSION"
+
+echo "L2-T2 release check passed for $VERSION"

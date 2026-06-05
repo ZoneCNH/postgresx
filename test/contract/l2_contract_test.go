@@ -2,9 +2,11 @@ package contract_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -13,6 +15,51 @@ import (
 	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/ZoneCNH/postgresx/test/postgresxtest"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+const l2ReleaseLevel = "L2-T2"
+
+var (
+	requiredProfiles    = []string{"unit", "contract", "integration"}
+	requiredP0Contracts = []string{
+		"sql.exec",
+		"sql.query_row",
+		"sql.query_many",
+		"sql.not_found",
+		"sql.syntax_error",
+		"sql.unique_violation",
+		"sql.foreign_key_violation",
+		"sql.context_timeout",
+		"tx.commit",
+		"tx.rollback",
+		"tx.rollback_on_error",
+		"pool.exhaustion",
+	}
+	requiredHardFailures = []string{
+		"secret_leak",
+		"layer_violation",
+		"missing_required_contract",
+		"missing_required_evidence",
+		"race_detected",
+		"goroutine_leak",
+		"release_level_overclaimed",
+	}
+	requiredEvidence = []string{
+		".agent/evidence/raw/unit-test.json",
+		".agent/evidence/raw/contract-test.json",
+		".agent/evidence/raw/integration-test.json",
+		".agent/evidence/normalized/contract-check.json",
+		".agent/evidence/normalized/integration-check.json",
+		".agent/evidence/normalized/layer-guard.json",
+		".agent/evidence/normalized/secret-scan.json",
+		".agent/evidence/decision/test-plan.json",
+		".agent/evidence/decision/release-readiness.json",
+		".agent/evidence/trace/traceability-matrix.json",
+		".agent/evidence/retrospective.json",
+		".agent/evidence/manifest.json",
+	}
 )
 
 func TestP0SQLContract(t *testing.T) {
@@ -242,6 +289,136 @@ func TestP0LivePostgresContract(t *testing.T) {
 	}
 }
 
+func TestP0ErrorMappingContract(t *testing.T) {
+	tests := []struct {
+		contract  string
+		err       error
+		kind      foundationx.ErrorKind
+		retryable bool
+	}{
+		{
+			contract:  "sql.not_found",
+			err:       pgx.ErrNoRows,
+			kind:      foundationx.ErrorKindNotFound,
+			retryable: false,
+		},
+		{
+			contract:  "sql.syntax_error",
+			err:       &pgconn.PgError{Code: "42601"},
+			kind:      foundationx.ErrorKindValidation,
+			retryable: false,
+		},
+		{
+			contract:  "sql.unique_violation",
+			err:       &pgconn.PgError{Code: "23505"},
+			kind:      foundationx.ErrorKindAlreadyExist,
+			retryable: false,
+		},
+		{
+			contract:  "sql.foreign_key_violation",
+			err:       &pgconn.PgError{Code: "23503"},
+			kind:      foundationx.ErrorKindConflict,
+			retryable: false,
+		},
+		{
+			contract:  "sql.context_timeout",
+			err:       context.DeadlineExceeded,
+			kind:      foundationx.ErrorKindTimeout,
+			retryable: true,
+		},
+		{
+			contract:  "pool.exhaustion",
+			err:       &pgconn.PgError{Code: "53300"},
+			kind:      foundationx.ErrorKindUnavailable,
+			retryable: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.contract, func(t *testing.T) {
+			err := postgresx.MapError(tt.contract, tt.err)
+			if !foundationx.IsKind(err, tt.kind) {
+				t.Fatalf("MapError() = %v, want kind %s", err, tt.kind)
+			}
+			if got := postgresx.IsRetryable(err); got != tt.retryable {
+				t.Fatalf("IsRetryable() = %v, want %v", got, tt.retryable)
+			}
+			if !errors.Is(err, tt.err) {
+				t.Fatalf("MapError() does not unwrap contract error %v", tt.err)
+			}
+		})
+	}
+}
+
+func TestL2StandardMetadataMatchesXlibStandard(t *testing.T) {
+	repoRoot := findRepoRoot(t)
+	manifest := readJSONFile[l2CapabilityManifest](t, filepath.Join(repoRoot, ".agent/l2-capabilities.yaml"))
+	if manifest.Package != "postgresx" || manifest.Layer != "L2" {
+		t.Fatalf("capability manifest package/layer = %s/%s, want postgresx/L2", manifest.Package, manifest.Layer)
+	}
+	if manifest.StandardSource != "github.com/ZoneCNH/xlib-standard" {
+		t.Fatalf("standard_source = %q, want github.com/ZoneCNH/xlib-standard", manifest.StandardSource)
+	}
+	if manifest.ReleaseLevelTarget != l2ReleaseLevel {
+		t.Fatalf("release_level_target = %q, want %q", manifest.ReleaseLevelTarget, l2ReleaseLevel)
+	}
+	if !reflect.DeepEqual(manifest.ReleaseContract.RequiredProfiles, requiredProfiles) {
+		t.Fatalf("manifest required_profiles = %v, want %v", manifest.ReleaseContract.RequiredProfiles, requiredProfiles)
+	}
+	if manifest.ReleaseContract.ReleaseAllowed {
+		t.Fatal("L2-T2 must not set release_allowed=true")
+	}
+	if manifest.ReleaseContract.FactoryGradeAllowed {
+		t.Fatal("L2-T2 must not set factory_grade_allowed=true")
+	}
+	if manifest.ReleaseContract.MinScore != 75 {
+		t.Fatalf("L2-T2 min_score = %d, want 75", manifest.ReleaseContract.MinScore)
+	}
+	if manifest.Provider.Image != "postgres:16-alpine" {
+		t.Fatalf("provider image = %q, want postgres:16-alpine", manifest.Provider.Image)
+	}
+	assertSameSet(t, "core capabilities", manifest.Capabilities.Core, []string{"common", "sql", "transaction", "pool"})
+	assertSameSet(t, "optional capabilities", manifest.Capabilities.Optional, []string{"migration", "advisory_lock", "batch_insert", "copy"})
+	assertSameSet(t, "p0 contracts", manifest.P0Contracts, requiredP0Contracts)
+	assertSameSet(t, "forbidden runtime dependencies", manifest.ForbiddenRuntimeDependencies, []string{
+		"github.com/ZoneCNH/xlib-standard",
+		"github.com/ZoneCNH/testkitx",
+		"github.com/ZoneCNH/xlibgate",
+	})
+
+	registry := readJSONFile[l2ContractPackRegistry](t, filepath.Join(repoRoot, ".agent/registry/l2-contract-packs.yaml"))
+	pack, ok := findContractPack(registry.Packs, "postgresx-p0-sql-tx-pool")
+	if !ok {
+		t.Fatal("contract pack postgresx-p0-sql-tx-pool not found")
+	}
+	if pack.Package != "postgresx" || pack.Layer != "L2" || pack.ReleaseLevel != l2ReleaseLevel {
+		t.Fatalf("contract pack package/layer/release = %s/%s/%s, want postgresx/L2/%s", pack.Package, pack.Layer, pack.ReleaseLevel, l2ReleaseLevel)
+	}
+	if !reflect.DeepEqual(pack.RequiredProfiles, requiredProfiles) {
+		t.Fatalf("pack required_profiles = %v, want %v", pack.RequiredProfiles, requiredProfiles)
+	}
+	assertSameSet(t, "pack required contracts", contractNames(pack.RequiredContracts), requiredP0Contracts)
+
+	gate := readJSONFile[l2Gate](t, filepath.Join(repoRoot, ".agent/gates/l2gate.yaml"))
+	if gate.Package != "postgresx" || gate.Layer != "L2" {
+		t.Fatalf("gate package/layer = %s/%s, want postgresx/L2", gate.Package, gate.Layer)
+	}
+	if gate.ReleaseLevelTarget != l2ReleaseLevel || gate.ReleaseLevelActual != l2ReleaseLevel {
+		t.Fatalf("gate release target/actual = %s/%s, want %s/%s", gate.ReleaseLevelTarget, gate.ReleaseLevelActual, l2ReleaseLevel, l2ReleaseLevel)
+	}
+	if gate.MinScore != 75 || gate.Score != 75 {
+		t.Fatalf("gate score/min_score = %d/%d, want 75/75", gate.Score, gate.MinScore)
+	}
+	if gate.ReleaseAllowed || gate.FactoryGradeAllowed {
+		t.Fatalf("L2-T2 gate release_allowed/factory_grade_allowed = %v/%v, want false/false", gate.ReleaseAllowed, gate.FactoryGradeAllowed)
+	}
+	if !reflect.DeepEqual(gate.RequiredProfiles, requiredProfiles) {
+		t.Fatalf("gate required_profiles = %v, want %v", gate.RequiredProfiles, requiredProfiles)
+	}
+	assertSameSet(t, "gate hard failures", gate.HardFailures, requiredHardFailures)
+	assertSameSet(t, "gate required evidence", gate.RequiredEvidence, requiredEvidence)
+}
+
 func TestFormalPackagesDoNotDependOnL2TestTooling(t *testing.T) {
 	repoRoot := findRepoRoot(t)
 	for _, dir := range []string{"pkg", "internal"} {
@@ -272,6 +449,26 @@ func TestFormalPackagesDoNotDependOnL2TestTooling(t *testing.T) {
 			t.Fatalf("walk %s: %v", root, err)
 		}
 	}
+
+	cmd := exec.Command("go", "list", "-deps", "./pkg/postgresx")
+	cmd.Dir = repoRoot
+	cmd.Env = append(os.Environ(), "GOWORK=off")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("go list -deps ./pkg/postgresx failed: %v\n%s", err, out)
+	}
+	deps := string(out)
+	for _, forbidden := range []string{
+		"github.com/ZoneCNH/xlib-standard",
+		"github.com/ZoneCNH/testkitx",
+		"github.com/ZoneCNH/xlibgate",
+		"github.com/ZoneCNH/x.go",
+		"github.com/bytechainx/x.go",
+	} {
+		if strings.Contains(deps, forbidden) {
+			t.Fatalf("formal package dependencies contain forbidden runtime dependency %q", forbidden)
+		}
+	}
 }
 
 func findRepoRoot(t *testing.T) string {
@@ -289,5 +486,118 @@ func findRepoRoot(t *testing.T) string {
 			t.Fatal("go.mod not found")
 		}
 		dir = parent
+	}
+}
+
+type l2CapabilityManifest struct {
+	SchemaVersion                string   `json:"schema_version"`
+	StandardSource               string   `json:"standard_source"`
+	Package                      string   `json:"package"`
+	Layer                        string   `json:"layer"`
+	ReleaseLevelTarget           string   `json:"release_level_target"`
+	P0Contracts                  []string `json:"p0_contracts"`
+	ForbiddenRuntimeDependencies []string `json:"forbidden_runtime_dependencies"`
+	ReleaseContract              struct {
+		RequiredProfiles    []string `json:"required_profiles"`
+		ReleaseAllowed      bool     `json:"release_allowed"`
+		FactoryGradeAllowed bool     `json:"factory_grade_allowed"`
+		MinScore            int      `json:"min_score"`
+	} `json:"release_contract"`
+	Capabilities struct {
+		Core     []string `json:"core"`
+		Optional []string `json:"optional"`
+	} `json:"capabilities"`
+	Provider struct {
+		Name  string `json:"name"`
+		Image string `json:"image"`
+	} `json:"provider"`
+}
+
+type l2ContractPackRegistry struct {
+	SchemaVersion  string           `json:"schema_version"`
+	StandardSource string           `json:"standard_source"`
+	Packs          []l2ContractPack `json:"packs"`
+}
+
+type l2ContractPack struct {
+	Name              string               `json:"name"`
+	Package           string               `json:"package"`
+	Layer             string               `json:"layer"`
+	ReleaseLevel      string               `json:"release_level"`
+	RequiredProfiles  []string             `json:"required_profiles"`
+	RequiredContracts []l2RequiredContract `json:"required_contracts"`
+}
+
+type l2RequiredContract struct {
+	Name string `json:"name"`
+}
+
+type l2Gate struct {
+	SchemaVersion       string   `json:"schema_version"`
+	StandardSource      string   `json:"standard_source"`
+	Package             string   `json:"package"`
+	Layer               string   `json:"layer"`
+	ReleaseLevelTarget  string   `json:"release_level_target"`
+	ReleaseLevelActual  string   `json:"release_level_actual"`
+	MinScore            int      `json:"min_score"`
+	Score               int      `json:"score"`
+	RequiredProfiles    []string `json:"required_profiles"`
+	ReleaseAllowed      bool     `json:"release_allowed"`
+	FactoryGradeAllowed bool     `json:"factory_grade_allowed"`
+	HardFailures        []string `json:"hard_failures"`
+	RequiredEvidence    []string `json:"required_evidence"`
+}
+
+func readJSONFile[T any](t *testing.T, path string) T {
+	t.Helper()
+	file, err := os.Open(path)
+	if err != nil {
+		t.Fatalf("open %s: %v", path, err)
+	}
+	defer file.Close()
+
+	var value T
+	if err := json.NewDecoder(file).Decode(&value); err != nil {
+		t.Fatalf("decode %s: %v", path, err)
+	}
+	return value
+}
+
+func findContractPack(packs []l2ContractPack, name string) (l2ContractPack, bool) {
+	for _, pack := range packs {
+		if pack.Name == name {
+			return pack, true
+		}
+	}
+	return l2ContractPack{}, false
+}
+
+func contractNames(contracts []l2RequiredContract) []string {
+	names := make([]string, 0, len(contracts))
+	for _, contract := range contracts {
+		names = append(names, contract.Name)
+	}
+	return names
+}
+
+func assertSameSet(t *testing.T, label string, got, want []string) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Fatalf("%s = %v, want %v", label, got, want)
+	}
+	seen := make(map[string]int, len(got))
+	for _, value := range got {
+		seen[value]++
+	}
+	for _, value := range want {
+		if seen[value] == 0 {
+			t.Fatalf("%s = %v, missing %q from %v", label, got, value, want)
+		}
+		seen[value]--
+	}
+	for value, count := range seen {
+		if count != 0 {
+			t.Fatalf("%s = %v, unexpected %q not in %v", label, got, value, want)
+		}
 	}
 }

@@ -6,7 +6,8 @@
     "core_env_file_secret_loading": "forbidden",
     "global_database_singleton": "forbidden"
   },
-  "commit": "951ecfe",
+  "capability_manifest": ".agent/l2-capabilities.yaml",
+  "commit": "136a348",
   "contract_hashes": {
     "api": "sha256:aca22f0e6511e5fe306968fb88da2181079a70eb3200aaa7795f7c500c115aa5",
     "config": "sha256:6c06425a698be735323b2dbc2b3353d0af2ebb32856d0d0747b6dac144528c27",
@@ -14,18 +15,25 @@
     "health": "sha256:29ddb5a679407ddc11e08c7fc8c88c1624d3803f40c083a44a87b3c8f4db9b67",
     "metrics": "sha256:9d8e4293ddf7c18edf89dcbfcb6d4ecdfd0c840611da4c956498d51573147595"
   },
+  "contract_pack_registry": ".agent/registry/l2-contract-packs.yaml",
   "core_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
   "downstream_adoption": {
     "evidence": "docs/CONSUMER_INTEGRATION.md",
     "status": "not_claimed"
   },
   "evidence": [
-    "GOWORK=off make ci-extended",
-    "GOWORK=off make release-preflight VERSION=v0.1.0",
-    "GOWORK=off make evidence VERSION=v0.1.0",
-    "GOWORK=off make release-evidence-check VERSION=v0.1.0",
-    "XLIB_CONTEXT=release_verify GOWORK=off make release-final-check"
+    "GOWORK=off make vet",
+    "GOWORK=off make test-unit",
+    "GOWORK=off make test-contract",
+    "GOWORK=off make test-integration",
+    "GOWORK=off make boundary",
+    "GOWORK=off make contracts",
+    "GOWORK=off make secret-scan",
+    "GOWORK=off make foundationx-api",
+    "GOWORK=off make template-alignment",
+    "GOWORK=off make evidence VERSION=v0.1.0"
   ],
+  "factory_grade_allowed": false,
   "gates": {
     "boundary": "required",
     "contract": "required",
@@ -39,21 +47,55 @@
     "test": "required",
     "vet": "required"
   },
-  "generated_at": "2026-06-05T00:54:53Z",
+  "generated_at": "2026-06-05T18:06:30Z",
+  "hard_failures": [
+    "secret_leak",
+    "layer_violation",
+    "missing_required_contract",
+    "missing_required_evidence",
+    "race_detected",
+    "goroutine_leak",
+    "release_level_overclaimed"
+  ],
   "integration": {
     "evidence": "docs/evidence/20260601/postgres-integration.txt",
     "status": "not_claimed"
   },
+  "l2_gate": ".agent/gates/l2gate.yaml",
   "layer": "L2",
+  "min_score": 75,
   "module": "github.com/ZoneCNH/postgresx",
   "package": "postgresx",
   "provider_dependencies": {
-    "pgx": "github.com/jackc/pgx/v5@v5.9.2"
+    "pgx": "github.com/jackc/pgx/v5@v5.9.2",
+    "postgres_image": "postgres:16-alpine"
   },
+  "release_allowed": false,
+  "release_level_actual": "L2-T2",
+  "release_level_target": "L2-T2",
+  "required_contract_tests": [
+    "sql.exec",
+    "sql.query_row",
+    "sql.query_many",
+    "sql.not_found",
+    "sql.syntax_error",
+    "sql.unique_violation",
+    "sql.foreign_key_violation",
+    "sql.context_timeout",
+    "tx.commit",
+    "tx.rollback",
+    "tx.rollback_on_error",
+    "pool.exhaustion"
+  ],
+  "required_profiles": [
+    "unit",
+    "contract",
+    "integration"
+  ],
   "role": "postgresql_infrastructure_adapter",
   "schema_version": "1.0",
-  "source_digest": "sha256:af785c382913ab5321eab413661d61de311a459c7e4e60cb1f85eaa4632c1db8",
+  "source_digest": "sha256:979681cf9d5ad807bc4b8ce77ff775f9ecc30cbcd584384502b7399a7def3b3c",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "tree_sha": "a7223c74b05fe1f378478ebf3789bc4d9acdf85b",
+  "tree_sha": "2bcd3a17d4109951a935ecbbca8fbc9e0998c59e",
   "version": "v0.1.0"
 }

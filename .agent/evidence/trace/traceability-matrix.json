@@ -1,0 +1,67 @@
+{
+  "contracts": [
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.exec"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.query_row"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.query_many"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.not_found"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.syntax_error"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.unique_violation"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.foreign_key_violation"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "sql.context_timeout"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "tx.commit"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "tx.rollback"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "tx.rollback_on_error"
+    },
+    {
+      "evidence": "test/contract/l2_contract_test.go",
+      "name": "pool.exhaustion"
+    }
+  ],
+  "generated_at": "2026-06-05T18:06:31Z",
+  "kind": "trace.traceability-matrix",
+  "layer": "L2",
+  "package": "postgresx",
+  "release_level_actual": "L2-T2",
+  "release_level_target": "L2-T2",
+  "schema_version": "1.0",
+  "source_of_truth": [
+    ".agent/l2-capabilities.yaml",
+    ".agent/registry/l2-contract-packs.yaml",
+    ".agent/gates/l2gate.yaml"
+  ],
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "status": "passed",
+  "version": "v0.1.0"
+}

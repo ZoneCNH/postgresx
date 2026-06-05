@@ -27,7 +27,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     -e "POSTGRES_DB=$db_name" \
     -e "POSTGRES_USER=$db_user" \
     -e "POSTGRES_PASSWORD=$db_secret" \
-    -P postgres:17-alpine >/dev/null; then
+    -P postgres:16-alpine >/dev/null; then
     if [[ "${POSTGRESX_REQUIRE_INTEGRATION:-}" == "1" ]]; then
       echo "failed to start Docker PostgreSQL for required integration gate" >&2
       exit 1

@@ -33,6 +33,18 @@ vet:
 test:
 	$(GOENV) $(GO) test ./...
 
+.PHONY: test-unit
+test-unit:
+	$(GOENV) $(GO) test ./pkg/postgresx ./testkit ./contracts
+
+.PHONY: test-contract
+test-contract:
+	$(GOENV) $(GO) test ./test/contract
+
+.PHONY: test-integration
+test-integration:
+	POSTGRESX_REQUIRE_INTEGRATION=1 bash ./scripts/run_integration.sh
+
 .PHONY: race
 race:
 	$(GOENV) $(GO) test -race ./...
@@ -42,8 +54,7 @@ lint:
 	bash ./scripts/ci/lint.sh
 
 .PHONY: integration
-integration:
-	bash ./scripts/run_integration.sh
+integration: test-integration
 
 .PHONY: integration-check
 integration-check: integration
@@ -88,6 +99,11 @@ docs-check:
 .PHONY: evidence
 evidence:
 	bash ./scripts/generate_manifest.sh
+	python3 ./scripts/ci/l2_evidence.py --version $(VERSION)
+
+.PHONY: l2-evidence
+l2-evidence:
+	python3 ./scripts/ci/l2_evidence.py --version $(VERSION)
 
 .PHONY: release-check
 release-check:

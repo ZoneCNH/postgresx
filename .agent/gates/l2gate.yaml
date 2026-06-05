@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "package": "postgresx",
+  "layer": "L2",
+  "release_level_target": "L2-T2",
+  "release_level_actual": "L2-T2",
+  "min_score": 75,
+  "score": 75,
+  "required_profiles": ["unit", "contract", "integration"],
+  "release_allowed": false,
+  "factory_grade_allowed": false,
+  "hard_failures": [
+    "secret_leak",
+    "layer_violation",
+    "missing_required_contract",
+    "missing_required_evidence",
+    "race_detected",
+    "goroutine_leak",
+    "release_level_overclaimed"
+  ],
+  "required_evidence": [
+    ".agent/evidence/raw/unit-test.json",
+    ".agent/evidence/raw/contract-test.json",
+    ".agent/evidence/raw/integration-test.json",
+    ".agent/evidence/normalized/contract-check.json",
+    ".agent/evidence/normalized/integration-check.json",
+    ".agent/evidence/normalized/layer-guard.json",
+    ".agent/evidence/normalized/secret-scan.json",
+    ".agent/evidence/decision/test-plan.json",
+    ".agent/evidence/decision/release-readiness.json",
+    ".agent/evidence/trace/traceability-matrix.json",
+    ".agent/evidence/retrospective.json",
+    ".agent/evidence/manifest.json"
+  ]
+}

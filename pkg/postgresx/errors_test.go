@@ -42,9 +42,15 @@ func TestMapErrorNormalizesKnownFailures(t *testing.T) {
 			retryable: false,
 		},
 		{
-			name:      "unique conflict",
+			name:      "syntax validation",
+			err:       &pgconn.PgError{Code: "42601"},
+			kind:      foundationx.ErrorKindValidation,
+			retryable: false,
+		},
+		{
+			name:      "unique already exists",
 			err:       &pgconn.PgError{Code: "23505"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      foundationx.ErrorKindAlreadyExist,
 			retryable: false,
 		},
 		{
@@ -54,15 +60,15 @@ func TestMapErrorNormalizesKnownFailures(t *testing.T) {
 			retryable: false,
 		},
 		{
-			name:      "not null conflict",
+			name:      "not null validation",
 			err:       &pgconn.PgError{Code: "23502"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      foundationx.ErrorKindValidation,
 			retryable: false,
 		},
 		{
-			name:      "check conflict",
+			name:      "check validation",
 			err:       &pgconn.PgError{Code: "23514"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      foundationx.ErrorKindValidation,
 			retryable: false,
 		},
 		{

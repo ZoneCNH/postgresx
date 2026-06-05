@@ -58,14 +58,16 @@ func mapPgError(op string, pgErr *pgconn.PgError, cause error) error {
 	switch pgErr.Code {
 	case "28P01":
 		return foundationx.WrapError(foundationx.ErrorKindAuth, op, "authentication failed", cause)
+	case "42601":
+		return foundationx.WrapError(foundationx.ErrorKindValidation, op, "syntax error", cause)
 	case "23505":
-		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "unique constraint violation", cause)
+		return foundationx.WrapError(foundationx.ErrorKindAlreadyExist, op, "unique constraint violation", cause)
 	case "23503":
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "foreign key constraint violation", cause)
 	case "23502":
-		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "not null constraint violation", cause)
+		return foundationx.WrapError(foundationx.ErrorKindValidation, op, "not null constraint violation", cause)
 	case "23514":
-		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "check constraint violation", cause)
+		return foundationx.WrapError(foundationx.ErrorKindValidation, op, "check constraint violation", cause)
 	case "40001":
 		return foundationx.WrapError(foundationx.ErrorKindConflict, op, "serialization failure", cause).WithRetryable(true)
 	case "40P01":
