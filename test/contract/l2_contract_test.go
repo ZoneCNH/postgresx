@@ -2,6 +2,7 @@ package contract_test
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -70,6 +71,48 @@ func TestP0SQLContract(t *testing.T) {
 	}
 }
 
+func TestP0SQLContractErrorPropagation(t *testing.T) {
+	ctx := context.Background()
+	execErr := errors.New("exec failed")
+	queryErr := errors.New("query failed")
+	rowErr := errors.New("row failed")
+	rowsErr := errors.New("rows failed")
+
+	queryer := &postgresxtest.QueryAdapter{ExecErr: execErr}
+	if _, err := queryer.Exec(ctx, "delete from l2_contract where id=$1", 10); !errors.Is(err, execErr) {
+		t.Fatalf("Exec() error = %v, want %v", err, execErr)
+	}
+	if len(queryer.Calls) != 1 || queryer.Calls[0].Operation != "exec" {
+		t.Fatalf("Exec() calls = %#v, want one exec call", queryer.Calls)
+	}
+
+	queryer = &postgresxtest.QueryAdapter{QueryErr: queryErr}
+	if _, err := queryer.Query(ctx, "select id from l2_contract"); !errors.Is(err, queryErr) {
+		t.Fatalf("Query() error = %v, want %v", err, queryErr)
+	}
+
+	queryer = &postgresxtest.QueryAdapter{Row: &postgresxtest.Row{Err: rowErr}}
+	if err := queryer.QueryRow(ctx, "select id from l2_contract where id=$1", 11).Scan(new(int)); !errors.Is(err, rowErr) {
+		t.Fatalf("QueryRow().Scan() error = %v, want %v", err, rowErr)
+	}
+
+	queryer = &postgresxtest.QueryAdapter{QueryRows: &postgresxtest.Rows{Rows: [][]any{{12}}, ErrValue: rowsErr}}
+	rows, err := queryer.Query(ctx, "select id from l2_contract")
+	if err != nil {
+		t.Fatalf("Query() error = %v", err)
+	}
+	if !rows.Next() {
+		t.Fatal("Rows.Next() = false, want one row before Err()")
+	}
+	var id int
+	if err := rows.Scan(&id); err != nil {
+		t.Fatalf("Rows.Scan() error = %v", err)
+	}
+	if err := rows.Err(); !errors.Is(err, rowsErr) {
+		t.Fatalf("Rows.Err() = %v, want %v", err, rowsErr)
+	}
+}
+
 func TestP0TxContract(t *testing.T) {
 	var _ postgresx.Tx = (*postgresxtest.QueryAdapter)(nil)
 
@@ -90,6 +133,51 @@ func TestP0TxContract(t *testing.T) {
 	}
 	if len(tx.Calls) != 1 || tx.Calls[0].Operation != "exec" {
 		t.Fatalf("tx calls = %#v, want one exec", tx.Calls)
+	}
+}
+
+func TestP0TxContractPropagatesExecutorErrors(t *testing.T) {
+	ctx := context.Background()
+	execErr := errors.New("tx exec failed")
+	tx := &postgresxtest.QueryAdapter{ExecErr: execErr}
+	txFn := postgresx.TxFunc(func(ctx context.Context, tx postgresx.Tx) error {
+		_, err := tx.Exec(ctx, "update l2_contract set seen=true where id=$1", 17)
+		return err
+	})
+
+	if err := txFn(ctx, tx); !errors.Is(err, execErr) {
+		t.Fatalf("TxFunc() error = %v, want %v", err, execErr)
+	}
+	if len(tx.Calls) != 1 || tx.Calls[0].Operation != "exec" {
+		t.Fatalf("tx calls = %#v, want one exec", tx.Calls)
+	}
+}
+
+func TestP0LivePostgresTxRollbackContract(t *testing.T) {
+	ctx := t.Context()
+	fixture := postgresxtest.Start(ctx, t, "postgresx-l2-rollback-contract")
+	client := fixture.Client()
+	sentinel := errors.New("rollback contract sentinel")
+
+	if _, err := client.Exec(ctx, "create temporary table l2_contract_rollback(id integer) on commit preserve rows"); err != nil {
+		t.Fatalf("create temporary table: %v", err)
+	}
+	err := client.WithTx(ctx, func(ctx context.Context, tx postgresx.Tx) error {
+		if _, err := tx.Exec(ctx, "insert into l2_contract_rollback(id) values($1)", 1); err != nil {
+			return err
+		}
+		return sentinel
+	})
+	if !errors.Is(err, sentinel) {
+		t.Fatalf("WithTx() error = %v, want sentinel rollback error", err)
+	}
+
+	var count int
+	if err := client.QueryRow(ctx, "select count(*) from l2_contract_rollback").Scan(&count); err != nil {
+		t.Fatalf("count rollback table: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("rollback table count = %d, want 0", count)
 	}
 }
 
