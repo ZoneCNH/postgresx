@@ -1,4 +1,4 @@
-# ADR-0002: Support sqlc-style callers, not ORM ownership
+# ADR-0002: Prefer sqlc-compatible callers over an ORM
 
 ## Status
 
@@ -6,17 +6,20 @@ Accepted
 
 ## Context
 
-The v1.0 scope explicitly excludes ORM features. Application services and other consumers own domain repositories, SQL, and migrations, while postgresx provides the foundation layer.
+postgresx must provide PostgreSQL infrastructure without owning domain models,
+repositories, generated queries, or schema-specific migrations.
 
 ## Decision
 
-postgresx exposes a sqlc-compatible `DBTX` interface and transaction runner instead of defining models, query builders, or repository abstractions.
+postgresx exposes a sqlc-compatible `Queryer` interface and transaction helpers
+instead of defining models, query builders, or repository abstractions.
 
-Consumer code should generate or write domain-specific SQL repositories against `postgresx.DBTX` and use `postgresx.TxRunner` for transaction boundaries.
+Consumer code should generate or write domain-specific SQL repositories against
+`postgresx.Queryer` and use `postgresx.WithTx` for transaction boundaries.
 
 ## Consequences
 
-- postgresx stays small and reusable.
-- Domain SQL remains close to the consuming application.
-- Transaction ownership is explicit and testable.
-- Adding ORM behavior is out of scope for the v1 foundation.
+- The module stays schema-agnostic.
+- Callers keep full control over SQL, migrations, and generated packages.
+- Documentation and examples must not imply that postgresx owns domain query
+  code.

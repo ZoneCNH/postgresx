@@ -1,86 +1,47 @@
-# Retrospective — GOAL-20260601-001
+# Retrospective — POSTGRESX Goal 2026-06-01
 
 ## Outcome
 
-The local postgresx release surface was aligned with the v0.1.0 foundation goal:
-module identity is `github.com/ZoneCNH/postgresx`, the public core package lives
-under `pkg/postgresx`, and validation/release gates run with `GOWORK=off`.
+postgresx converged toward a standalone PostgreSQL L2 factory module with a
+small root package, caller-owned configuration, pool lifecycle helpers,
+transaction helpers, migrations, error mapping, and evidence-focused release
+documentation.
 
-## What Changed
+## Decisions that held
 
-- Moved the core package to `pkg/postgresx` while keeping examples, contracts,
-  testkit, and internal helpers outside the core package.
-- Normalized docs, examples, tests, contracts, and scripts to the ZoneCNH module
-  identity.
-- Added release/evidence Makefile gates and a machine-readable release manifest.
-- Strengthened boundary checks for forbidden application dependencies,
-  business-domain terms, and core `configx`/`observex` drift.
-- Documented explicit secret/config/observability ownership boundaries.
+- Keep postgresx infrastructure-only: no domain schema, repository layer,
+  application service orchestration, or implicit env/secret loading.
+- Keep generated SQL and domain migrations outside this repository.
+- Use a narrow `Queryer` interface so generated callers can compile against the
+  adapter without depending on a concrete pool type.
+- Run Go verification with `GOWORK=off` to avoid accidental workspace leakage.
+- Treat downstream adoption as a separate proof requirement rather than a local
+  documentation assertion.
 
-- The module is aligned to `github.com/ZoneCNH/postgresx` with the public package under `pkg/postgresx`.
-- Documentation, contracts, examples, scripts, and release evidence now describe a standalone PostgreSQL foundation library.
-- Release gates enforce the same boundaries described in the goal: explicit configuration, caller-owned secrets, no business schemas, no ORM layer, no package-level database singleton, and no application config or observability dependency in core.
+## Corrections made during documentation convergence
 
-- Keep migrations caller-owned; postgresx only runs migration sources supplied by
-  the caller.
-- Keep sqlc support as an interface boundary (`DBTX`) rather than generated code
-  or business repositories inside the library.
-- Keep metrics/tracing adapter-style and opt-in so the core stays independent of
-  application observability packages.
+- Public API documentation was narrowed to exported symbols that exist in the
+  current root package.
+- Error mapping documentation was aligned with the current foundationx error
+  kinds emitted by `MapError`.
+- Release evidence now separates local module verification from missing
+  downstream adoption proof.
+- Manifest evidence paths were renamed away from consumer-specific wording.
+- Example live mode now requires caller-provided connection env values instead
+  of silently using a default password.
 
-## Remaining Work
+## Remaining risks
 
-- The prior `/home/x.go/pkg/adapter/db/postgres/postgres.go` candidate opened
-  its existing pool configuration through `postgresx.OpenPool`.
-- x.go remained the owner of business SQL, migrations, and generated query code.
-- The prior `collection_status` candidate had an x.go-owned repository,
-  migration, and test slice that depended on `postgresx.DBTX` and
-  `postgresx.TxRunner`.
-- The prior `collection_status` SQL was generated through x.go's local sqlc
-  v1.31.1 configuration rather than embedded by postgresx.
-- The prior x.go import-boundary gate included `B-POSTGRESX-001`, which forbade
-  direct `pgxpool` imports under `internal/market_data/server/state/**` while
-  preserving the existing adapter-owned pool boundary.
-- Targeted x.go tests passed in the prior candidate for
-  `./internal/market_data/server/state ./pkg/adapter/db/postgres ./internal/bootstrap`.
-- x.go import-boundary tests and the full import-boundary gate passed in the
-  prior candidate.
-- `docs/EVIDENCE-20260601.md` records the command evidence and remaining
-  release gaps.
+- Remote release publication, checksum artifacts, and contract hashes are not
+  represented by current evidence files.
+- Downstream adoption remains unproven until a consumer checkout records a
+  fresh dependency pin, compile/test evidence, import-boundary evidence, and
+  release-manifest linkage.
+- README-level API wording may still need a separate owner pass if it is treated
+  as part of the release surface.
 
-## Remaining Evidence Needed
+## Follow-up rule
 
-- Release commit/staging remains open: the current `/home/postgresx` `HEAD`
-  tracks only `.gitignore`, `LICENSE`, and `README.md`, while the implementation
-  candidate is still local working-tree state.
-- Git tag `v0.1.0` and remote publication verification require explicit
-  release authorization after that release commit/staging decision.
-
-## Verified Evidence
-
-- `docs/EVIDENCE-20260601.md` records a live PostgreSQL migration up/down/up
-  gate with `dirty=false` checks.
-- `docs/EVIDENCE-20260601.md` records the live metrics/tracing adapter
-  integration check.
-- `docs/EVIDENCE-20260601.md` records the historical live x.go
-  `collection_status` PostgreSQL integration run.
-- `docs/EVIDENCE-20260601.md` records the historical x.go `B-POSTGRESX-001`
-  import-boundary test and repository-wide import-boundary gate run.
-- The current `/home/x.go/go.mod` does not record
-  `github.com/ZoneCNH/postgresx v0.1.0`.
-
-## Output Patch
-
-- Prompt patch: keep local implementation evidence separate from release
-  publication authority; do not mark `v0.1.0` complete until tag and remote
-  publication are verified.
-- Release patch: do not cut a tag from the current initial `HEAD`; the tag must
-  point at an authorized release commit that contains the implementation,
-  docs, tests, and x.go integration evidence.
-- Harness patch: release evidence must show whether live PostgreSQL migration
-  gates ran against a real `POSTGRES_TEST_DSN` or were skipped by CI defaults.
-- Rule patch: business-owned x.go database modules should depend on
-  `postgresx.DBTX` and `postgresx.TxRunner`; direct `pgxpool` ownership stays
-  in platform adapter boundaries or explicit escape hatches. Enforce this for
-  `collection_status` through x.go's import-boundary gate rather than a broad
-  grep that would fail existing adapter/infra pool ownership.
+Future modifiers should update docs, contracts, examples, and evidence in the
+same change whenever exported API names or release claims change. Do not add a
+consumer adoption claim without current consumer-side evidence.

@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if !runtime.Live {
-		fmt.Println("postgresx sqlc example dry-run: DBTX boundary available")
+		fmt.Println("postgresx sqlc example dry-run: Queryer boundary available")
 		return
 	}
 	client, err := postgresx.Open(ctx, runtime.Config)

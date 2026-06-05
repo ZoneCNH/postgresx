@@ -21,11 +21,17 @@ type RuntimeConfig struct {
 // explicitly sets POSTGRESX_EXAMPLE_LIVE=1, allowing `go run ./examples/...`
 // to act as a dry-run smoke check without requiring a database.
 func FromEnv(applicationName string) (RuntimeConfig, error) {
+	live := os.Getenv("POSTGRESX_EXAMPLE_LIVE") == "1"
+
 	cfg := postgresx.DefaultConfig()
 	cfg.Host = getenv("POSTGRES_HOST", "localhost")
 	cfg.Database = getenv("POSTGRES_DATABASE", "postgres")
 	cfg.User = getenv("POSTGRES_USER", "postgres")
-	cfg.Password = foundationx.NewSecretString(getenv("POSTGRES_PASSWORD", "postgres"))
+	password, err := envPassword(live)
+	if err != nil {
+		return RuntimeConfig{}, err
+	}
+	cfg.Password = foundationx.NewSecretString(password)
 	cfg.SSLMode = getenv("POSTGRES_SSLMODE", cfg.SSLMode)
 	cfg.ApplicationName = applicationName
 
@@ -34,7 +40,12 @@ func FromEnv(applicationName string) (RuntimeConfig, error) {
 		return RuntimeConfig{}, fmt.Errorf("parse POSTGRES_PORT: %w", err)
 	}
 	cfg.Port = port
-	return RuntimeConfig{Config: cfg, Live: os.Getenv("POSTGRESX_EXAMPLE_LIVE") == "1"}, nil
+	if live {
+		if err := requireLiveEnv("POSTGRES_HOST", "POSTGRES_DATABASE", "POSTGRES_USER", "POSTGRES_PASSWORD"); err != nil {
+			return RuntimeConfig{}, err
+		}
+	}
+	return RuntimeConfig{Config: cfg, Live: live}, nil
 }
 
 func getenv(key string, fallback string) string {
@@ -42,4 +53,23 @@ func getenv(key string, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func envPassword(live bool) (string, error) {
+	if value := os.Getenv("POSTGRES_PASSWORD"); value != "" {
+		return value, nil
+	}
+	if live {
+		return "", fmt.Errorf("POSTGRES_PASSWORD must be set when POSTGRESX_EXAMPLE_LIVE=1")
+	}
+	return "postgres", nil
+}
+
+func requireLiveEnv(keys ...string) error {
+	for _, key := range keys {
+		if os.Getenv(key) == "" {
+			return fmt.Errorf("%s must be set when POSTGRESX_EXAMPLE_LIVE=1", key)
+		}
+	}
+	return nil
 }

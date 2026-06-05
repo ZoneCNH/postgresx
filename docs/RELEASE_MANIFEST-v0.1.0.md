@@ -1,61 +1,44 @@
 # Release Manifest — postgresx v0.1.0
 
-Status: local release candidate prepared for `github.com/ZoneCNH/postgresx`.
-
 ## Identity
 
-- Go module `github.com/ZoneCNH/postgresx`
-- pgxpool client lifecycle
-- sqlc `DBTX`
-- transaction and retry helpers
-- migration runner
-- normalized errors with explicit SQLSTATE mappings
-- health and pool stats
-- metrics/tracing adapter interfaces
-- public `Mask` and `MaskDSN` secret masking
-- testkit and examples
-- CI scripts and GitHub Actions workflow
-- integration documentation describing the intended x.go adoption boundary and
-  current checkout status
+- Module: `github.com/ZoneCNH/postgresx`
+- Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
+- Status: local release-preparation snapshot, not remote publication proof
+- Go verification mode: `GOWORK=off`
 
-## Release Contents
+## Included surfaces
 
-- pgx-backed client lifecycle and explicit pool ownership.
-- sqlc-compatible `DBTX` execution boundary.
-- Explicit transaction helper and retry policy.
-- Migration runner for caller-owned migration trees.
-- Error normalization, health checks, stats, metrics/tracing interfaces, and DSN masking.
-- Testkit helpers and examples outside the core package.
+- caller-owned `Config` construction, validation, DSN rendering, and redaction;
+- `New`/`Open` client lifecycle, ping/check, pool stats, and query methods;
+- sqlc-compatible `Queryer` execution boundary;
+- `WithTx` and `WithTxOptions` transaction helpers;
+- caller-owned migration runner over embedded or filesystem SQL sources;
+- foundationx-compatible error mapping, logging, and metrics options;
+- examples that keep env and secret loading outside the core package.
 
-## Exclusions
+## Explicit non-claims
 
-- `/home/x.go/go.mod` does not require `github.com/ZoneCNH/postgresx`.
-- `/home/x.go/pkg/adapter/db/postgres/postgres.go` still imports
-  `github.com/jackc/pgx/v5/pgxpool` directly.
-- `GOWORK=off go list -m github.com/ZoneCNH/postgresx` in `/home/x.go`
-  reports that `github.com/ZoneCNH/postgresx/pkg/postgresx` is not a known dependency.
-- No `sqlc.yaml` or `sqlc.yml` file is present under `/home/x.go` at max depth
-  3, and the previously documented `collection_status` files are absent from
-  the current checkout.
+- This snapshot does not include current downstream adoption proof.
+- This snapshot does not prove remote tag publication or CI status.
+- This snapshot does not include checksum or contract-hash artifacts.
+- This module does not own domain schema, repositories, application services, or
+  production DSNs.
 
-## Required Gates
+## Evidence index
 
-```sh
-GOWORK=off make ci
-GOWORK=off make ci-extended
-GOWORK=off make release-evidence-check
-GOWORK=off make release-preflight
-```
+- `release/manifest/v0.1.0.json`
+- `release/manifest/latest.json`
+- `docs/EVIDENCE-20260601.md`
+- `docs/evidence/20260601/go-test.txt`
+- `docs/evidence/20260601/go-test-race.txt`
+- `docs/evidence/20260601/go-vet.txt`
+- `docs/evidence/20260601/secret-scan.txt`
+- `docs/evidence/20260601/no-consumer-deps.txt`
+- `docs/evidence/20260601/dependencies.txt`
 
-`make release-check` additionally sets required live integration semantics through
-`scripts/ci/release_check.sh`.
+## Remaining release hardening
 
-## Evidence
-
-Primary evidence is recorded in `docs/EVIDENCE-20260601.md` and raw command logs
-under `docs/evidence/20260601/`.
-
-## Publication Notes
-
-This worker prepared local release artifacts and verification gates. It did not
-create or push a remote tag.
+Before treating this as a published release, add fresh CI evidence, tag and
+remote publication evidence, checksum files, and contract-hash files. Add
+consumer adoption evidence only after a current consumer checkout proves it.

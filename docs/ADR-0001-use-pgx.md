@@ -1,4 +1,4 @@
-# ADR-0001: Use pgx
+# ADR-0001: Use pgx as the PostgreSQL driver
 
 ## Status
 
@@ -6,17 +6,21 @@ Accepted
 
 ## Context
 
-postgresx needs a small, explicit PostgreSQL foundation for connection pooling, transactions, health checks, error normalization, metrics, tracing, migrations, and sqlc integration. The library must stay independent from application modules and must not become an ORM.
+postgresx needs a production-grade PostgreSQL driver with connection pooling,
+transaction control, error details, and low-level escape hatches for advanced
+callers while keeping this module infrastructure-only.
 
 ## Decision
 
-Use `github.com/jackc/pgx/v5` and `pgxpool` as the PostgreSQL driver and pool layer for postgresx.
-
-postgresx exposes stable wrapper contracts such as `Config`, `Client`, `DBTX`, `TxRunner`, `WithinTx`, `Migrator`, `HealthChecker`, and adapter interfaces while preserving access to `pgxpool.Pool` for advanced callers.
+Use `github.com/jackc/pgx/v5` and `pgxpool` internally. Expose a stable wrapper
+contract around `Config`, `Client`, `Queryer`, `Tx`, transaction helpers,
+migration helpers, health checks, and observability adapters rather than
+requiring callers to own pgx construction directly.
 
 ## Consequences
 
-- Applications get native PostgreSQL behavior, pooling, SQLSTATE visibility, and transaction control.
-- sqlc-generated repositories can depend on `postgresx.DBTX` instead of a concrete pool.
-- Callers remain responsible for business schema and query ownership.
-- postgresx must normalize pgx and PostgreSQL errors at its boundary.
+- postgresx can map pg errors into foundationx-compatible error kinds.
+- sqlc-generated callers can depend on `postgresx.Queryer` instead of a concrete
+  pool type.
+- Advanced pgx behavior remains available through caller-owned SQL and options,
+  without adding ORM or domain abstractions to this module.
