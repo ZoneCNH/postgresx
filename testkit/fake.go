@@ -100,9 +100,9 @@ func (r *FakeRow) Scan(dest ...any) error {
 
 // FakeRows is a deterministic postgresx.Rows backed by row value slices.
 type FakeRows struct {
-	Rows [][]any
+	Rows     [][]any
 	ErrValue error
-	Closed bool
+	Closed   bool
 
 	index int
 }
