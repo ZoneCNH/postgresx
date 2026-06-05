@@ -6,24 +6,54 @@
     "core_env_file_secret_loading": "forbidden",
     "global_database_singleton": "forbidden"
   },
-  "commit": "01f2f47",
-  "contracts": [
-    "contracts/config.schema.json",
-    "contracts/error.schema.json",
-    "contracts/health.schema.json",
-    "contracts/metrics.md",
-    "contracts/public_api.md",
-    "docs/api.md"
-  ],
+  "commit": "35a97f0",
+  "contract_hashes": {
+    "api": "sha256:1c2726e8acd801842b6bd34e72207958a190f9ff81f6f68c24666d5ab5fdf56b",
+    "config": "sha256:6c06425a698be735323b2dbc2b3353d0af2ebb32856d0d0747b6dac144528c27",
+    "errors": "sha256:9b40feb648b24b2279e251c50ef953ebd2c66023fc8d86adda256399345855b2",
+    "health": "sha256:29ddb5a679407ddc11e08c7fc8c88c1624d3803f40c083a44a87b3c8f4db9b67",
+    "metrics": "sha256:9d8e4293ddf7c18edf89dcbfcb6d4ecdfd0c840611da4c956498d51573147595"
+  },
   "core_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
-  "gates": [
+  "downstream_adoption": {
+    "evidence": "docs/CONSUMER_INTEGRATION.md",
+    "status": "not_claimed"
+  },
+  "evidence": [
     "GOWORK=off make ci-extended",
     "GOWORK=off make release-preflight VERSION=v0.1.0",
     "GOWORK=off make evidence VERSION=v0.1.0",
-    "GOWORK=off make release-evidence-check VERSION=v0.1.0"
+    "GOWORK=off make release-evidence-check VERSION=v0.1.0",
+    "XLIB_CONTEXT=release_verify GOWORK=off make release-final-check"
   ],
-  "generated_at": "2026-06-01T06:24:19Z",
-  "go_version": "go1.26.3",
+  "gates": {
+    "boundary": "required",
+    "contract": "required",
+    "docs": "required",
+    "fmt": "required",
+    "integration": "required-or-skip-with-reason",
+    "lint": "required",
+    "race": "required",
+    "release_final": "required",
+    "security": "required",
+    "test": "required",
+    "vet": "required"
+  },
+  "generated_at": "2026-06-05T00:31:52Z",
+  "integration": {
+    "evidence": "docs/evidence/20260601/postgres-integration.txt",
+    "status": "not_claimed"
+  },
+  "layer": "L2",
   "module": "github.com/ZoneCNH/postgresx",
+  "package": "postgresx",
+  "provider_dependencies": {
+    "pgx": "github.com/jackc/pgx/v5@v5.9.2"
+  },
+  "role": "postgresql_infrastructure_adapter",
+  "schema_version": "1.0",
+  "source_digest": "sha256:ff9dbd63cbc7306d6e5a61898b73c7fa3d3260866460ad3632af928d9e25cf75",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "tree_sha": "8064cea4c67dcc2dec409b75b62558083c698f8c",
   "version": "v0.1.0"
 }

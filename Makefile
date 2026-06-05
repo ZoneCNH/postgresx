@@ -45,6 +45,9 @@ lint:
 integration:
 	bash ./scripts/run_integration.sh
 
+.PHONY: integration-check
+integration-check: integration
+
 .PHONY: secret-scan
 secret-scan:
 	bash ./scripts/check_secrets.sh
@@ -60,9 +63,15 @@ security: secret-scan govulncheck
 boundary:
 	bash ./scripts/check_boundary.sh
 
+.PHONY: boundary-check
+boundary-check: boundary
+
 .PHONY: contracts
 contracts:
 	bash ./scripts/check_contracts.sh
+
+.PHONY: contract-check
+contract-check: contracts
 
 .PHONY: foundationx-api
 foundationx-api:
@@ -71,6 +80,10 @@ foundationx-api:
 .PHONY: template-alignment
 template-alignment:
 	bash ./scripts/check_template_alignment.sh
+
+.PHONY: docs-check
+docs-check:
+	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
 .PHONY: evidence
 evidence:
@@ -85,16 +98,18 @@ release-preflight: ci-extended integration evidence
 
 .PHONY: release-evidence-check
 release-evidence-check:
-	test -f docs/EVIDENCE-20260601.md
-	test -f docs/RELEASE_MANIFEST-v0.1.0.md
-	test -f docs/RETROSPECTIVE-GOAL-20260601-001.md
-	test -d release/manifest
+	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
 .PHONY: release-final-check
 release-final-check: release-evidence-check
 	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx
 	$(GOENV) $(GO) list ./pkg/postgresx >/dev/null
 	git diff --check
+	@if [ -n "$$(git status --short)" ]; then \
+		echo "release-final-check requires a clean workspace; run make evidence and commit artifacts first" >&2; \
+		git status --short >&2; \
+		exit 1; \
+	fi
 
 .PHONY: property
 property:
