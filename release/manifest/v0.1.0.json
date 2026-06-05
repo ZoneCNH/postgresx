@@ -1,23 +1,14 @@
 {
-  "schema_version": "1.0",
-  "module": "github.com/ZoneCNH/postgresx",
   "version": "v0.1.0",
+  "module": "github.com/ZoneCNH/postgresx",
   "core_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
-  "release_date": "2026-06-01",
-  "constraints": {
-    "gowork": "off",
-    "no_application_dependency": true,
-    "no_business_schema": true,
-    "no_implicit_secret_loading": true,
-    "no_global_db_singleton": true,
-    "core_excludes": ["configx", "observex"]
-  },
+  "commit": "e0ebe6b",
+  "created_at": "2026-06-05T00:30:14Z",
+  "dirty": false,
   "evidence": [
-    "docs/EVIDENCE-20260601.md",
-    "docs/evidence/20260601/go-test.txt",
-    "docs/evidence/20260601/go-test-race.txt",
-    "docs/evidence/20260601/go-vet.txt",
-    "docs/evidence/20260601/secret-scan.txt",
-    "docs/evidence/20260601/no-xgo-deps.txt"
+    "GOWORK=off make ci-extended",
+    "GOWORK=off make release-preflight VERSION=v0.1.0",
+    "GOWORK=off make release-evidence-check",
+    "GOWORK=off make release-final-check"
   ]
 }
