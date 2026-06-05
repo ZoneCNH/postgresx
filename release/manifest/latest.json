@@ -6,7 +6,7 @@
     "core_env_file_secret_loading": "forbidden",
     "global_database_singleton": "forbidden"
   },
-  "commit": "35a97f0",
+  "commit": "539aaa6",
   "contract_hashes": {
     "api": "sha256:1c2726e8acd801842b6bd34e72207958a190f9ff81f6f68c24666d5ab5fdf56b",
     "config": "sha256:6c06425a698be735323b2dbc2b3353d0af2ebb32856d0d0747b6dac144528c27",
@@ -39,7 +39,7 @@
     "test": "required",
     "vet": "required"
   },
-  "generated_at": "2026-06-05T00:31:52Z",
+  "generated_at": "2026-06-05T00:41:36Z",
   "integration": {
     "evidence": "docs/evidence/20260601/postgres-integration.txt",
     "status": "not_claimed"
@@ -54,6 +54,6 @@
   "schema_version": "1.0",
   "source_digest": "sha256:ff9dbd63cbc7306d6e5a61898b73c7fa3d3260866460ad3632af928d9e25cf75",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "tree_sha": "8064cea4c67dcc2dec409b75b62558083c698f8c",
+  "tree_sha": "de696a8c19982a1b45698725bc6d4e01213a8187",
   "version": "v0.1.0"
 }
