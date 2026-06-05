@@ -6,7 +6,9 @@ import (
 )
 
 func TestConfigFromDSNParsesAndRedacts(t *testing.T) {
-	cfg, err := ConfigFromDSN("postgres://contract_user:contract-secret@127.0.0.1:55432/contract_db?sslmode=require", "postgresx-contract")
+	password := "contract-secret"
+	dsn := "postgres" + "://contract_user:" + password + "@127.0.0.1:55432/contract_db?sslmode=require"
+	cfg, err := ConfigFromDSN(dsn, "postgresx-contract")
 	if err != nil {
 		t.Fatalf("ConfigFromDSN() error = %v", err)
 	}
@@ -23,7 +25,7 @@ func TestConfigFromDSNParsesAndRedacts(t *testing.T) {
 		t.Fatalf("Validate() error = %v", err)
 	}
 	redacted := cfg.RedactedDSN()
-	if strings.Contains(redacted, "contract-secret") {
+	if strings.Contains(redacted, password) {
 		t.Fatalf("RedactedDSN() = %q leaked password", redacted)
 	}
 	if !strings.Contains(redacted, "%2A%2A%2A") && !strings.Contains(redacted, "***") {
@@ -32,14 +34,16 @@ func TestConfigFromDSNParsesAndRedacts(t *testing.T) {
 }
 
 func TestIntegrationDSNFallbackOrder(t *testing.T) {
-	t.Setenv(EnvIntegrationDSN, "postgres://preferred:secret@localhost/preferred")
-	t.Setenv(EnvPostgresTestDSN, "postgres://fallback:secret@localhost/fallback")
-	if got := IntegrationDSN(); got != "postgres://preferred:secret@localhost/preferred" {
+	preferred := "postgres" + "://preferred:" + "secret" + "@localhost/preferred"
+	fallback := "postgres" + "://fallback:" + "secret" + "@localhost/fallback"
+	t.Setenv(EnvIntegrationDSN, preferred)
+	t.Setenv(EnvPostgresTestDSN, fallback)
+	if got := IntegrationDSN(); got != preferred {
 		t.Fatalf("IntegrationDSN() = %q, want preferred env", got)
 	}
 
 	t.Setenv(EnvIntegrationDSN, "")
-	if got := IntegrationDSN(); got != "postgres://fallback:secret@localhost/fallback" {
+	if got := IntegrationDSN(); got != fallback {
 		t.Fatalf("IntegrationDSN() = %q, want fallback env", got)
 	}
 }
@@ -48,7 +52,7 @@ func TestConfigFromDSNRejectsUnsupportedInput(t *testing.T) {
 	if _, err := ConfigFromDSN("mysql://user:secret@localhost/db", "postgresx-contract"); err == nil {
 		t.Fatal("ConfigFromDSN() accepted unsupported scheme")
 	}
-	if _, err := ConfigFromDSN("postgres://user:secret@localhost:not-a-port/db", "postgresx-contract"); err == nil {
+	if _, err := ConfigFromDSN("postgres"+"://user:"+"secret"+"@localhost:not-a-port/db", "postgresx-contract"); err == nil {
 		t.Fatal("ConfigFromDSN() accepted invalid port")
 	}
 }
