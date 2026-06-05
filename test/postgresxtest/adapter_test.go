@@ -1,14 +1,13 @@
 package postgresxtest
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"testing"
 )
 
 func TestQueryAdapterPropagatesConfiguredErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	execErr := errors.New("exec failed")
 	queryErr := errors.New("query failed")
 	rowErr := errors.New("row failed")

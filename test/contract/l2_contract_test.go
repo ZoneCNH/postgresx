@@ -16,7 +16,7 @@ import (
 )
 
 func TestP0SQLContract(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	queryer := &postgresxtest.QueryAdapter{
 		ExecTag:   postgresxtest.CommandTag{Rows: 2},
 		QueryRows: &postgresxtest.Rows{Rows: [][]any{{1, "one"}, {2, "two"}}},
@@ -72,7 +72,7 @@ func TestP0SQLContract(t *testing.T) {
 }
 
 func TestP0SQLContractErrorPropagation(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	execErr := errors.New("exec failed")
 	queryErr := errors.New("query failed")
 	rowErr := errors.New("row failed")
@@ -116,7 +116,7 @@ func TestP0SQLContractErrorPropagation(t *testing.T) {
 func TestP0TxContract(t *testing.T) {
 	var _ postgresx.Tx = (*postgresxtest.QueryAdapter)(nil)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	tx := &postgresxtest.QueryAdapter{ExecTag: postgresxtest.CommandTag{Rows: 1}}
 	txFn := postgresx.TxFunc(func(ctx context.Context, tx postgresx.Tx) error {
 		tag, err := tx.Exec(ctx, "update l2_contract set seen=true where id=$1", 7)
@@ -137,7 +137,7 @@ func TestP0TxContract(t *testing.T) {
 }
 
 func TestP0TxContractPropagatesExecutorErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	execErr := errors.New("tx exec failed")
 	tx := &postgresxtest.QueryAdapter{ExecErr: execErr}
 	txFn := postgresx.TxFunc(func(ctx context.Context, tx postgresx.Tx) error {
