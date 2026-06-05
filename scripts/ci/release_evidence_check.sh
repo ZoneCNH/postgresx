@@ -72,7 +72,7 @@ for path in (manifest_path, latest_path):
 PY
 
 if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)|go get github[.]com/ZoneCNH/postgresx/pkg/postgresx' \
-  README.md docs contracts release scripts .github --glob '!docs/goal.md' --glob '!docs/evidence/20260601/*'; then
+  README.md docs contracts release .github --glob '!docs/goal.md' --glob '!docs/evidence/20260601/*'; then
   echo "release evidence contains stale module/package references" >&2
   exit 1
 fi
@@ -81,6 +81,8 @@ if rg -n --hidden \
   --glob '!.git/**' \
   --glob '!docs/goal.md' \
   --glob '!docs/evidence/20260601/*' \
+  --glob '!scripts/ci/release_evidence_check.sh' \
+  --glob '!scripts/ci/secret_scan.sh' \
   'postgres(?:ql)?://[^[:space:]'"'"'"`]+:[^[:space:]'"'"'"`]+@|PGPASSWORD=[^[:space:]'"'"'"`]+|password=[^[:space:]'"'"'"`]+' \
   README.md docs contracts release scripts .github .agent 2>/dev/null; then
   echo "release evidence contains secret-like PostgreSQL credential material" >&2
