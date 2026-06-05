@@ -14,6 +14,7 @@ scan() {
     --glob '!go.sum' \
     --glob '!docs/goal.md' \
     --glob '!scripts/ci/secret_scan.sh' \
+    --glob '!scripts/ci/release_evidence_check.sh' \
     "$pattern" .; then
     status=1
   fi
