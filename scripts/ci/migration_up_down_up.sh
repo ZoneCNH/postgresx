@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 GO="${GO:-go}"
-TEST_PATTERN='TestMigrationRunner.*Integration'
+TEST_PATTERN='Test.*Integration$'
 
 run_tests() {
   GOWORK=off "$GO" test -v -run "$TEST_PATTERN" -count=1 ./...
@@ -32,7 +32,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
       echo "failed to start Docker PostgreSQL for required integration gate" >&2
       exit 1
     fi
-    echo "Docker PostgreSQL is unavailable; skipping live migration gate"
+    echo "Docker PostgreSQL is unavailable; skipping live integration gate"
     exit 0
   fi
   trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
@@ -89,4 +89,4 @@ if [[ "${POSTGRESX_REQUIRE_INTEGRATION:-}" == "1" ]]; then
   exit 1
 fi
 
-echo "POSTGRESX_INTEGRATION_DSN or POSTGRES_TEST_DSN is not set; skipping live migration gate"
+echo "POSTGRESX_INTEGRATION_DSN or POSTGRES_TEST_DSN is not set; skipping live integration gate"
