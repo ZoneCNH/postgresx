@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-06-05T18:06:31Z",
+  "kind": "retrospective",
+  "layer": "L2",
+  "next_release_level": "L2-T3",
+  "notes": [
+    "L2-T2 is integration-gated but not release-allowed.",
+    "Retrospective evidence is mandatory at L2-T4."
+  ],
+  "package": "postgresx",
+  "release_level_actual": "L2-T2",
+  "release_level_target": "L2-T2",
+  "schema_version": "1.0",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "status": "not_required_for_l2_t2",
+  "version": "v0.1.0"
+}

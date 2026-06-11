@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "packs": [
+    {
+      "name": "postgresx-p0-sql-tx-pool",
+      "package": "postgresx",
+      "layer": "L2",
+      "release_level": "L2-T2",
+      "required_profiles": ["unit", "contract", "integration"],
+      "required_contracts": [
+        {"name": "sql.exec", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.query_row", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.query_many", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.not_found", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.syntax_error", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.unique_violation", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.foreign_key_violation", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "sql.context_timeout", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "tx.commit", "category": "transaction", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "tx.rollback", "category": "transaction", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "tx.rollback_on_error", "category": "transaction", "evidence": "test/contract/l2_contract_test.go"},
+        {"name": "pool.exhaustion", "category": "pool", "evidence": "test/contract/l2_contract_test.go"}
+      ]
+    }
+  ]
+}

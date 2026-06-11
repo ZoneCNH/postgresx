@@ -1,0 +1,3 @@
+Command: GOWORK=off go list -deps ./... | dependency-boundary audit
+Result: no forbidden consumer-module or peer-L2 dependency matches were found.
+Scope: current postgresx packages only.

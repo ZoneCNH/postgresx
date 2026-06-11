@@ -1,0 +1,4 @@
+Command: GOWORK=off go list -deps ./... | legacy consumer dependency audit
+Result: no forbidden consumer-module or peer-L2 dependency matches were found.
+Scope: current postgresx packages only.
+Compatibility: retained for the existing release evidence checker; see no-consumer-deps.txt for the neutral evidence name.

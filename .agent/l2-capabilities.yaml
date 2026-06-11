@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "standard_source": "github.com/ZoneCNH/xlib-standard",
+  "package": "postgresx",
+  "layer": "L2",
+  "release_level_target": "L2-T2",
+  "release_contract": {
+    "required_profiles": ["unit", "contract", "integration"],
+    "release_allowed": false,
+    "factory_grade_allowed": false,
+    "min_score": 75
+  },
+  "capabilities": {
+    "core": ["common", "sql", "transaction", "pool"],
+    "optional": ["migration", "advisory_lock", "batch_insert", "copy"]
+  },
+  "provider": {
+    "name": "postgres",
+    "image": "postgres:16-alpine"
+  },
+  "p0_contracts": [
+    "sql.exec",
+    "sql.query_row",
+    "sql.query_many",
+    "sql.not_found",
+    "sql.syntax_error",
+    "sql.unique_violation",
+    "sql.foreign_key_violation",
+    "sql.context_timeout",
+    "tx.commit",
+    "tx.rollback",
+    "tx.rollback_on_error",
+    "pool.exhaustion"
+  ],
+  "forbidden_runtime_dependencies": [
+    "github.com/ZoneCNH/xlib-standard",
+    "github.com/ZoneCNH/testkitx",
+    "github.com/ZoneCNH/xlibgate"
+  ]
+}
