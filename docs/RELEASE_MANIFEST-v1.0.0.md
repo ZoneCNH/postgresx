@@ -45,10 +45,12 @@ boundary compatibility from a temporary consumer module. It is not production
 consumer adoption evidence, so adoption remains smoke-level rather than
 factory-grade evidence.
 
-The integration evidence was produced with a real PostgreSQL development DSN
-loaded from the local SRE secret document through environment variables only.
-The DSN and credentials are not written to release docs, manifests, or evidence
-artifacts.
+The integration evidence was produced on 2026-06-13 with PostgreSQL connection
+fields read from the local SRE secret Markdown document and assembled into a
+DSN inside one shell process. That DSN was passed only through
+`POSTGRESX_INTEGRATION_DSN` / `POSTGRES_TEST_DSN` with
+`POSTGRESX_REQUIRE_INTEGRATION=1`; the raw DSN and credential-bearing values
+are not written to release docs, manifests, or evidence artifacts.
 
 ## Manifest semantics
 
@@ -83,7 +85,8 @@ release-history decision authorizes retagging `v1.0.0`.
   the local compile smoke.
 - This snapshot does not prove current GitHub Actions status or production
   soak.
-- This snapshot does not publish or embed PostgreSQL credentials or DSNs.
+- This snapshot does not publish or embed PostgreSQL credentials, DSNs, or raw
+  SRE secret document fields.
 - This module does not own domain schema, repositories, application services, or
   production DSNs.
 
