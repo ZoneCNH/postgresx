@@ -79,6 +79,7 @@ tagged snapshot or cutting a successor release tag. Do not rewrite or retag
 - `release/manifest/v1.0.0.json.sha256`
 - `release/manifest/latest.json`
 - `release/manifest/latest.json.sha256`
+- `docs/POSTGRESX-SCORE-AUDIT-20260613.md`
 - `docs/EVIDENCE-20260601.md`
 - `docs/evidence/20260601/go-test.txt`
 - `docs/evidence/20260601/go-test-race.txt`
