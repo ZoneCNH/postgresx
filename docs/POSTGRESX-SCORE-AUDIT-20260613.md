@@ -8,8 +8,8 @@
 `factory_grade_allowed=false`。
 
 不能把当前状态提升为 `100/100`，因为现有证据仍缺少外部 CI、生产
-soak、真实下游采用证明，以及 `v1.0.0` 发布 manifest 与已发布 tag 的
-历史一致性闭合。
+soak、真实下游采用证明、`v1.0.0` manifest 祖先关系闭合，以及把当前分支
+后补证据作为新发布版本交付的发布闭合动作。
 
 ## 评分依据
 
@@ -21,7 +21,7 @@ soak、真实下游采用证明，以及 `v1.0.0` 发布 manifest 与已发布 t
 | chaos / benchmark smoke | 通过 | `make release-check` 生成 `.agent/evidence/raw/*` 与 `.agent/evidence/normalized/*` |
 | 本地下游 smoke | 通过 | 临时 consumer module 验证导入、编译、配置脱敏和 `Queryer` 边界 |
 | secret scan / 边界检查 | 通过 | 发布 gate 包含 secret scan、boundary、contracts、foundationx API 和 template alignment |
-| 发布证据一致性 | 阻塞 | `release-evidence-check` 仍因 manifest source commit 与已发布 tag commit 不具祖先关系失败 |
+| 发布证据一致性 | 阻塞 | `v1.0.0` manifest 已恢复为已发布快照中的 source metadata，但 `release-evidence-check` 拒绝它：`9eaf770` 不是当前 `HEAD` 或 tag commit `310a249` 的祖先 |
 | 工厂级 / 满分 | 阻塞 | 缺少外部 CI、生产 soak 和真实 consumer release evidence |
 
 ## 已验证命令
@@ -38,10 +38,15 @@ soak、真实下游采用证明，以及 `v1.0.0` 发布 manifest 与已发布 t
 - `make security boundary contracts foundationx-api template-alignment`
 - `VERSION=v1.0.0 make release-check`
 
-`VERSION=v1.0.0 make release-evidence-check` 的当前结果是失败，失败原因是
-发布 manifest 记录的 source commit `7fe4cfd` 不是已发布 `v1.0.0` tag
-commit `310a249` 的祖先。这是发布历史一致性问题，不是测试覆盖或代码行为
-失败。
+`VERSION=v1.0.0 make release-evidence-check` 用于校验已发布 tag 的不可变
+manifest，但当前仍未通过。manifest 记录的 source commit 是 `9eaf770`；
+该对象能在本地解析，但不是当前 `HEAD` 或已发布 `v1.0.0` tag commit
+`310a249` 的祖先，因此命令失败于：
+`release manifest source commit is not an ancestor of HEAD: 9eaf770`。
+
+当前分支后补的 `L2-T3 / 85` 证据不能直接覆盖这个 tag manifest；如需发布
+该证据，应切后继版本、取得明确 retag 授权，或先完成受控的
+manifest-contract 决策。
 
 ## 真实配置使用边界
 
@@ -60,13 +65,18 @@ commit `310a249` 的祖先。这是发布历史一致性问题，不是测试覆
 ## v1.0.0 发布状态
 
 GitHub release `v1.0.0` 已存在，已发布 tag commit 是 `310a249`。当前
-`postgresx` 分支保存的是 tag 之后补齐的 `L2-T3 / 85` evidence 与文档同步，
-其中 release manifest 的 source commit 是 `7fe4cfd`。
+`postgresx` 分支保存的是 tag 之后补齐的 `L2-T3 / 85` evidence 与文档同步；
+`v1.0.0` release manifest 则保留已发布快照中的 source metadata，source
+commit 是 `9eaf770`。当前 Git 拓扑显示 `9eaf770` 不在 `HEAD` 或
+`v1.0.0` tag commit `310a249` 的祖先链上，所以现有
+`release-evidence-check` 合同仍然阻塞。
 
 在没有显式发布历史授权前，不应 force retag 或重写 `v1.0.0`。可选闭合路径：
 
-1. 保持 `v1.0.0` 不可变，从 tag snapshot 重新生成并校验 manifest。
-2. 从当前 evidence 分支切后继版本，例如 `v1.0.1`。
+1. 从当前 evidence 分支切后继版本，例如 `v1.0.1`，并生成新的 manifest、
+   checksum 与 tag evidence。
+2. 通过受控变更明确 release manifest 是否允许记录 squash 前 source
+   metadata，并同步更新校验脚本与治理文档。
 3. 仅在获得明确授权时重写 `v1.0.0` tag/release；这是高风险路径，不作为默认方案。
 
 ## 满分差距
@@ -76,6 +86,8 @@ GitHub release `v1.0.0` 已存在，已发布 tag commit 是 `310a249`。当前
 - 外部 CI 成功记录，且不受当前 GitHub 账户 billing lock 影响；
 - 生产 soak 记录，包括时间窗口、环境、失败率和回滚条件；
 - 真实 consumer checkout 的依赖 pin、编译、测试、导入边界和发布 manifest；
-- 与最终 tag 一致的 release manifest、checksum 和 `release-evidence-check` 通过记录。
+- 后继 tag/release、manifest、checksum 和 `release-evidence-check` 通过记录，
+  用于发布当前分支的 `L2-T3 / 85` 证据，或等价的受控 manifest-contract
+  决策。
 
 在这些证据补齐前，`85/100` 是当前最高可信评分。

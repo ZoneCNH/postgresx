@@ -4,8 +4,9 @@
 
 - Module: `github.com/ZoneCNH/postgresx`
 - Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
-- Status: published `v1.0.0` tag plus post-tag local `L2-T3 / 85`
-  evidence on the `postgresx` branch
+- Status: published immutable `v1.0.0` tag with restored tag snapshot
+  manifest metadata, plus separate post-tag local `L2-T3 / 85` evidence on
+  the `postgresx` branch
 - Go verification mode: `GOWORK=off`
 
 ## Publication evidence
@@ -13,20 +14,31 @@
 - GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
 - Tag object: `refs/tags/v1.0.0` resolves to `5c3e3a6`.
 - Tag commit: `refs/tags/v1.0.0^{}` resolves to `310a249`.
-- Release snapshot commit: `release/manifest/v1.0.0.json` records `7fe4cfd`.
-- Release snapshot tree: `231164546c9c7b11d30287f1318c5f6a3b51442d`.
+- Release snapshot commit metadata: `release/manifest/v1.0.0.json` records
+  `9eaf770`.
+- Release snapshot tree: `a45b1813f4ba5c0cb9a5b90e80b75f970078616b`.
+- Snapshot ancestry blocker: commit `9eaf770` resolves in the local object
+  database, but is not an ancestor of the current `HEAD` or the immutable tag
+  commit `310a249`; the current `release-evidence-check` contract therefore
+  rejects this manifest.
 - Release metadata `targetCommitish` remains `main`; the tag object and resolved
   tag commit are the authoritative published release identity.
 
 ## Local gate evidence
 
-- Current local gate: `L2-T3 / 85`
-- Local release decision: `release_allowed=true`
-- Factory decision: `factory_grade_allowed=false`
-- Required profiles: unit, contract, integration, chaos, benchmark, and local
-  downstream compile smoke
-- Executable check: `GOWORK=off VERSION=v1.0.0 make release-check`
-- Evidence generated at: `2026-06-13T07:52:51Z`
+- Tag manifest gate: `L2-T2 / 75`
+- Tag manifest release decision: `release_allowed=false`
+- Current branch evidence gate: `L2-T3 / 85`
+- Current branch release decision: `release_allowed=true`
+- Factory decision for both snapshots: `factory_grade_allowed=false`
+- Current branch required profiles: unit, contract, integration, chaos,
+  benchmark, and local downstream compile smoke
+- Tag evidence check: `GOWORK=off VERSION=v1.0.0 make release-evidence-check`
+  currently fails with `release manifest source commit is not an ancestor of
+  HEAD: 9eaf770`
+- Current branch evidence generator: `GOWORK=off VERSION=v1.0.0 make release-check`
+- Tag manifest generated at: `2026-06-13T01:10:36Z`
+- Current branch evidence generated at: `2026-06-13T07:52:51Z`
 
 The downstream smoke proves import, compile, configuration, and `Queryer`
 boundary compatibility from a temporary consumer module. It is not production
@@ -40,16 +52,18 @@ artifacts.
 
 ## Manifest semantics
 
-`release/manifest/v1.0.0.json` and `release/manifest/latest.json` record the
-source snapshot used to generate the post-tag release evidence. Their current
-`commit` field is `7fe4cfd`, which resolves in Git and is expected to be an
-ancestor of the evidence-carrying `postgresx` branch after this
-documentation/evidence commit, but it is **not** an ancestor of the immutable
-`v1.0.0` tag commit `310a249`. The local
-`release-evidence-check` therefore fails until the release-history decision is
-reconciled by an approved action, such as regenerating the manifest from the
-tagged snapshot or cutting a successor release tag. Do not rewrite or retag
-`v1.0.0` without explicit release-history approval.
+`release/manifest/v1.0.0.json` and `release/manifest/latest.json` intentionally
+preserve the source metadata from the published `v1.0.0` snapshot instead of
+silently replacing it with post-tag branch evidence. Their `commit` field is
+`9eaf770`, which resolves in Git but is outside the current `HEAD` and
+`v1.0.0` tag ancestry. This preserves the immutable snapshot semantics, but it
+does not satisfy `release-evidence-check` until the release-history or manifest
+contract is explicitly resolved.
+
+Running `release-check` or `make evidence` on the current `postgresx` branch
+will regenerate manifests from the post-tag branch head and should be treated
+as successor-release input, for example `v1.0.1`, unless an explicit
+release-history decision authorizes retagging `v1.0.0`.
 
 ## Included surfaces
 
@@ -101,6 +115,7 @@ Before treating this as a factory-grade or production-adopted release, add fresh
 external CI evidence, production soak evidence, and consumer adoption evidence
 from a current consumer checkout. GitHub Actions is currently blocked outside
 the repository by an account billing lock, so local evidence is the authoritative
-available gate evidence. The current release-evidence blocker is the manifest
-`7fe4cfd` versus tag `310a249` ancestry mismatch; resolve it through an
-approved release-history action rather than rewriting or retagging `v1.0.0`.
+available branch gate evidence. Publishing the post-tag `L2-T3 / 85` evidence
+as a release requires a successor tag such as `v1.0.1`, an approved
+manifest-contract decision for squashed source metadata, or explicit
+release-history authorization to retag `v1.0.0`.
