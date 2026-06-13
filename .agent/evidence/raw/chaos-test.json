@@ -1,7 +1,7 @@
 {
-  "command": "GOWORK=off make boundary",
+  "command": "GOWORK=off make test-chaos",
   "generated_at": "2026-06-13T06:33:57Z",
-  "kind": "raw.boundary-check",
+  "kind": "raw.chaos-test",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",

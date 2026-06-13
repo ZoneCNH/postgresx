@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-13T05:36:50Z",
+  "generated_at": "2026-06-13T06:33:57Z",
   "kind": "retrospective",
   "layer": "L2",
-  "next_release_level": "L2-T3",
+  "next_release_level": "L2-T4",
   "notes": [
-    "L2-T2 is integration-gated but not release-allowed.",
-    "Retrospective evidence is mandatory at L2-T4."
+    "L2-T3 is release-allowed after local integration, chaos, benchmark, and downstream smoke evidence.",
+    "Factory-grade remains blocked until external CI and production downstream adoption evidence are available."
   ],
   "package": "postgresx",
-  "release_level_actual": "L2-T2",
-  "release_level_target": "L2-T2",
+  "release_level_actual": "L2-T3",
+  "release_level_target": "L2-T3",
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "status": "not_required_for_l2_t2",
+  "status": "captured_for_l2_t3",
   "version": "v1.0.0"
 }

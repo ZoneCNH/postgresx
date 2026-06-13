@@ -19,10 +19,10 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const l2ReleaseLevel = "L2-T2"
+const l2ReleaseLevel = "L2-T3"
 
 var (
-	requiredProfiles    = []string{"unit", "contract", "integration"}
+	requiredProfiles    = []string{"unit", "contract", "integration", "chaos", "benchmark", "adoption"}
 	requiredP0Contracts = []string{
 		"sql.exec",
 		"sql.query_row",
@@ -45,13 +45,22 @@ var (
 		"race_detected",
 		"goroutine_leak",
 		"release_level_overclaimed",
+		"chaos_failure",
+		"benchmark_smoke_failed",
+		"missing_downstream_adoption",
 	}
 	requiredEvidence = []string{
 		".agent/evidence/raw/unit-test.json",
 		".agent/evidence/raw/contract-test.json",
 		".agent/evidence/raw/integration-test.json",
+		".agent/evidence/raw/chaos-test.json",
+		".agent/evidence/raw/benchmark-smoke.json",
+		".agent/evidence/raw/downstream-smoke.json",
 		".agent/evidence/normalized/contract-check.json",
 		".agent/evidence/normalized/integration-check.json",
+		".agent/evidence/normalized/chaos-check.json",
+		".agent/evidence/normalized/benchmark-check.json",
+		".agent/evidence/normalized/adoption-check.json",
 		".agent/evidence/normalized/layer-guard.json",
 		".agent/evidence/normalized/secret-scan.json",
 		".agent/evidence/decision/test-plan.json",
@@ -365,14 +374,14 @@ func TestL2StandardMetadataMatchesXlibStandard(t *testing.T) {
 	if !reflect.DeepEqual(manifest.ReleaseContract.RequiredProfiles, requiredProfiles) {
 		t.Fatalf("manifest required_profiles = %v, want %v", manifest.ReleaseContract.RequiredProfiles, requiredProfiles)
 	}
-	if manifest.ReleaseContract.ReleaseAllowed {
-		t.Fatal("L2-T2 must not set release_allowed=true")
+	if !manifest.ReleaseContract.ReleaseAllowed {
+		t.Fatal("L2-T3 must set release_allowed=true")
 	}
 	if manifest.ReleaseContract.FactoryGradeAllowed {
-		t.Fatal("L2-T2 must not set factory_grade_allowed=true")
+		t.Fatal("L2-T3 must not set factory_grade_allowed=true")
 	}
-	if manifest.ReleaseContract.MinScore != 75 {
-		t.Fatalf("L2-T2 min_score = %d, want 75", manifest.ReleaseContract.MinScore)
+	if manifest.ReleaseContract.MinScore != 85 {
+		t.Fatalf("L2-T3 min_score = %d, want 85", manifest.ReleaseContract.MinScore)
 	}
 	if manifest.Provider.Image != "postgres:16-alpine" {
 		t.Fatalf("provider image = %q, want postgres:16-alpine", manifest.Provider.Image)
@@ -406,11 +415,11 @@ func TestL2StandardMetadataMatchesXlibStandard(t *testing.T) {
 	if gate.ReleaseLevelTarget != l2ReleaseLevel || gate.ReleaseLevelActual != l2ReleaseLevel {
 		t.Fatalf("gate release target/actual = %s/%s, want %s/%s", gate.ReleaseLevelTarget, gate.ReleaseLevelActual, l2ReleaseLevel, l2ReleaseLevel)
 	}
-	if gate.MinScore != 75 || gate.Score != 75 {
-		t.Fatalf("gate score/min_score = %d/%d, want 75/75", gate.Score, gate.MinScore)
+	if gate.MinScore != 85 || gate.Score != 85 {
+		t.Fatalf("gate score/min_score = %d/%d, want 85/85", gate.Score, gate.MinScore)
 	}
-	if gate.ReleaseAllowed || gate.FactoryGradeAllowed {
-		t.Fatalf("L2-T2 gate release_allowed/factory_grade_allowed = %v/%v, want false/false", gate.ReleaseAllowed, gate.FactoryGradeAllowed)
+	if !gate.ReleaseAllowed || gate.FactoryGradeAllowed {
+		t.Fatalf("L2-T3 gate release_allowed/factory_grade_allowed = %v/%v, want true/false", gate.ReleaseAllowed, gate.FactoryGradeAllowed)
 	}
 	if !reflect.DeepEqual(gate.RequiredProfiles, requiredProfiles) {
 		t.Fatalf("gate required_profiles = %v, want %v", gate.RequiredProfiles, requiredProfiles)

@@ -83,11 +83,16 @@ GOWORK=off make test
 GOWORK=off make vet
 GOWORK=off make race
 GOWORK=off make contracts
-GOWORK=off VERSION=v1.0.0 make release-preflight
-GOWORK=off VERSION=v1.0.0 make release-final-check
+GOWORK=off VERSION=v1.0.0 make release-check
 ```
 
 `POSTGRES_TEST_DSN` or `POSTGRESX_INTEGRATION_DSN` is required only for live
 PostgreSQL integration when Docker is unavailable. Release mode requires live
 integration with `POSTGRESX_REQUIRE_INTEGRATION=1`; inject those environment
 variables from the caller or CI environment and do not commit DSNs.
+
+The local release gate is `L2-T3 / 85`: unit, contract, integration, chaos,
+benchmark smoke, and downstream compile smoke must pass before evidence is
+generated. `release_allowed=true` is local to this gate;
+`factory_grade_allowed=false` remains until external CI, production soak, and
+real consumer adoption evidence are available.

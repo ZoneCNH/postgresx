@@ -1,7 +1,7 @@
 {
-  "command": "GOWORK=off make boundary",
   "generated_at": "2026-06-13T06:33:57Z",
-  "kind": "raw.boundary-check",
+  "hard_failure": "benchmark_smoke_failed",
+  "kind": "normalized.benchmark-check",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",
@@ -9,5 +9,6 @@
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
+  "triggered": false,
   "version": "v1.0.0"
 }

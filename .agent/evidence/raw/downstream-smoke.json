@@ -1,12 +1,13 @@
 {
-  "command": "GOWORK=off make boundary",
+  "command": "GOWORK=off make downstream-smoke",
   "generated_at": "2026-06-13T06:33:57Z",
-  "kind": "raw.boundary-check",
+  "kind": "raw.downstream-smoke",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",
   "release_level_target": "L2-T3",
   "schema_version": "1.0",
+  "scope": "local_consumer_compile_and_optional_live_query",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
   "version": "v1.0.0"

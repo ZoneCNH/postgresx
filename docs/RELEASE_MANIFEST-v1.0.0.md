@@ -4,7 +4,8 @@
 
 - Module: `github.com/ZoneCNH/postgresx`
 - Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
-- Status: published `v1.0.0` evidence snapshot
+- Status: published `v1.0.0` source snapshot with current local `L2-T3 / 85`
+  evidence on the `postgresx` branch
 - Go verification mode: `GOWORK=off`
 
 ## Publication evidence
@@ -14,6 +15,19 @@
 - Remote tag: `refs/tags/v1.0.0^{}` resolves to `310a249`.
 - Release metadata `targetCommitish` remains `main`; the tag object and resolved
   tag commit are the authoritative release identity.
+
+## Local gate evidence
+
+- Current local gate: `L2-T3 / 85`
+- Local release decision: `release_allowed=true`
+- Factory decision: `factory_grade_allowed=false`
+- Required profiles: unit, contract, integration, chaos, benchmark, and local
+  downstream compile smoke
+- Executable check: `GOWORK=off VERSION=v1.0.0 make release-check`
+
+The downstream smoke proves import, compile, configuration, and `Queryer`
+boundary compatibility from a temporary consumer module. It is not production
+consumer adoption evidence.
 
 ## Manifest semantics
 
@@ -36,8 +50,10 @@ later evidence-maintenance commit.
 
 ## Explicit non-claims
 
-- This snapshot does not include current downstream adoption proof.
-- This snapshot does not prove current CI status or production soak.
+- This snapshot does not include production downstream adoption proof beyond
+  the local compile smoke.
+- This snapshot does not prove current GitHub Actions status or production
+  soak.
 - This snapshot does not publish or embed PostgreSQL credentials or DSNs.
 - This module does not own domain schema, repositories, application services, or
   production DSNs.
@@ -55,10 +71,19 @@ later evidence-maintenance commit.
 - `docs/evidence/20260601/secret-scan.txt`
 - `docs/evidence/20260601/no-consumer-deps.txt`
 - `docs/evidence/20260601/dependencies.txt`
+- `.agent/evidence/raw/chaos-test.json`
+- `.agent/evidence/raw/benchmark-smoke.json`
+- `.agent/evidence/raw/downstream-smoke.json`
+- `.agent/evidence/normalized/chaos-check.json`
+- `.agent/evidence/normalized/benchmark-check.json`
+- `.agent/evidence/normalized/adoption-check.json`
+- `.agent/evidence/decision/release-readiness.json`
 
 ## Remaining release hardening
 
-Before treating this as a production-adopted release, add fresh CI evidence,
-production soak evidence, and consumer adoption evidence from a current consumer
-checkout. Do not rewrite or retag `v1.0.0` without an explicit release-history
-approval.
+Before treating this as a factory-grade or production-adopted release, add fresh
+external CI evidence, production soak evidence, and consumer adoption evidence
+from a current consumer checkout. GitHub Actions is currently blocked outside
+the repository by an account billing lock, so local evidence is the authoritative
+available gate evidence. Do not rewrite or retag `v1.0.0` without an explicit
+release-history approval.

@@ -1,13 +1,15 @@
 {
-  "command": "GOWORK=off make boundary",
   "generated_at": "2026-06-13T06:33:57Z",
-  "kind": "raw.boundary-check",
+  "hard_failure": "missing_downstream_adoption",
+  "kind": "normalized.adoption-check",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",
   "release_level_target": "L2-T3",
   "schema_version": "1.0",
+  "scope": "local_downstream_smoke",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
+  "triggered": false,
   "version": "v1.0.0"
 }

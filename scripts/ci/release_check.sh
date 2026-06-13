@@ -12,6 +12,9 @@ GOWORK=off make vet
 GOWORK=off make test-unit
 GOWORK=off make test-contract
 GOWORK=off make test-integration
+GOWORK=off make test-chaos
+GOWORK=off make benchmark-smoke
+GOWORK=off make downstream-smoke
 GOWORK=off make boundary
 GOWORK=off make contracts
 GOWORK=off make secret-scan
@@ -42,4 +45,4 @@ fi
 
 python3 ./scripts/ci/l2_evidence.py --check --version "$VERSION"
 
-echo "L2-T2 release check passed for $VERSION"
+echo "L2-T3 release check passed for $VERSION"

@@ -45,6 +45,18 @@ test-contract:
 test-integration:
 	POSTGRESX_REQUIRE_INTEGRATION=1 bash ./scripts/run_integration.sh
 
+.PHONY: test-chaos
+test-chaos:
+	$(GOENV) $(GO) test ./test/chaos
+
+.PHONY: benchmark-smoke
+benchmark-smoke:
+	bash ./scripts/ci/benchmark_smoke.sh
+
+.PHONY: downstream-smoke
+downstream-smoke:
+	bash ./scripts/ci/downstream_smoke.sh
+
 .PHONY: race
 race:
 	$(GOENV) $(GO) test -race ./...
