@@ -6,8 +6,8 @@
       "name": "postgresx-p0-sql-tx-pool",
       "package": "postgresx",
       "layer": "L2",
-      "release_level": "L2-T2",
-      "required_profiles": ["unit", "contract", "integration"],
+      "release_level": "L2-T3",
+      "required_profiles": ["unit", "contract", "integration", "chaos", "benchmark", "adoption"],
       "required_contracts": [
         {"name": "sql.exec", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},
         {"name": "sql.query_row", "category": "sql", "evidence": "test/contract/l2_contract_test.go"},

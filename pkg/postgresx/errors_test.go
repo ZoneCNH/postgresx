@@ -48,6 +48,12 @@ func TestMapErrorNormalizesKnownFailures(t *testing.T) {
 			retryable: false,
 		},
 		{
+			name:      "undefined table not found",
+			err:       &pgconn.PgError{Code: "42P01"},
+			kind:      foundationx.ErrorKindNotFound,
+			retryable: false,
+		},
+		{
 			name:      "unique already exists",
 			err:       &pgconn.PgError{Code: "23505"},
 			kind:      foundationx.ErrorKindAlreadyExist,

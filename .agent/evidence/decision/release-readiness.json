@@ -1,9 +1,12 @@
 {
   "factory_grade_allowed": false,
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T07:52:51Z",
   "hard_failures": {
+    "benchmark_smoke_failed": false,
+    "chaos_failure": false,
     "goroutine_leak": false,
     "layer_violation": false,
+    "missing_downstream_adoption": false,
     "missing_required_contract": false,
     "missing_required_evidence": false,
     "race_detected": false,
@@ -12,17 +15,23 @@
   },
   "kind": "decision.release-readiness",
   "layer": "L2",
-  "min_score": 75,
+  "min_score": 85,
   "package": "postgresx",
-  "release_allowed": false,
-  "release_level_actual": "L2-T2",
-  "release_level_target": "L2-T2",
+  "release_allowed": true,
+  "release_level_actual": "L2-T3",
+  "release_level_target": "L2-T3",
   "required_evidence": [
     ".agent/evidence/raw/unit-test.json",
     ".agent/evidence/raw/contract-test.json",
     ".agent/evidence/raw/integration-test.json",
+    ".agent/evidence/raw/chaos-test.json",
+    ".agent/evidence/raw/benchmark-smoke.json",
+    ".agent/evidence/raw/downstream-smoke.json",
     ".agent/evidence/normalized/contract-check.json",
     ".agent/evidence/normalized/integration-check.json",
+    ".agent/evidence/normalized/chaos-check.json",
+    ".agent/evidence/normalized/benchmark-check.json",
+    ".agent/evidence/normalized/adoption-check.json",
     ".agent/evidence/normalized/layer-guard.json",
     ".agent/evidence/normalized/secret-scan.json",
     ".agent/evidence/decision/test-plan.json",
@@ -34,11 +43,14 @@
   "required_profiles": [
     "unit",
     "contract",
-    "integration"
+    "integration",
+    "chaos",
+    "benchmark",
+    "adoption"
   ],
   "schema_version": "1.0",
-  "score": 75,
+  "score": 85,
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }

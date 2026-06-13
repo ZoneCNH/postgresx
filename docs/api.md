@@ -2,7 +2,7 @@
 
 The supported import path is `github.com/ZoneCNH/postgresx/pkg/postgresx`.
 
-Stable v0.1.0 surfaces:
+Stable v1.0.0 surfaces:
 
 - `Config`, `SanitizedConfig`, `DefaultConfig`, `Validate`, `Sanitize`, `DSN`,
   and `RedactedDSN` for explicit caller-owned configuration.

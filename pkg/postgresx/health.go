@@ -66,7 +66,7 @@ func (c *Client) Check(ctx context.Context) foundationx.HealthStatus {
 	return result
 }
 
-// HealthCheck implements the xlib-standard HealthCheck interface.
+// HealthCheck implements the shared HealthCheck interface shape.
 func (c *Client) HealthCheck(ctx context.Context) foundationx.HealthStatus {
 	return c.Check(ctx)
 }
