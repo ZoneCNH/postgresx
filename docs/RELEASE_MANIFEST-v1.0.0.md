@@ -11,11 +11,12 @@
 ## Publication evidence
 
 - GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
-- Remote branch: `refs/heads/postgresx` resolves to `4ea49cc` as of the
+- Branch head: `refs/heads/postgresx` resolves to `4ea49cc` as of the
   2026-06-13 local verification pass.
-- Remote tag: `refs/tags/v1.0.0^{}` resolves to `310a249`.
+- Tag commit: `refs/tags/v1.0.0^{}` resolves to `310a249`.
+- Release snapshot commit: `release/manifest/v1.0.0.json` records `c9c369a`.
 - Release metadata `targetCommitish` remains `main`; the tag object and resolved
-  tag commit are the authoritative release identity.
+  tag commit are the authoritative published release identity.
 
 ## Local gate evidence
 
