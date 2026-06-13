@@ -128,6 +128,10 @@ release-preflight: ci-extended integration evidence
 release-evidence-check:
 	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
+.PHONY: release-blockers
+release-blockers:
+	bash ./scripts/ci/release_blockers.sh $(VERSION)
+
 .PHONY: release-final-check
 release-final-check: release-evidence-check test
 	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx

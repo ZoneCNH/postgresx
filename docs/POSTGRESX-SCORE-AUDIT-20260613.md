@@ -44,6 +44,9 @@ manifest，但当前仍未通过。manifest 记录的 source commit 是 `9eaf770
 该对象能在本地解析，但不是当前 `HEAD` 或已发布 `v1.0.0` tag commit
 `310a249` 的祖先，因此命令失败于：
 `release manifest source commit is not an ancestor of HEAD: 9eaf770`。
+`VERSION=v1.0.0 make release-blockers` 是对应的只读诊断入口，用于输出
+manifest commit、当前 `HEAD`、tag object、tag commit 与祖先关系矩阵；它不
+生成 manifest，也不移动 tag。
 
 当前分支后补的 `L2-T3 / 85` 证据不能直接覆盖这个 tag manifest；如需发布
 该证据，应切后继版本、取得明确 retag 授权，或先完成受控的
@@ -68,10 +71,12 @@ manifest-contract 决策。
 
 ## v1.0.0 发布状态
 
-GitHub release `v1.0.0` 已存在，已发布 tag commit 是 `310a249`。当前
-`postgresx` 分支保存的是 tag 之后补齐的 `L2-T3 / 85` evidence 与文档同步；
-`v1.0.0` release manifest 则保留已发布快照中的 source metadata，source
-commit 是 `9eaf770`。当前 Git 拓扑显示 `9eaf770` 不在 `HEAD` 或
+GitHub release `v1.0.0` 已存在，已发布 tag commit 是 `310a249`。2026-06-13
+只读远端校验确认 `refs/tags/v1.0.0` 的 tag object 是 `5c3e3a6`，peeled
+commit 是 `310a249`。当前 `postgresx` 分支保存的是 tag 之后补齐的
+`L2-T3 / 85` evidence 与文档同步；`v1.0.0` release manifest 则保留已发布
+快照中的 source metadata，source commit 是 `9eaf770`。当前 Git 拓扑显示
+`9eaf770` 不在 `HEAD` 或
 `v1.0.0` tag commit `310a249` 的祖先链上，所以现有
 `release-evidence-check` 合同仍然阻塞。
 

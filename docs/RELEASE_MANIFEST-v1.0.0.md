@@ -14,6 +14,9 @@
 - GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
 - Tag object: `refs/tags/v1.0.0` resolves to `5c3e3a6`.
 - Tag commit: `refs/tags/v1.0.0^{}` resolves to `310a249`.
+- Remote tag check: 2026-06-13 read-only
+  `git ls-remote --tags origin refs/tags/v1.0.0 'refs/tags/v1.0.0^{}'`
+  returned the same tag object `5c3e3a6` and peeled commit `310a249`.
 - Release snapshot commit metadata: `release/manifest/v1.0.0.json` records
   `9eaf770`.
 - Release snapshot tree: `a45b1813f4ba5c0cb9a5b90e80b75f970078616b`.
@@ -36,6 +39,9 @@
 - Tag evidence check: `GOWORK=off VERSION=v1.0.0 make release-evidence-check`
   currently fails with `release manifest source commit is not an ancestor of
   HEAD: 9eaf770`
+- Non-mutating blocker diagnostic: `GOWORK=off VERSION=v1.0.0 make
+  release-blockers` reports the exact manifest, `HEAD`, and tag ancestry
+  blockers without regenerating manifests or moving the tag.
 - Current branch evidence generator: `GOWORK=off VERSION=v1.0.0 make release-check`
 - Tag manifest generated at: `2026-06-13T01:10:36Z`
 - Current branch evidence generated at: `2026-06-13T07:52:51Z`

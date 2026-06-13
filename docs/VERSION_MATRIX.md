@@ -14,6 +14,7 @@
 | release permission | `release_allowed=true` | local gate only; public tag is not moved by evidence maintenance |
 | factory grade | `factory_grade_allowed=false` | requires external CI, production soak, and real downstream adoption evidence |
 | release evidence check | blocked for `v1.0.0` | source commit `9eaf770` resolves but is outside current `HEAD` and tag ancestry |
+| release blocker diagnostic | `release-blockers` | non-mutating ancestry report for manifest commit, current `HEAD`, and tag commit |
 | release manifest | dual-scope evidence | tag manifest preserves snapshot metadata; current-branch evidence must ship through a successor release or approved manifest-contract change |
 | workspace mode | `GOWORK=off` | required for postgresx verification evidence |
 | downstream adoption | local smoke only | production adoption still requires current consumer-side dependency, compile, test, and release evidence |
