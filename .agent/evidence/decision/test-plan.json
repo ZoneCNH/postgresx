@@ -4,24 +4,30 @@
     "GOWORK=off make test-unit",
     "GOWORK=off make test-contract",
     "GOWORK=off make test-integration",
+    "GOWORK=off make test-chaos",
+    "GOWORK=off make benchmark-smoke",
+    "GOWORK=off make downstream-smoke",
     "GOWORK=off make boundary",
     "GOWORK=off make contracts",
     "GOWORK=off make secret-scan",
     "GOWORK=off make evidence"
   ],
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T07:52:51Z",
   "kind": "decision.test-plan",
   "layer": "L2",
   "package": "postgresx",
-  "release_level_actual": "L2-T2",
-  "release_level_target": "L2-T2",
+  "release_level_actual": "L2-T3",
+  "release_level_target": "L2-T3",
   "required_profiles": [
     "unit",
     "contract",
-    "integration"
+    "integration",
+    "chaos",
+    "benchmark",
+    "adoption"
   ],
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }

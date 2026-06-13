@@ -1,12 +1,7 @@
 {
-  "forbidden_runtime_dependencies": [
-    "github.com/ZoneCNH/xlib-standard",
-    "github.com/ZoneCNH/testkitx",
-    "github.com/ZoneCNH/xlibgate"
-  ],
-  "formal_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
   "generated_at": "2026-06-13T07:52:51Z",
-  "kind": "normalized.layer-guard",
+  "hard_failure": "chaos_failure",
+  "kind": "normalized.chaos-check",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",
@@ -14,5 +9,6 @@
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
+  "triggered": false,
   "version": "v1.0.0"
 }

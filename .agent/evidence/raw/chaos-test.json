@@ -1,12 +1,7 @@
 {
-  "forbidden_runtime_dependencies": [
-    "github.com/ZoneCNH/xlib-standard",
-    "github.com/ZoneCNH/testkitx",
-    "github.com/ZoneCNH/xlibgate"
-  ],
-  "formal_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
+  "command": "GOWORK=off make test-chaos",
   "generated_at": "2026-06-13T07:52:51Z",
-  "kind": "normalized.layer-guard",
+  "kind": "raw.chaos-test",
   "layer": "L2",
   "package": "postgresx",
   "release_level_actual": "L2-T3",

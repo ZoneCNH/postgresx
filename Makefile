@@ -1,7 +1,7 @@
 XLIB_CONTEXT ?= local_write
 GO ?= go
 GOENV ?= GOWORK=off
-VERSION ?= v0.1.0
+VERSION ?= v1.0.0
 
 .PHONY: require-gowork-off
 require-gowork-off:
@@ -44,6 +44,18 @@ test-contract:
 .PHONY: test-integration
 test-integration:
 	POSTGRESX_REQUIRE_INTEGRATION=1 bash ./scripts/run_integration.sh
+
+.PHONY: test-chaos
+test-chaos:
+	$(GOENV) $(GO) test ./test/chaos
+
+.PHONY: benchmark-smoke
+benchmark-smoke:
+	bash ./scripts/ci/benchmark_smoke.sh
+
+.PHONY: downstream-smoke
+downstream-smoke:
+	bash ./scripts/ci/downstream_smoke.sh
 
 .PHONY: race
 race:
@@ -116,8 +128,12 @@ release-preflight: ci-extended integration evidence
 release-evidence-check:
 	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
+.PHONY: release-blockers
+release-blockers:
+	bash ./scripts/ci/release_blockers.sh $(VERSION)
+
 .PHONY: release-final-check
-release-final-check: release-evidence-check
+release-final-check: release-evidence-check test
 	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx
 	$(GOENV) $(GO) list ./pkg/postgresx >/dev/null
 	git diff --check

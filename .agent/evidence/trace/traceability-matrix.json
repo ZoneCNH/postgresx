@@ -49,12 +49,12 @@
       "name": "pool.exhaustion"
     }
   ],
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T07:52:51Z",
   "kind": "trace.traceability-matrix",
   "layer": "L2",
   "package": "postgresx",
-  "release_level_actual": "L2-T2",
-  "release_level_target": "L2-T2",
+  "release_level_actual": "L2-T3",
+  "release_level_target": "L2-T3",
   "schema_version": "1.0",
   "source_of_truth": [
     ".agent/l2-capabilities.yaml",
@@ -63,5 +63,5 @@
   ],
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
-version="${1:-${VERSION:-v0.1.0}}"
+version="${1:-${VERSION:-v1.0.0}}"
 out="docs/evidence/20260601"
 mkdir -p "$out"
 GOWORK=off go list -m > "$out/go-list-module.txt"

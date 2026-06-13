@@ -24,6 +24,7 @@ RUN apt-get update \
       jq \
       make \
       python3-yaml \
+      ripgrep \
     && git config --global --add safe.directory /workspace \
     && rm -rf /var/lib/apt/lists/*
 

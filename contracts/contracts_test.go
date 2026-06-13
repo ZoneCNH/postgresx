@@ -154,10 +154,38 @@ func TestMetricsContractDocumentsPublicHooks(t *testing.T) {
 		"postgresx.query.total",
 		"postgresx.query.duration_seconds",
 		"postgresx.tx.total",
+		"postgresx.tx.duration_seconds",
+		"postgresx.health.total",
+		"postgresx.health.latency_seconds",
 		"postgresx.pool.connections",
 	} {
 		if !strings.Contains(text, snippet) {
 			t.Fatalf("metrics contract missing %q", snippet)
+		}
+	}
+}
+
+func TestVersionContractDocumentsPublicAPIBaseline(t *testing.T) {
+	contents, err := os.ReadFile("../VERSION")
+	if err != nil {
+		t.Fatal(err)
+	}
+	version := strings.TrimSpace(string(contents))
+	if version == "" {
+		t.Fatal("VERSION is empty")
+	}
+	if postgresx.Version != version {
+		t.Fatalf("postgresx.Version = %q, want VERSION %q", postgresx.Version, version)
+	}
+
+	for _, path := range []string{"public_api.md", "../docs/api.md"} {
+		contents, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := "Stable " + version + " surfaces:"
+		if !strings.Contains(string(contents), want) {
+			t.Fatalf("%s missing %q", path, want)
 		}
 	}
 }
