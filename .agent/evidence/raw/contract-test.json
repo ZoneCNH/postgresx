@@ -1,6 +1,6 @@
 {
   "command": "GOWORK=off make test-contract",
-  "generated_at": "2026-06-13T05:16:10Z",
+  "generated_at": "2026-06-13T05:36:50Z",
   "kind": "raw.contract-test",
   "layer": "L2",
   "package": "postgresx",
