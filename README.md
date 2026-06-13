@@ -103,3 +103,10 @@ benchmark smoke, and downstream compile smoke must pass before evidence is
 generated. `release_allowed=true` is local to this gate;
 `factory_grade_allowed=false` remains until external CI, production soak, and
 real consumer adoption evidence are available.
+
+`make release-check` regenerates current-branch evidence from `HEAD`.
+`make release-evidence-check` verifies the immutable published tag manifest.
+For the existing `v1.0.0` tag, that immutable check remains blocked because the
+restored snapshot source commit `9eaf770` is outside the current `HEAD` and tag
+ancestry; do not overwrite or retag `v1.0.0` with post-tag evidence without an
+explicit release-history decision.
