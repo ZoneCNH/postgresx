@@ -49,7 +49,6 @@ func TestChaosErrorMappingCoversRetryableTransientFailures(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -81,12 +80,12 @@ func TestChaosOpenFailureDoesNotLeakSecret(t *testing.T) {
 	cfg.ConnectTimeout = 25 * time.Millisecond
 	cfg.HealthTimeout = 25 * time.Millisecond
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 
 	client, err := postgresx.Open(ctx, cfg)
 	if client != nil {
-		_ = client.Close(context.Background())
+		_ = client.Close(t.Context())
 	}
 	if err == nil {
 		t.Fatal("Open with canceled context unexpectedly succeeded")
@@ -108,12 +107,12 @@ func TestChaosNilClientOperationsFailClosed(t *testing.T) {
 	t.Parallel()
 
 	var client *postgresx.Client
-	err := client.Ping(context.Background())
+	err := client.Ping(t.Context())
 	if !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
 		t.Fatalf("nil client Ping() want %v, err=%v", foundationx.ErrorKindConnection, err)
 	}
 
-	if err := client.Close(context.Background()); err != nil {
+	if err := client.Close(t.Context()); err != nil {
 		t.Fatalf("nil client Close() should be a no-op: %v", err)
 	}
 }

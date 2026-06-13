@@ -4,14 +4,15 @@
 
 - Module: `github.com/ZoneCNH/postgresx`
 - Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
-- Status: published `v1.0.0` source snapshot with current local `L2-T3 / 85`
+- Status: published `v1.0.0` tag plus post-tag local `L2-T3 / 85`
   evidence on the `postgresx` branch
 - Go verification mode: `GOWORK=off`
 
 ## Publication evidence
 
 - GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
-- Remote branch: `refs/heads/postgresx` resolves to `310a249`.
+- Remote branch: `refs/heads/postgresx` resolves to `4ea49cc` as of the
+  2026-06-13 local verification pass.
 - Remote tag: `refs/tags/v1.0.0^{}` resolves to `310a249`.
 - Release metadata `targetCommitish` remains `main`; the tag object and resolved
   tag commit are the authoritative release identity.
@@ -27,16 +28,20 @@
 
 The downstream smoke proves import, compile, configuration, and `Queryer`
 boundary compatibility from a temporary consumer module. It is not production
-consumer adoption evidence.
+consumer adoption evidence, so adoption remains smoke-level rather than
+factory-grade evidence.
 
 ## Manifest semantics
 
 `release/manifest/v1.0.0.json` and `release/manifest/latest.json` record the
-source snapshot used to generate the release evidence. Their `commit` and
-`tree_sha` fields must resolve in Git, the tree must match the resolved commit,
-and the resolved commit must be an ancestor of both the evidence-carrying HEAD
-and the `v1.0.0` tag when the tag is present. They are not required to equal a
-later evidence-maintenance commit.
+source snapshot used to generate the post-tag release evidence. Their current
+`commit` field is `c9c369a`, which resolves in Git and is an ancestor of the
+evidence-carrying `postgresx` branch HEAD `4ea49cc`, but it is **not** an
+ancestor of the immutable `v1.0.0` tag commit `310a249`. The local
+`release-evidence-check` therefore fails until the release-history decision is
+reconciled by an approved action, such as regenerating the manifest from the
+tagged snapshot or cutting a successor release tag. Do not rewrite or retag
+`v1.0.0` without explicit release-history approval.
 
 ## Included surfaces
 
@@ -85,5 +90,6 @@ Before treating this as a factory-grade or production-adopted release, add fresh
 external CI evidence, production soak evidence, and consumer adoption evidence
 from a current consumer checkout. GitHub Actions is currently blocked outside
 the repository by an account billing lock, so local evidence is the authoritative
-available gate evidence. Do not rewrite or retag `v1.0.0` without an explicit
-release-history approval.
+available gate evidence. The current release-evidence blocker is the manifest
+`c9c369a` versus tag `310a249` ancestry mismatch; resolve it through an
+approved release-history action rather than rewriting or retagging `v1.0.0`.
