@@ -7,7 +7,7 @@
     "global_database_singleton": "forbidden"
   },
   "capability_manifest": ".agent/l2-capabilities.yaml",
-  "commit": "9eaf770",
+  "commit": "310a249",
   "contract_hashes": {
     "api": "sha256:77028a91129b3781464d8c585171084c2385033e04167487730684112ba915d4",
     "config": "sha256:6c06425a698be735323b2dbc2b3353d0af2ebb32856d0d0747b6dac144528c27",
@@ -47,7 +47,7 @@
     "test": "required",
     "vet": "required"
   },
-  "generated_at": "2026-06-13T01:10:36Z",
+  "generated_at": "2026-06-13T01:33:13Z",
   "hard_failures": [
     "secret_leak",
     "layer_violation",
@@ -96,6 +96,6 @@
   "schema_version": "1.0",
   "source_digest": "sha256:bd87b9fd805cda7101632db6aa618b5f7f9dc114666fe6d06df2fc73baf18d3a",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "tree_sha": "a45b1813f4ba5c0cb9a5b90e80b75f970078616b",
+  "tree_sha": "3c86c13630ceadeac1bef2d10e290777e696194b",
   "version": "v1.0.0"
 }

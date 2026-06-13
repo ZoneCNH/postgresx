@@ -49,6 +49,11 @@ verify_sha256() {
 verify_sha256 "$manifest"
 verify_sha256 "$latest"
 
+if ! cmp -s "$manifest" "$latest"; then
+  echo "latest release manifest diverges from $manifest" >&2
+  exit 1
+fi
+
 python3 - "$manifest" "$latest" "$version" <<'PY'
 import json
 import sys
@@ -70,6 +75,50 @@ for path in (manifest_path, latest_path):
     if missing:
         raise SystemExit(f"{path} missing contract hashes: {', '.join(missing)}")
 PY
+
+read -r manifest_commit manifest_tree < <(python3 - "$manifest" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as fh:
+    data = json.load(fh)
+print(data.get("commit", ""), data.get("tree_sha", ""))
+PY
+)
+
+if [[ ! "$manifest_commit" =~ ^[0-9a-f]{7,40}$ ]]; then
+  echo "release manifest has invalid source commit: $manifest_commit" >&2
+  exit 1
+fi
+
+if [[ ! "$manifest_tree" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "release manifest has invalid source tree: $manifest_tree" >&2
+  exit 1
+fi
+
+resolved_manifest_commit="$(git rev-parse --verify --quiet "${manifest_commit}^{commit}" 2>/dev/null || true)"
+if [[ -z "$resolved_manifest_commit" ]]; then
+  echo "release manifest source commit is not present in git history: $manifest_commit" >&2
+  exit 1
+fi
+
+resolved_manifest_tree="$(git rev-parse "${resolved_manifest_commit}^{tree}")"
+if [[ "$resolved_manifest_tree" != "$manifest_tree" ]]; then
+  echo "release manifest tree does not match source commit: $manifest_commit" >&2
+  exit 1
+fi
+
+head_commit="$(git rev-parse HEAD)"
+if ! git merge-base --is-ancestor "$resolved_manifest_commit" "$head_commit"; then
+  echo "release manifest source commit is not an ancestor of HEAD: $manifest_commit" >&2
+  exit 1
+fi
+
+if tag_commit="$(git rev-parse --verify --quiet "refs/tags/${version}^{commit}" 2>/dev/null)"; then
+  if ! git merge-base --is-ancestor "$resolved_manifest_commit" "$tag_commit"; then
+    echo "release manifest source commit is not an ancestor of tag ${version}: $manifest_commit" >&2
+    exit 1
+  fi
+fi
 
 if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx/(examples|contracts)|go get github[.]com/ZoneCNH/postgresx/pkg/postgresx' \
   README.md docs contracts release .github --glob '!docs/goal.md' --glob '!docs/evidence/20260601/*'; then

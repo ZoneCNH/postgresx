@@ -4,8 +4,25 @@
 
 - Module: `github.com/ZoneCNH/postgresx`
 - Core package: `github.com/ZoneCNH/postgresx/pkg/postgresx`
-- Status: local release-preparation snapshot, not remote publication proof
+- Status: published `v1.0.0` evidence snapshot
 - Go verification mode: `GOWORK=off`
+
+## Publication evidence
+
+- GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
+- Remote branch: `refs/heads/postgresx` resolves to `310a249`.
+- Remote tag: `refs/tags/v1.0.0^{}` resolves to `310a249`.
+- Release metadata `targetCommitish` remains `main`; the tag object and resolved
+  tag commit are the authoritative release identity.
+
+## Manifest semantics
+
+`release/manifest/v1.0.0.json` and `release/manifest/latest.json` record the
+source snapshot used to generate the release evidence. Their `commit` and
+`tree_sha` fields must resolve in Git, the tree must match the resolved commit,
+and the resolved commit must be an ancestor of both the evidence-carrying HEAD
+and the `v1.0.0` tag when the tag is present. They are not required to equal a
+later evidence-maintenance commit.
 
 ## Included surfaces
 
@@ -20,7 +37,7 @@
 ## Explicit non-claims
 
 - This snapshot does not include current downstream adoption proof.
-- This snapshot does not prove remote tag publication or CI status.
+- This snapshot does not prove current CI status or production soak.
 - This snapshot does not publish or embed PostgreSQL credentials or DSNs.
 - This module does not own domain schema, repositories, application services, or
   production DSNs.
@@ -41,7 +58,7 @@
 
 ## Remaining release hardening
 
-Before treating this as a published release, add fresh CI evidence, tag and
-remote publication evidence, and current live PostgreSQL integration evidence
-from leader-injected environment variables. Add consumer adoption evidence only
-after a current consumer checkout proves it.
+Before treating this as a production-adopted release, add fresh CI evidence,
+production soak evidence, and consumer adoption evidence from a current consumer
+checkout. Do not rewrite or retag `v1.0.0` without an explicit release-history
+approval.
