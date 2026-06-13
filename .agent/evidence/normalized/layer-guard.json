@@ -5,7 +5,7 @@
     "github.com/ZoneCNH/xlibgate"
   ],
   "formal_package": "github.com/ZoneCNH/postgresx/pkg/postgresx",
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T01:10:36Z",
   "kind": "normalized.layer-guard",
   "layer": "L2",
   "package": "postgresx",
@@ -14,5 +14,5 @@
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }

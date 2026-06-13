@@ -15,7 +15,7 @@ required_paths=(
   "examples/basic/main.go"
   "testkit/postgres.go"
   "docs/EVIDENCE-20260601.md"
-  "docs/RELEASE_MANIFEST-v0.1.0.md"
+  "docs/RELEASE_MANIFEST-v1.0.0.md"
   "docs/RETROSPECTIVE-GOAL-20260601-001.md"
   ".agent"
   ".devcontainer/devcontainer.json"

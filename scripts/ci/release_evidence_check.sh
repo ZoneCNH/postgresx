@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-version="${1:-${VERSION:-v0.1.0}}"
+version="${1:-${VERSION:-v1.0.0}}"
 manifest="release/manifest/${version}.json"
 latest="release/manifest/latest.json"
 required=(

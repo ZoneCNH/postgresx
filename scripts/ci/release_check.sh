@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 GO="${GO:-go}"
-VERSION="${VERSION:-v0.1.0}"
+VERSION="${VERSION:-v1.0.0}"
 export POSTGRESX_REQUIRE_INTEGRATION="${POSTGRESX_REQUIRE_INTEGRATION:-1}"
 
 GOWORK=off make vet

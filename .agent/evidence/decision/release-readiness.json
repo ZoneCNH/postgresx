@@ -1,6 +1,6 @@
 {
   "factory_grade_allowed": false,
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T01:10:36Z",
   "hard_failures": {
     "goroutine_leak": false,
     "layer_violation": false,
@@ -40,5 +40,5 @@
   "score": 75,
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }

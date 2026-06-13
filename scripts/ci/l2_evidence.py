@@ -297,7 +297,7 @@ def check_evidence() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", default="v0.1.0")
+    parser.add_argument("--version", default="v1.0.0")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 

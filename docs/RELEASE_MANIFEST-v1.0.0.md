@@ -1,4 +1,4 @@
-# Release Manifest — postgresx v0.1.0
+# Release Manifest — postgresx v1.0.0
 
 ## Identity
 
@@ -21,14 +21,16 @@
 
 - This snapshot does not include current downstream adoption proof.
 - This snapshot does not prove remote tag publication or CI status.
-- This snapshot does not include checksum or contract-hash artifacts.
+- This snapshot does not publish or embed PostgreSQL credentials or DSNs.
 - This module does not own domain schema, repositories, application services, or
   production DSNs.
 
 ## Evidence index
 
-- `release/manifest/v0.1.0.json`
+- `release/manifest/v1.0.0.json`
+- `release/manifest/v1.0.0.json.sha256`
 - `release/manifest/latest.json`
+- `release/manifest/latest.json.sha256`
 - `docs/EVIDENCE-20260601.md`
 - `docs/evidence/20260601/go-test.txt`
 - `docs/evidence/20260601/go-test-race.txt`
@@ -40,5 +42,6 @@
 ## Remaining release hardening
 
 Before treating this as a published release, add fresh CI evidence, tag and
-remote publication evidence, checksum files, and contract-hash files. Add
-consumer adoption evidence only after a current consumer checkout proves it.
+remote publication evidence, and current live PostgreSQL integration evidence
+from leader-injected environment variables. Add consumer adoption evidence only
+after a current consumer checkout proves it.

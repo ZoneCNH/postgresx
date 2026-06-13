@@ -1,7 +1,7 @@
 XLIB_CONTEXT ?= local_write
 GO ?= go
 GOENV ?= GOWORK=off
-VERSION ?= v0.1.0
+VERSION ?= v1.0.0
 
 .PHONY: require-gowork-off
 require-gowork-off:
@@ -117,7 +117,7 @@ release-evidence-check:
 	bash ./scripts/ci/release_evidence_check.sh $(VERSION)
 
 .PHONY: release-final-check
-release-final-check: release-evidence-check
+release-final-check: release-evidence-check test
 	$(GOENV) $(GO) list -m | grep -Fx github.com/ZoneCNH/postgresx
 	$(GOENV) $(GO) list ./pkg/postgresx >/dev/null
 	git diff --check

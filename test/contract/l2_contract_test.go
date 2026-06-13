@@ -554,7 +554,11 @@ func readJSONFile[T any](t *testing.T, path string) T {
 	if err != nil {
 		t.Fatalf("open %s: %v", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Fatalf("close %s: %v", path, err)
+		}
+	}()
 
 	var value T
 	if err := json.NewDecoder(file).Decode(&value); err != nil {
