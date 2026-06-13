@@ -24,7 +24,7 @@ capability manifest
 common / sql / transaction / pool / migration / advisory_lock / batch_insert / copy
 ```
 
-## 3. L2-T2 Capability Manifest
+## 3. Current L2-T3 Capability Manifest
 
 ```yaml
 repo: postgresx
@@ -45,8 +45,11 @@ provider:
   name: postgres
   test_image: postgres:16-alpine
 
-required_profiles: [unit, contract, integration]
-release_level: L2-T2
+required_profiles: [unit, contract, integration, chaos, benchmark, adoption]
+release_level: L2-T3
+score_min: 85
+release_allowed: true
+factory_grade_allowed: false
 ```
 
 ## 4. P0 Contract Tests
@@ -123,8 +126,8 @@ make test-unit
 make test-contract
 make test-integration
 make test-chaos
-make test-bench
-make test-adoption
+make benchmark-smoke
+make downstream-smoke
 make test-arch
 make test-security
 make evidence
@@ -138,6 +141,9 @@ make l2-plan
 make test-unit
 make test-contract
 make test-integration
+make test-chaos
+make benchmark-smoke
+make downstream-smoke
 make evidence
 make release-check
 ```
@@ -152,8 +158,8 @@ make release-check
     contract-test.json
     integration-test.json
     chaos-test.json
-    adoption-test.json
-    benchmark.txt
+    benchmark-smoke.json
+    downstream-smoke.json
   normalized/
     contract-check.json
     integration-check.json
@@ -187,18 +193,20 @@ L2-T2:
   common + 主能力族 + integration + release-readiness
 
 L2-T3:
-  chaos + benchmark + adoption + layer guard + secret scan
+  当前本地状态：chaos + benchmark smoke + downstream compile smoke +
+  layer guard + secret scan，release_allowed=true，score=85
 
 L2-T4:
-  extended capabilities + traceability + retrospective + factory_grade=true
+  external CI + production soak + real downstream adoption + factory_grade=true
 ```
 
 ## 8. Rollout
 
 ```text
 L2-T2 验证 SQL/Tx/Pool。
-L2-T3 增加 restart/query timeout/benchmark/adoption。
-L2-T4 打开 migration/advisory_lock/batch_insert/copy。
+L2-T3 增加 chaos、benchmark smoke、downstream compile smoke。
+L2-T4 增加外部 CI、生产 soak、真实消费者采用证据，并评估是否打开
+migration/advisory_lock/batch_insert/copy。
 ```
 
 ## 9. 特殊注意

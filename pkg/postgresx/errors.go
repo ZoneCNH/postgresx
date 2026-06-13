@@ -60,6 +60,8 @@ func mapPgError(op string, pgErr *pgconn.PgError, cause error) error {
 		return foundationx.WrapError(foundationx.ErrorKindAuth, op, "authentication failed", cause)
 	case "42601":
 		return foundationx.WrapError(foundationx.ErrorKindValidation, op, "syntax error", cause)
+	case "42P01":
+		return foundationx.WrapError(foundationx.ErrorKindNotFound, op, "relation not found", cause)
 	case "23505":
 		return foundationx.WrapError(foundationx.ErrorKindAlreadyExist, op, "unique constraint violation", cause)
 	case "23503":

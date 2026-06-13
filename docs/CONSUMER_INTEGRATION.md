@@ -5,8 +5,9 @@ as a domain layer.
 
 ## Current status
 
-This repository does not include current consumer-side adoption proof. Treat the
-steps below as integration guidance until a consumer checkout records dependency,
+This repository includes a local consumer smoke check for import, compile,
+configuration redaction, and `postgresx.Queryer` compatibility. Treat the steps
+below as integration guidance until a real consumer checkout records dependency,
 compile, test, import-boundary, and release evidence.
 
 ## Recommended flow

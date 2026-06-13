@@ -7,10 +7,15 @@ repositories, application transactions, and release wiring.
 
 ## Current status
 
-No current downstream compile or runtime adoption proof is included in this
-release-preparation snapshot. Documentation and release notes must therefore
-avoid claiming that a downstream service has adopted the module until a fresh
-consumer checkout records dependency, compile, test, and release evidence.
+The repository includes a local downstream smoke check that creates a temporary
+consumer module, imports `github.com/ZoneCNH/postgresx`, compiles against the
+public `Queryer` boundary, and verifies caller-owned configuration/redaction
+behavior. This supports the local `L2-T3 / 85` gate.
+
+That smoke check is not production adoption proof. Documentation and release
+notes must avoid claiming that a downstream service has adopted the module until
+a fresh consumer checkout records dependency, compile, test, and release
+evidence.
 
 ## Dependency direction
 

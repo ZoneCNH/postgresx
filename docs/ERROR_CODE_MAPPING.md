@@ -12,6 +12,7 @@
 | `net.Error` timeout | `timeout` | yes |
 | non-timeout `net.Error` | `connection` | yes |
 | SQLSTATE `42601` | `validation` | no |
+| SQLSTATE `42P01` | `not_found` | no |
 | SQLSTATE `23505` | `already_exists` | no |
 | SQLSTATE `23503` | `conflict` | no |
 | SQLSTATE `23502` | `validation` | no |

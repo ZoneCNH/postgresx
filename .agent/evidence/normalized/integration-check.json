@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T18:06:31Z",
+  "generated_at": "2026-06-13T07:52:51Z",
   "kind": "normalized.integration-check",
   "layer": "L2",
   "package": "postgresx",
@@ -7,10 +7,10 @@
     "image": "postgres:16-alpine",
     "name": "postgres"
   },
-  "release_level_actual": "L2-T2",
-  "release_level_target": "L2-T2",
+  "release_level_actual": "L2-T3",
+  "release_level_target": "L2-T3",
   "schema_version": "1.0",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
   "status": "passed",
-  "version": "v0.1.0"
+  "version": "v1.0.0"
 }
