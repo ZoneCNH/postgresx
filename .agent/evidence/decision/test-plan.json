@@ -9,7 +9,7 @@
     "GOWORK=off make secret-scan",
     "GOWORK=off make evidence"
   ],
-  "generated_at": "2026-06-13T01:33:13Z",
+  "generated_at": "2026-06-13T05:16:10Z",
   "kind": "decision.test-plan",
   "layer": "L2",
   "package": "postgresx",

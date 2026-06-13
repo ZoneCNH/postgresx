@@ -1,6 +1,6 @@
 {
   "factory_grade_allowed": false,
-  "generated_at": "2026-06-13T01:33:13Z",
+  "generated_at": "2026-06-13T05:16:10Z",
   "hard_failures": {
     "goroutine_leak": false,
     "layer_violation": false,
