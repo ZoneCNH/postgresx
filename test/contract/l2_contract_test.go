@@ -318,6 +318,12 @@ func TestP0ErrorMappingContract(t *testing.T) {
 			retryable: false,
 		},
 		{
+			contract:  "sql.not_found.undefined_table",
+			err:       &pgconn.PgError{Code: "42P01"},
+			kind:      foundationx.ErrorKindNotFound,
+			retryable: false,
+		},
+		{
 			contract:  "sql.unique_violation",
 			err:       &pgconn.PgError{Code: "23505"},
 			kind:      foundationx.ErrorKindAlreadyExist,

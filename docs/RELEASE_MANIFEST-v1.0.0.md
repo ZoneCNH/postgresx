@@ -11,10 +11,10 @@
 ## Publication evidence
 
 - GitHub release: `https://github.com/ZoneCNH/postgresx/releases/tag/v1.0.0`
-- Branch head: `refs/heads/postgresx` resolves to `4ea49cc` as of the
-  2026-06-13 local verification pass.
+- Tag object: `refs/tags/v1.0.0` resolves to `5c3e3a6`.
 - Tag commit: `refs/tags/v1.0.0^{}` resolves to `310a249`.
-- Release snapshot commit: `release/manifest/v1.0.0.json` records `c9c369a`.
+- Release snapshot commit: `release/manifest/v1.0.0.json` records `7fe4cfd`.
+- Release snapshot tree: `231164546c9c7b11d30287f1318c5f6a3b51442d`.
 - Release metadata `targetCommitish` remains `main`; the tag object and resolved
   tag commit are the authoritative published release identity.
 
@@ -26,19 +26,26 @@
 - Required profiles: unit, contract, integration, chaos, benchmark, and local
   downstream compile smoke
 - Executable check: `GOWORK=off VERSION=v1.0.0 make release-check`
+- Evidence generated at: `2026-06-13T07:52:51Z`
 
 The downstream smoke proves import, compile, configuration, and `Queryer`
 boundary compatibility from a temporary consumer module. It is not production
 consumer adoption evidence, so adoption remains smoke-level rather than
 factory-grade evidence.
 
+The integration evidence was produced with a real PostgreSQL development DSN
+loaded from the local SRE secret document through environment variables only.
+The DSN and credentials are not written to release docs, manifests, or evidence
+artifacts.
+
 ## Manifest semantics
 
 `release/manifest/v1.0.0.json` and `release/manifest/latest.json` record the
 source snapshot used to generate the post-tag release evidence. Their current
-`commit` field is `c9c369a`, which resolves in Git and is an ancestor of the
-evidence-carrying `postgresx` branch HEAD `4ea49cc`, but it is **not** an
-ancestor of the immutable `v1.0.0` tag commit `310a249`. The local
+`commit` field is `7fe4cfd`, which resolves in Git and is expected to be an
+ancestor of the evidence-carrying `postgresx` branch after this
+documentation/evidence commit, but it is **not** an ancestor of the immutable
+`v1.0.0` tag commit `310a249`. The local
 `release-evidence-check` therefore fails until the release-history decision is
 reconciled by an approved action, such as regenerating the manifest from the
 tagged snapshot or cutting a successor release tag. Do not rewrite or retag
@@ -51,7 +58,9 @@ tagged snapshot or cutting a successor release tag. Do not rewrite or retag
 - sqlc-compatible `Queryer` execution boundary;
 - `WithTx` and `WithTxOptions` transaction helpers;
 - caller-owned migration runner over embedded or filesystem SQL sources;
-- foundationx-compatible error mapping, logging, and metrics options;
+- foundationx-compatible error mapping, including SQLSTATE `42P01`
+  `undefined_table` to `not_found`;
+- logging and metrics options;
 - examples that keep env and secret loading outside the core package.
 
 ## Explicit non-claims
@@ -92,5 +101,5 @@ external CI evidence, production soak evidence, and consumer adoption evidence
 from a current consumer checkout. GitHub Actions is currently blocked outside
 the repository by an account billing lock, so local evidence is the authoritative
 available gate evidence. The current release-evidence blocker is the manifest
-`c9c369a` versus tag `310a249` ancestry mismatch; resolve it through an
+`7fe4cfd` versus tag `310a249` ancestry mismatch; resolve it through an
 approved release-history action rather than rewriting or retagging `v1.0.0`.

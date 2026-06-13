@@ -7,7 +7,7 @@
     "global_database_singleton": "forbidden"
   },
   "capability_manifest": ".agent/l2-capabilities.yaml",
-  "commit": "c9c369a",
+  "commit": "7fe4cfd",
   "contract_hashes": {
     "api": "sha256:77028a91129b3781464d8c585171084c2385033e04167487730684112ba915d4",
     "config": "sha256:6c06425a698be735323b2dbc2b3353d0af2ebb32856d0d0747b6dac144528c27",
@@ -54,7 +54,7 @@
     "test": "required",
     "vet": "required"
   },
-  "generated_at": "2026-06-13T06:33:57Z",
+  "generated_at": "2026-06-13T07:52:51Z",
   "hard_failures": [
     "secret_leak",
     "layer_violation",
@@ -107,8 +107,8 @@
   ],
   "role": "postgresql_infrastructure_adapter",
   "schema_version": "1.0",
-  "source_digest": "sha256:d25175a9853f3860af754ceebaae8bb8955d1bfc4c40f52ff5dbe4efda0d5826",
+  "source_digest": "sha256:5ea6baf0b9a604583132ea0992c053898aab988ea7e053736240dfabb6f99596",
   "standard_source": "github.com/ZoneCNH/xlib-standard",
-  "tree_sha": "19951e9384e5f08342b9d8ad06bb051108653927",
+  "tree_sha": "231164546c9c7b11d30287f1318c5f6a3b51442d",
   "version": "v1.0.0"
 }
