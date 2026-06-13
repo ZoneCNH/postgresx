@@ -126,6 +126,12 @@ if rg -n 'github[.]com/[b]ytechainx|github[.]com/ZoneCNH/postgresx/pkg/postgresx
   exit 1
 fi
 
+if rg -n 'OpenPool|DBTX|WithinTx|MaskDSN|MigrationConfig|client[.]DB[(][)]|DSN:[[:space:]]*os[.]Getenv' \
+  README.md docs/api.md contracts/public_api.md "docs/RELEASE_MANIFEST-${version}.md"; then
+  echo "release evidence contains stale public API references" >&2
+  exit 1
+fi
+
 if rg -n --hidden \
   --glob '!.git/**' \
   --glob '!docs/goal.md' \
