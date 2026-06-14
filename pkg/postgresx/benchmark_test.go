@@ -4,7 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	foundationx "github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -14,7 +13,7 @@ func benchmarkConfig() Config {
 	cfg.Port = 5432
 	cfg.Database = "postgresx_benchmark"
 	cfg.User = "postgresx"
-	cfg.Password = foundationx.NewSecretString("benchmark-secret-value")
+	cfg.Password = NewSecretString("benchmark-secret-value")
 	cfg.ApplicationName = "postgresx-benchmark"
 	return cfg
 }
@@ -49,7 +48,7 @@ func BenchmarkMapErrorPostgresCodeSmoke(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		err := MapError("benchmark.serialization", pgErr)
-		if !foundationx.IsKind(err, foundationx.ErrorKindConflict) || !IsRetryable(err) {
+		if !IsKind(err, ErrorKindConflict) || !IsRetryable(err) {
 			b.Fatalf("MapError produced unexpected classification: %v", err)
 		}
 	}

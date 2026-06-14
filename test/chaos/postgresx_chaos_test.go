@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	foundationx "github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -19,31 +18,31 @@ func TestChaosErrorMappingCoversRetryableTransientFailures(t *testing.T) {
 	cases := []struct {
 		name      string
 		input     error
-		wantKind  foundationx.ErrorKind
+		wantKind  postgresx.ErrorKind
 		retryable bool
 	}{
 		{
 			name:      "deadline timeout",
 			input:     context.DeadlineExceeded,
-			wantKind:  foundationx.ErrorKindTimeout,
+			wantKind:  postgresx.ErrorKindTimeout,
 			retryable: true,
 		},
 		{
 			name:      "caller cancellation",
 			input:     context.Canceled,
-			wantKind:  foundationx.ErrorKindCanceled,
+			wantKind:  postgresx.ErrorKindCanceled,
 			retryable: false,
 		},
 		{
 			name:      "resource unavailable",
 			input:     &pgconn.PgError{Code: "53300", Message: "too many connections"},
-			wantKind:  foundationx.ErrorKindUnavailable,
+			wantKind:  postgresx.ErrorKindUnavailable,
 			retryable: true,
 		},
 		{
 			name:      "connection exception",
 			input:     &pgconn.PgError{Code: "08006", Message: "connection failure"},
-			wantKind:  foundationx.ErrorKindConnection,
+			wantKind:  postgresx.ErrorKindConnection,
 			retryable: true,
 		},
 	}
@@ -53,7 +52,7 @@ func TestChaosErrorMappingCoversRetryableTransientFailures(t *testing.T) {
 			t.Parallel()
 
 			err := postgresx.MapError("chaos."+tc.name, tc.input)
-			if !foundationx.IsKind(err, tc.wantKind) {
+			if !postgresx.IsKind(err, tc.wantKind) {
 				t.Fatalf("MapError kind mismatch: want %v, err=%v", tc.wantKind, err)
 			}
 			if errors.Is(tc.input, context.DeadlineExceeded) && !errors.Is(err, context.DeadlineExceeded) {
@@ -75,7 +74,7 @@ func TestChaosOpenFailureDoesNotLeakSecret(t *testing.T) {
 	cfg.Port = 1
 	cfg.Database = "postgresx_chaos"
 	cfg.User = "postgresx"
-	cfg.Password = foundationx.NewSecretString(secret)
+	cfg.Password = postgresx.NewSecretString(secret)
 	cfg.ApplicationName = "postgresx-chaos-test"
 	cfg.ConnectTimeout = 25 * time.Millisecond
 	cfg.HealthTimeout = 25 * time.Millisecond
@@ -108,8 +107,8 @@ func TestChaosNilClientOperationsFailClosed(t *testing.T) {
 
 	var client *postgresx.Client
 	err := client.Ping(t.Context())
-	if !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
-		t.Fatalf("nil client Ping() want %v, err=%v", foundationx.ErrorKindConnection, err)
+	if !postgresx.IsKind(err, postgresx.ErrorKindConnection) {
+		t.Fatalf("nil client Ping() want %v, err=%v", postgresx.ErrorKindConnection, err)
 	}
 
 	if err := client.Close(t.Context()); err != nil {

@@ -1,5 +1,3 @@
-github.com/ZoneCNH/foundationx v0.1.1 h1:o4s7dGmFQa5ecoWEfk9UjhMRopYDz6pEnbIDtuYr9mY=
-github.com/ZoneCNH/foundationx v0.1.1/go.mod h1:RpTHom/eqSyHHDRjnomhZMKG8yQddzEqYkB+17p8XeI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

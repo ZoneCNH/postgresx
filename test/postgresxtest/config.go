@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
@@ -56,7 +55,7 @@ func ConfigFromDSN(dsn string, applicationName string) (postgresx.Config, error)
 	cfg.Port = port
 	cfg.Database = database
 	cfg.User = parsed.User.Username()
-	cfg.Password = foundationx.NewSecretString(secret)
+	cfg.Password = postgresx.NewSecretString(secret)
 	cfg.SSLMode = sslmode
 	cfg.MaxOpenConns = 4
 	cfg.MinIdleConns = 1

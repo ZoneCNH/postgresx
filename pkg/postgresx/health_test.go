@@ -2,8 +2,6 @@ package postgresx
 
 import (
 	"testing"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
 
 func TestNilClientCheckReturnsUnhealthyStatus(t *testing.T) {
@@ -13,7 +11,7 @@ func TestNilClientCheckReturnsUnhealthyStatus(t *testing.T) {
 	if status.Name != "postgresx" {
 		t.Fatalf("Name = %q, want postgresx", status.Name)
 	}
-	if status.Status != foundationx.HealthUnhealthy {
+	if status.Status != HealthUnhealthy {
 		t.Fatalf("Status = %q, want unhealthy", status.Status)
 	}
 	if status.Message == "" {

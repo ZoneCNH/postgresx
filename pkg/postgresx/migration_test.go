@@ -2,8 +2,6 @@ package postgresx
 
 import (
 	"testing"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
 
 func TestValidateMigrations(t *testing.T) {
@@ -21,22 +19,22 @@ func TestValidateMigrationsRejectsInvalidInput(t *testing.T) {
 	tests := []struct {
 		name       string
 		migrations []Migration
-		kind       foundationx.ErrorKind
+		kind       ErrorKind
 	}{
 		{
 			name:       "non-positive version",
 			migrations: []Migration{{Version: 0, Name: "bad", UpSQL: "select 1"}},
-			kind:       foundationx.ErrorKindValidation,
+			kind:       ErrorKindValidation,
 		},
 		{
 			name:       "missing name",
 			migrations: []Migration{{Version: 1, UpSQL: "select 1"}},
-			kind:       foundationx.ErrorKindValidation,
+			kind:       ErrorKindValidation,
 		},
 		{
 			name:       "missing up sql",
 			migrations: []Migration{{Version: 1, Name: "empty"}},
-			kind:       foundationx.ErrorKindValidation,
+			kind:       ErrorKindValidation,
 		},
 		{
 			name: "duplicate version",
@@ -44,14 +42,14 @@ func TestValidateMigrationsRejectsInvalidInput(t *testing.T) {
 				{Version: 1, Name: "one", UpSQL: "select 1"},
 				{Version: 1, Name: "two", UpSQL: "select 2"},
 			},
-			kind: foundationx.ErrorKindConflict,
+			kind: ErrorKindConflict,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validateMigrations(tt.migrations)
-			if !foundationx.IsKind(err, tt.kind) {
+			if !IsKind(err, tt.kind) {
 				t.Fatalf("validateMigrations() error = %v, want kind %s", err, tt.kind)
 			}
 		})

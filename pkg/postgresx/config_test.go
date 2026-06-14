@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
 
 func validTestConfig() Config {
@@ -14,7 +12,7 @@ func validTestConfig() Config {
 	cfg.Host = "localhost"
 	cfg.Database = "app"
 	cfg.User = "postgres"
-	cfg.Password = foundationx.NewSecretString("secret")
+	cfg.Password = NewSecretString("secret")
 	cfg.ApplicationName = "postgresx-test"
 	return cfg
 }
@@ -24,7 +22,7 @@ func TestConfigWithDefaultsAndValidate(t *testing.T) {
 		Host:     "localhost",
 		Database: "app",
 		User:     "postgres",
-		Password: foundationx.NewSecretString("secret"),
+		Password: NewSecretString("secret"),
 	}.withDefaults()
 
 	if err := cfg.Validate(); err != nil {
@@ -77,7 +75,7 @@ func TestConfigValidateRejectsInvalidFields(t *testing.T) {
 		{
 			name: "missing password",
 			mutate: func(cfg *Config) {
-				var zero foundationx.SecretString
+				var zero SecretString
 				cfg.Password = zero
 			},
 		},
@@ -102,7 +100,7 @@ func TestConfigValidateRejectsInvalidFields(t *testing.T) {
 			tt.mutate(&cfg)
 
 			err := cfg.Validate()
-			if !foundationx.IsKind(err, foundationx.ErrorKindConfig) {
+			if !IsKind(err, ErrorKindConfig) {
 				t.Fatalf("Validate() error = %v, want foundation config error", err)
 			}
 		})

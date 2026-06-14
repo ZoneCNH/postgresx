@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
@@ -31,7 +30,7 @@ func FromEnv(applicationName string) (RuntimeConfig, error) {
 	if err != nil {
 		return RuntimeConfig{}, err
 	}
-	cfg.Password = foundationx.NewSecretString(password)
+	cfg.Password = postgresx.NewSecretString(password)
 	cfg.SSLMode = getenv("POSTGRES_SSLMODE", cfg.SSLMode)
 	cfg.ApplicationName = applicationName
 

@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
@@ -62,7 +61,7 @@ func openWithRetry(ctx context.Context, cfg postgresx.Config, timeout time.Durat
 			return client, nil
 		}
 		lastErr = err
-		if (!foundationx.IsKind(err, foundationx.ErrorKindTimeout) && !foundationx.IsKind(err, foundationx.ErrorKindConnection)) || time.Now().After(deadline) {
+		if (!postgresx.IsKind(err, postgresx.ErrorKindTimeout) && !postgresx.IsKind(err, postgresx.ErrorKindConnection)) || time.Now().After(deadline) {
 			return nil, lastErr
 		}
 		timer := time.NewTimer(250 * time.Millisecond)
