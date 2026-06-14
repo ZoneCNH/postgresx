@@ -1,0 +1,16 @@
+schema_version: repo-contract/v1
+repo:
+  name: postgresx
+  owner: ZoneCNH
+  url: https://github.com/ZoneCNH/postgresx
+  module: github.com/ZoneCNH/postgresx
+identity:
+  layer: L1
+  public_package: github.com/ZoneCNH/postgresx/pkg/postgresx
+  standard_source: github.com/ZoneCNH/xlib-standard
+  is_standard_source: false
+  is_generator: false
+versions:
+  table_version: v1.0.0
+  latest_git_tag: v1.0.0
+  all_aligned: true
