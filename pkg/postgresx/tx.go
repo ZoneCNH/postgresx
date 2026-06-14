@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -58,7 +57,7 @@ func (c *Client) WithTxOptions(ctx context.Context, opts TxOptions, fn TxFunc) (
 		return err
 	}
 	if fn == nil {
-		return foundationx.NewError(foundationx.ErrorKindValidation, op, "transaction function is required")
+		return NewError(ErrorKindValidation, op, "transaction function is required")
 	}
 
 	start := time.Now()

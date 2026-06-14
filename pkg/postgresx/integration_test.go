@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/ZoneCNH/postgresx/testkit"
 )
@@ -45,7 +44,7 @@ func TestOpenCloseIntegration(t *testing.T) {
 	if err := client.Close(ctx); err != nil {
 		t.Fatalf("second Close() error = %v, want nil", err)
 	}
-	if err := client.Ping(ctx); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.Ping(ctx); !postgresx.IsKind(err, postgresx.ErrorKindConnection) {
 		t.Fatalf("Ping() after Close() error = %v, want connection error", err)
 	}
 }
@@ -105,7 +104,7 @@ func TestClientQueryStatsAndHealthIntegration(t *testing.T) {
 	}
 
 	err = client.QueryRow(ctx, `SELECT name FROM postgresx_client_items WHERE id = $1`, int64(99)).Scan(new(string))
-	if !foundationx.IsKind(err, foundationx.ErrorKindNotFound) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindNotFound) {
 		t.Fatalf("missing QueryRow() error = %v, want not found", err)
 	}
 
@@ -118,7 +117,7 @@ func TestClientQueryStatsAndHealthIntegration(t *testing.T) {
 	if status.Name != "postgresx" {
 		t.Fatalf("Check().Name = %q, want postgresx", status.Name)
 	}
-	if !status.IsHealthy() || status.Status != foundationx.HealthHealthy {
+	if !status.IsHealthy() || status.Status != postgresx.HealthHealthy {
 		t.Fatalf("Check() = %#v, want healthy", status)
 	}
 	if status.Metadata["application_name"] != appName {
@@ -197,7 +196,7 @@ func TestPostgresErrorMappingIntegration(t *testing.T) {
 	}
 
 	_, err := client.Exec(ctx, `INSERT INTO postgresx_error_parents (id) VALUES ($1)`, int64(1))
-	if !foundationx.IsKind(err, foundationx.ErrorKindAlreadyExist) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindAlreadyExist) {
 		t.Fatalf("duplicate key error = %v, want already_exists", err)
 	}
 	if postgresx.IsRetryable(err) {
@@ -205,17 +204,17 @@ func TestPostgresErrorMappingIntegration(t *testing.T) {
 	}
 
 	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(1), int64(999), "ok")
-	if !foundationx.IsKind(err, foundationx.ErrorKindConflict) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindConflict) {
 		t.Fatalf("foreign key error = %v, want conflict", err)
 	}
 
 	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(2), int64(1), nil)
-	if !foundationx.IsKind(err, foundationx.ErrorKindValidation) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindValidation) {
 		t.Fatalf("not null error = %v, want validation", err)
 	}
 
 	_, err = client.Exec(ctx, `INSERT INTO postgresx_error_children (id, parent_id, code) VALUES ($1, $2, $3)`, int64(3), int64(1), "x")
-	if !foundationx.IsKind(err, foundationx.ErrorKindValidation) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindValidation) {
 		t.Fatalf("check constraint error = %v, want validation", err)
 	}
 }
@@ -283,7 +282,7 @@ func TestMigrationRunnerDetectsVersionNameConflictIntegration(t *testing.T) {
 	}
 
 	err := runner.Up(ctx, migrationSource{{Version: 1, Name: "renamed", UpSQL: `SELECT 1`}})
-	if !foundationx.IsKind(err, foundationx.ErrorKindConflict) {
+	if !postgresx.IsKind(err, postgresx.ErrorKindConflict) {
 		t.Fatalf("Up() error = %v, want conflict", err)
 	}
 }

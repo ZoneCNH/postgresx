@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
 
@@ -25,25 +24,25 @@ func TestErrorSchemaMatchesPublicContract(t *testing.T) {
 	})
 
 	expectedKinds := []string{
-		string(foundationx.ErrorKindConfig),
-		string(foundationx.ErrorKindValidation),
-		string(foundationx.ErrorKindConnection),
-		string(foundationx.ErrorKindUnavailable),
-		string(foundationx.ErrorKindTimeout),
-		string(foundationx.ErrorKindAuth),
-		string(foundationx.ErrorKindConflict),
-		string(foundationx.ErrorKindRateLimit),
-		string(foundationx.ErrorKindCanceled),
-		string(foundationx.ErrorKindNotFound),
-		string(foundationx.ErrorKindAlreadyExist),
-		string(foundationx.ErrorKindInternal),
+		string(postgresx.ErrorKindConfig),
+		string(postgresx.ErrorKindValidation),
+		string(postgresx.ErrorKindConnection),
+		string(postgresx.ErrorKindUnavailable),
+		string(postgresx.ErrorKindTimeout),
+		string(postgresx.ErrorKindAuth),
+		string(postgresx.ErrorKindConflict),
+		string(postgresx.ErrorKindRateLimit),
+		string(postgresx.ErrorKindCanceled),
+		string(postgresx.ErrorKindNotFound),
+		string(postgresx.ErrorKindAlreadyExist),
+		string(postgresx.ErrorKindInternal),
 	}
 	assertSetEqual(t, "error kinds", enumValues(t, schema, "kind"), expectedKinds)
 
 	if err := postgresx.MapError("contract", context.DeadlineExceeded); !postgresx.IsRetryable(err) {
 		t.Fatalf("deadline exceeded should be retryable")
 	}
-	if err := postgresx.MapError("contract", context.Canceled); !foundationx.IsKind(err, foundationx.ErrorKindCanceled) {
+	if err := postgresx.MapError("contract", context.Canceled); !postgresx.IsKind(err, postgresx.ErrorKindCanceled) {
 		t.Fatalf("context canceled should map to canceled, got %v", err)
 	}
 }
@@ -61,11 +60,11 @@ func TestHealthSchemaMatchesPublicContract(t *testing.T) {
 		"metadata",
 	})
 	assertSetEqual(t, "health statuses", enumValues(t, schema, "status"), []string{
-		string(foundationx.HealthHealthy),
-		string(foundationx.HealthDegraded),
-		string(foundationx.HealthUnhealthy),
+		string(postgresx.HealthHealthy),
+		string(postgresx.HealthDegraded),
+		string(postgresx.HealthUnhealthy),
 	})
-	assertStructProperties(t, reflect.TypeOf(foundationx.HealthStatus{}), properties, map[string]string{
+	assertStructProperties(t, reflect.TypeOf(postgresx.HealthStatus{}), properties, map[string]string{
 		"Name":      "name",
 		"Status":    "status",
 		"Message":   "message",

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"slices"
 	"time"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
 
 // Migration describes one caller-owned migration.
@@ -43,10 +41,10 @@ func NewMigrationRunner(client *Client) *MigrationRunner {
 func (r *MigrationRunner) Up(ctx context.Context, source MigrationSource) error {
 	const op = "postgresx.MigrationRunner.Up"
 	if r == nil || r.client == nil {
-		return foundationx.NewError(foundationx.ErrorKindConfig, op, "client is required")
+		return NewError(ErrorKindConfig, op, "client is required")
 	}
 	if source == nil {
-		return foundationx.NewError(foundationx.ErrorKindConfig, op, "migration source is required")
+		return NewError(ErrorKindConfig, op, "migration source is required")
 	}
 	if err := r.ensureTable(ctx); err != nil {
 		return err
@@ -80,7 +78,7 @@ func (r *MigrationRunner) Up(ctx context.Context, source MigrationSource) error 
 	for _, migration := range migrations {
 		if existing, ok := appliedByVersion[migration.Version]; ok {
 			if existing.Name != migration.Name {
-				return foundationx.WrapError(foundationx.ErrorKindConflict, op, "migration version already applied with different name", fmt.Errorf("version %d: applied %q, requested %q", migration.Version, existing.Name, migration.Name))
+				return WrapError(ErrorKindConflict, op, "migration version already applied with different name", fmt.Errorf("version %d: applied %q, requested %q", migration.Version, existing.Name, migration.Name))
 			}
 			continue
 		}
@@ -124,7 +122,7 @@ func (r *MigrationRunner) Applied(ctx context.Context) ([]AppliedMigration, erro
 
 func (r *MigrationRunner) ensureTable(ctx context.Context) error {
 	if r == nil || r.client == nil {
-		return foundationx.NewError(foundationx.ErrorKindConfig, "postgresx.MigrationRunner.ensureTable", "client is required")
+		return NewError(ErrorKindConfig, "postgresx.MigrationRunner.ensureTable", "client is required")
 	}
 	_, err := r.client.Exec(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (
 		version BIGINT PRIMARY KEY,
@@ -138,16 +136,16 @@ func validateMigrations(migrations []Migration) error {
 	seen := make(map[int64]string, len(migrations))
 	for _, migration := range migrations {
 		if migration.Version <= 0 {
-			return foundationx.NewError(foundationx.ErrorKindValidation, "postgresx.validateMigrations", "migration version must be positive")
+			return NewError(ErrorKindValidation, "postgresx.validateMigrations", "migration version must be positive")
 		}
 		if migration.Name == "" {
-			return foundationx.NewError(foundationx.ErrorKindValidation, "postgresx.validateMigrations", "migration name is required")
+			return NewError(ErrorKindValidation, "postgresx.validateMigrations", "migration name is required")
 		}
 		if migration.UpSQL == "" {
-			return foundationx.NewError(foundationx.ErrorKindValidation, "postgresx.validateMigrations", "migration up sql is required")
+			return NewError(ErrorKindValidation, "postgresx.validateMigrations", "migration up sql is required")
 		}
 		if previous, ok := seen[migration.Version]; ok {
-			return foundationx.WrapError(foundationx.ErrorKindConflict, "postgresx.validateMigrations", "duplicate migration version", fmt.Errorf("version %d: %q and %q", migration.Version, previous, migration.Name))
+			return WrapError(ErrorKindConflict, "postgresx.validateMigrations", "duplicate migration version", fmt.Errorf("version %d: %q and %q", migration.Version, previous, migration.Name))
 		}
 		seen[migration.Version] = migration.Name
 	}

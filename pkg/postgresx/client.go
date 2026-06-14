@@ -6,7 +6,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -202,7 +201,7 @@ func recordQueryMetrics(metrics Metrics, operation string, start time.Time, err 
 
 func (c *Client) ensureOpen(op string) error {
 	if c == nil || c.pool == nil || c.closed.Load() {
-		return foundationx.NewError(foundationx.ErrorKindConnection, op, "client is closed")
+		return NewError(ErrorKindConnection, op, "client is closed")
 	}
 	return nil
 }

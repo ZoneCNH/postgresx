@@ -2,17 +2,7 @@ package postgresx
 
 import (
 	"context"
-	"time"
 )
-
-// clock abstracts time.Now for tests.
-type clock interface {
-	Now() time.Time
-}
-
-type realClock struct{}
-
-func (realClock) Now() time.Time { return time.Now() }
 
 // Option customizes Client behavior.
 type Option func(*options)
@@ -20,7 +10,7 @@ type Option func(*options)
 type options struct {
 	logger  Logger
 	metrics Metrics
-	clock   clock
+	clock   Clock
 }
 
 // Field is a minimal structured log field.
@@ -63,10 +53,10 @@ func WithMetrics(metrics Metrics) Option {
 }
 
 // WithClock injects a clock for tests and deterministic health output.
-func WithClock(c clock) Option {
+func WithClock(clock Clock) Option {
 	return func(o *options) {
-		if c != nil {
-			o.clock = c
+		if clock != nil {
+			o.clock = clock
 		}
 	}
 }
@@ -75,7 +65,7 @@ func defaultOptions() options {
 	return options{
 		logger:  noopLogger{},
 		metrics: noopMetrics{},
-		clock:   &realClock{},
+		clock:   NewRealClock(),
 	}
 }
 

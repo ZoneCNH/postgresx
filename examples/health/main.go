@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/examples/internal/exampleconfig"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 )
@@ -31,7 +30,7 @@ func main() {
 	}()
 
 	status := client.Check(ctx)
-	if status.Status != foundationx.HealthHealthy {
+	if status.Status != postgresx.HealthHealthy {
 		log.Fatal(status.Message)
 	}
 }

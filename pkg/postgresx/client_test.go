@@ -5,24 +5,22 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
 
 func TestClosedClientOperationsReturnConnectionError(t *testing.T) {
 	ctx := t.Context()
 	var client *Client
 
-	if _, err := client.Exec(ctx, "select 1"); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if _, err := client.Exec(ctx, "select 1"); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("Exec() error = %v, want connection error", err)
 	}
-	if _, err := client.Query(ctx, "select 1"); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if _, err := client.Query(ctx, "select 1"); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("Query() error = %v, want connection error", err)
 	}
-	if err := client.QueryRow(ctx, "select 1").Scan(new(int)); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.QueryRow(ctx, "select 1").Scan(new(int)); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("QueryRow().Scan() error = %v, want connection error", err)
 	}
-	if err := client.WithTx(ctx, func(ctx context.Context, tx Tx) error { return nil }); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.WithTx(ctx, func(ctx context.Context, tx Tx) error { return nil }); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("WithTx() error = %v, want connection error", err)
 	}
 	if err := client.Close(ctx); err != nil {
@@ -41,19 +39,19 @@ func TestNonNilClosedClientOperationsReturnConnectionError(t *testing.T) {
 	if err := client.Close(ctx); err != nil {
 		t.Fatalf("second Close() error = %v, want nil", err)
 	}
-	if err := client.Ping(ctx); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.Ping(ctx); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("Ping() error = %v, want connection error", err)
 	}
-	if _, err := client.Exec(ctx, "select 1"); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if _, err := client.Exec(ctx, "select 1"); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("Exec() error = %v, want connection error", err)
 	}
-	if _, err := client.Query(ctx, "select 1"); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if _, err := client.Query(ctx, "select 1"); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("Query() error = %v, want connection error", err)
 	}
-	if err := client.QueryRow(ctx, "select 1").Scan(new(int)); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.QueryRow(ctx, "select 1").Scan(new(int)); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("QueryRow().Scan() error = %v, want connection error", err)
 	}
-	if err := client.WithTx(ctx, func(ctx context.Context, tx Tx) error { return nil }); !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if err := client.WithTx(ctx, func(ctx context.Context, tx Tx) error { return nil }); !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("WithTx() error = %v, want connection error", err)
 	}
 	if stats := client.Stats(); stats != (PoolStats{}) {
@@ -135,7 +133,7 @@ func TestRecordQueryMetricsErrorPath(t *testing.T) {
 func TestEnsureOpenNilPool(t *testing.T) {
 	client := &Client{opts: defaultOptions()}
 	err := client.ensureOpen("test.EnsureOpen")
-	if !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+	if !IsKind(err, ErrorKindConnection) {
 		t.Fatalf("ensureOpen() error = %v, want connection error", err)
 	}
 }
@@ -154,7 +152,7 @@ func TestHealthCheckDelegatesToCheck(t *testing.T) {
 	if status.Name != "postgresx" {
 		t.Fatalf("Name = %q, want postgresx", status.Name)
 	}
-	if status.Status != foundationx.HealthUnhealthy {
+	if status.Status != HealthUnhealthy {
 		t.Fatalf("Status = %q, want unhealthy", status.Status)
 	}
 }
