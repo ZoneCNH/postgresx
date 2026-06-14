@@ -114,6 +114,51 @@ func TestMetricRowRecordsOnceOnScan(t *testing.T) {
 	}
 }
 
+func TestRecordQueryMetricsErrorPath(t *testing.T) {
+	metrics := &captureMetrics{}
+	recordQueryMetrics(metrics, "exec", time.Now(), context.Canceled)
+
+	if metrics.counterCalls != 1 {
+		t.Fatalf("counter calls = %d, want 1", metrics.counterCalls)
+	}
+	if metrics.histogramCalls != 1 {
+		t.Fatalf("histogram calls = %d, want 1", metrics.histogramCalls)
+	}
+	if metrics.lastCounterLabels["outcome"] != "error" {
+		t.Fatalf("outcome label = %q, want error", metrics.lastCounterLabels["outcome"])
+	}
+	if metrics.lastCounterLabels["operation"] != "exec" {
+		t.Fatalf("operation label = %q, want exec", metrics.lastCounterLabels["operation"])
+	}
+}
+
+func TestEnsureOpenNilPool(t *testing.T) {
+	client := &Client{opts: defaultOptions()}
+	err := client.ensureOpen("test.EnsureOpen")
+	if !foundationx.IsKind(err, foundationx.ErrorKindConnection) {
+		t.Fatalf("ensureOpen() error = %v, want connection error", err)
+	}
+}
+
+func TestQueryerReturnsClient(t *testing.T) {
+	client := &Client{opts: defaultOptions()}
+	q := client.Queryer()
+	if q != client {
+		t.Fatal("Queryer() did not return the client")
+	}
+}
+
+func TestHealthCheckDelegatesToCheck(t *testing.T) {
+	var client *Client
+	status := client.HealthCheck(t.Context())
+	if status.Name != "postgresx" {
+		t.Fatalf("Name = %q, want postgresx", status.Name)
+	}
+	if status.Status != foundationx.HealthUnhealthy {
+		t.Fatalf("Status = %q, want unhealthy", status.Status)
+	}
+}
+
 type staticRow struct{}
 
 func (staticRow) Scan(dest ...any) error {
