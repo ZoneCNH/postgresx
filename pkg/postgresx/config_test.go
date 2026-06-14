@@ -80,7 +80,7 @@ func TestConfigValidateRejectsInvalidFields(t *testing.T) {
 			},
 		},
 		{
-			name: "negative timeout",
+			name: "negative connect timeout",
 			mutate: func(cfg *Config) {
 				cfg.ConnectTimeout = -time.Second
 			},
@@ -90,6 +90,42 @@ func TestConfigValidateRejectsInvalidFields(t *testing.T) {
 			mutate: func(cfg *Config) {
 				cfg.MinIdleConns = 5
 				cfg.MaxOpenConns = 2
+			},
+		},
+		{
+			name: "empty sslmode",
+			mutate: func(cfg *Config) {
+				cfg.SSLMode = ""
+			},
+		},
+		{
+			name: "negative max open conns",
+			mutate: func(cfg *Config) {
+				cfg.MaxOpenConns = -1
+			},
+		},
+		{
+			name: "negative min idle conns",
+			mutate: func(cfg *Config) {
+				cfg.MinIdleConns = -1
+			},
+		},
+		{
+			name: "negative max conn lifetime",
+			mutate: func(cfg *Config) {
+				cfg.MaxConnLifetime = -time.Minute
+			},
+		},
+		{
+			name: "negative max conn idle time",
+			mutate: func(cfg *Config) {
+				cfg.MaxConnIdleTime = -time.Minute
+			},
+		},
+		{
+			name: "negative health timeout",
+			mutate: func(cfg *Config) {
+				cfg.HealthTimeout = -time.Second
 			},
 		},
 	}

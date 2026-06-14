@@ -15,6 +15,58 @@ func TestValidateMigrations(t *testing.T) {
 	}
 }
 
+func TestNewMigrationRunner(t *testing.T) {
+	client := &Client{opts: defaultOptions()}
+	runner := NewMigrationRunner(client)
+	if runner == nil {
+		t.Fatal("NewMigrationRunner() = nil")
+	}
+	if runner.client != client {
+		t.Fatal("runner.client is not the provided client")
+	}
+}
+
+func TestUpNilRunner(t *testing.T) {
+	var runner *MigrationRunner
+	err := runner.Up(t.Context(), nil)
+	if !IsKind(err, ErrorKindConfig) {
+		t.Fatalf("Up() error = %v, want config error", err)
+	}
+}
+
+func TestUpNilClient(t *testing.T) {
+	runner := &MigrationRunner{}
+	err := runner.Up(t.Context(), nil)
+	if !IsKind(err, ErrorKindConfig) {
+		t.Fatalf("Up() error = %v, want config error", err)
+	}
+}
+
+func TestUpNilSource(t *testing.T) {
+	client := &Client{opts: defaultOptions()}
+	runner := NewMigrationRunner(client)
+	err := runner.Up(t.Context(), nil)
+	if !IsKind(err, ErrorKindConfig) {
+		t.Fatalf("Up() error = %v, want config error", err)
+	}
+}
+
+func TestEnsureTableNilRunner(t *testing.T) {
+	var runner *MigrationRunner
+	err := runner.ensureTable(t.Context())
+	if !IsKind(err, ErrorKindConfig) {
+		t.Fatalf("ensureTable() error = %v, want config error", err)
+	}
+}
+
+func TestEnsureTableNilClient(t *testing.T) {
+	runner := &MigrationRunner{}
+	err := runner.ensureTable(t.Context())
+	if !IsKind(err, ErrorKindConfig) {
+		t.Fatalf("ensureTable() error = %v, want config error", err)
+	}
+}
+
 func TestValidateMigrationsRejectsInvalidInput(t *testing.T) {
 	tests := []struct {
 		name       string

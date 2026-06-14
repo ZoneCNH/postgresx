@@ -191,6 +191,12 @@ func TestMapErrorNilAndRetryableNil(t *testing.T) {
 	}
 }
 
+func TestIsRetryableNonFoundationError(t *testing.T) {
+	if IsRetryable(errors.New("plain error")) {
+		t.Fatal("IsRetryable(plain error) = true, want false")
+	}
+}
+
 func TestMapErrorPreservesFoundationError(t *testing.T) {
 	original := NewError(ErrorKindValidation, "op", "bad input")
 	mapped := MapError("postgresx.test", original)
