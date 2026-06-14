@@ -2,9 +2,17 @@ package postgresx
 
 import (
 	"context"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
+	"time"
 )
+
+// clock abstracts time.Now for tests.
+type clock interface {
+	Now() time.Time
+}
+
+type realClock struct{}
+
+func (realClock) Now() time.Time { return time.Now() }
 
 // Option customizes Client behavior.
 type Option func(*options)
@@ -12,7 +20,7 @@ type Option func(*options)
 type options struct {
 	logger  Logger
 	metrics Metrics
-	clock   foundationx.Clock
+	clock   clock
 }
 
 // Field is a minimal structured log field.
@@ -55,10 +63,10 @@ func WithMetrics(metrics Metrics) Option {
 }
 
 // WithClock injects a clock for tests and deterministic health output.
-func WithClock(clock foundationx.Clock) Option {
+func WithClock(c clock) Option {
 	return func(o *options) {
-		if clock != nil {
-			o.clock = clock
+		if c != nil {
+			o.clock = c
 		}
 	}
 }
@@ -67,7 +75,7 @@ func defaultOptions() options {
 	return options{
 		logger:  noopLogger{},
 		metrics: noopMetrics{},
-		clock:   foundationx.NewRealClock(),
+		clock:   &realClock{},
 	}
 }
 

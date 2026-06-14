@@ -4,9 +4,13 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 )
+
+type fixedClock struct {
+	t time.Time
+}
+
+func (c *fixedClock) Now() time.Time { return c.t }
 
 type stubLogger struct{}
 
@@ -51,7 +55,7 @@ func TestApplyOptionsSkipsNilOptions(t *testing.T) {
 func TestApplyOptionsAppliesAllOptions(t *testing.T) {
 	logger := stubLogger{}
 	metrics := stubMetrics{}
-	clock := foundationx.NewFixedClock(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC))
+	clock := &fixedClock{t: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)}
 
 	opts := applyOptions([]Option{
 		WithLogger(logger),
