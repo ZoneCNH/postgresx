@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -14,115 +13,115 @@ func TestMapErrorNormalizesKnownFailures(t *testing.T) {
 	tests := []struct {
 		name      string
 		err       error
-		kind      foundationx.ErrorKind
+		kind      ErrorKind
 		retryable bool
 	}{
 		{
 			name:      "context canceled",
 			err:       context.Canceled,
-			kind:      foundationx.ErrorKindCanceled,
+			kind:      ErrorKindCanceled,
 			retryable: false,
 		},
 		{
 			name:      "context deadline",
 			err:       context.DeadlineExceeded,
-			kind:      foundationx.ErrorKindTimeout,
+			kind:      ErrorKindTimeout,
 			retryable: true,
 		},
 		{
 			name:      "no rows",
 			err:       pgx.ErrNoRows,
-			kind:      foundationx.ErrorKindNotFound,
+			kind:      ErrorKindNotFound,
 			retryable: false,
 		},
 		{
 			name:      "auth",
 			err:       &pgconn.PgError{Code: "28P01"},
-			kind:      foundationx.ErrorKindAuth,
+			kind:      ErrorKindAuth,
 			retryable: false,
 		},
 		{
 			name:      "syntax validation",
 			err:       &pgconn.PgError{Code: "42601"},
-			kind:      foundationx.ErrorKindValidation,
+			kind:      ErrorKindValidation,
 			retryable: false,
 		},
 		{
 			name:      "undefined table not found",
 			err:       &pgconn.PgError{Code: "42P01"},
-			kind:      foundationx.ErrorKindNotFound,
+			kind:      ErrorKindNotFound,
 			retryable: false,
 		},
 		{
 			name:      "unique already exists",
 			err:       &pgconn.PgError{Code: "23505"},
-			kind:      foundationx.ErrorKindAlreadyExist,
+			kind:      ErrorKindAlreadyExist,
 			retryable: false,
 		},
 		{
 			name:      "foreign key conflict",
 			err:       &pgconn.PgError{Code: "23503"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      ErrorKindConflict,
 			retryable: false,
 		},
 		{
 			name:      "not null validation",
 			err:       &pgconn.PgError{Code: "23502"},
-			kind:      foundationx.ErrorKindValidation,
+			kind:      ErrorKindValidation,
 			retryable: false,
 		},
 		{
 			name:      "check validation",
 			err:       &pgconn.PgError{Code: "23514"},
-			kind:      foundationx.ErrorKindValidation,
+			kind:      ErrorKindValidation,
 			retryable: false,
 		},
 		{
 			name:      "serialization retry",
 			err:       &pgconn.PgError{Code: "40001"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      ErrorKindConflict,
 			retryable: true,
 		},
 		{
 			name:      "deadlock retry",
 			err:       &pgconn.PgError{Code: "40P01"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      ErrorKindConflict,
 			retryable: true,
 		},
 		{
 			name:      "lock not available retry",
 			err:       &pgconn.PgError{Code: "55P03"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      ErrorKindConflict,
 			retryable: true,
 		},
 		{
 			name:      "query canceled retry",
 			err:       &pgconn.PgError{Code: "57014"},
-			kind:      foundationx.ErrorKindTimeout,
+			kind:      ErrorKindTimeout,
 			retryable: true,
 		},
 		{
 			name:      "connection class",
 			err:       &pgconn.PgError{Code: "08006"},
-			kind:      foundationx.ErrorKindConnection,
+			kind:      ErrorKindConnection,
 			retryable: true,
 		},
 		{
 			name:      "resource class",
 			err:       &pgconn.PgError{Code: "53300"},
-			kind:      foundationx.ErrorKindUnavailable,
+			kind:      ErrorKindUnavailable,
 			retryable: true,
 		},
 		{
 			name:      "admin shutdown class",
 			err:       &pgconn.PgError{Code: "57P01"},
-			kind:      foundationx.ErrorKindUnavailable,
+			kind:      ErrorKindUnavailable,
 			retryable: true,
 		},
 		{
 			name:      "unknown",
 			err:       errors.New("driver failure"),
-			kind:      foundationx.ErrorKindInternal,
+			kind:      ErrorKindInternal,
 			retryable: false,
 		},
 	}
@@ -130,7 +129,7 @@ func TestMapErrorNormalizesKnownFailures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := MapError("postgresx.test", tt.err)
-			if !foundationx.IsKind(err, tt.kind) {
+			if !IsKind(err, tt.kind) {
 				t.Fatalf("MapError() = %v, want kind %s", err, tt.kind)
 			}
 			if got := IsRetryable(err); got != tt.retryable {
@@ -147,25 +146,25 @@ func TestMapErrorNormalizesHeuristicDriverFailures(t *testing.T) {
 	tests := []struct {
 		name      string
 		err       error
-		kind      foundationx.ErrorKind
+		kind      ErrorKind
 		retryable bool
 	}{
 		{
 			name:      "password auth text",
 			err:       errors.New("password authentication failed for user postgres"),
-			kind:      foundationx.ErrorKindAuth,
+			kind:      ErrorKindAuth,
 			retryable: false,
 		},
 		{
 			name:      "connection text",
 			err:       errors.New("dial tcp: connection refused"),
-			kind:      foundationx.ErrorKindConnection,
+			kind:      ErrorKindConnection,
 			retryable: true,
 		},
 		{
 			name:      "wrapped context",
 			err:       errors.Join(errors.New("driver wrapper"), context.DeadlineExceeded),
-			kind:      foundationx.ErrorKindTimeout,
+			kind:      ErrorKindTimeout,
 			retryable: true,
 		},
 	}
@@ -173,7 +172,7 @@ func TestMapErrorNormalizesHeuristicDriverFailures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := MapError("postgresx.test", tt.err)
-			if !foundationx.IsKind(err, tt.kind) {
+			if !IsKind(err, tt.kind) {
 				t.Fatalf("MapError() = %v, want kind %s", err, tt.kind)
 			}
 			if got := IsRetryable(err); got != tt.retryable {
@@ -193,7 +192,7 @@ func TestMapErrorNilAndRetryableNil(t *testing.T) {
 }
 
 func TestMapErrorPreservesFoundationError(t *testing.T) {
-	original := foundationx.NewError(foundationx.ErrorKindValidation, "op", "bad input")
+	original := NewError(ErrorKindValidation, "op", "bad input")
 	mapped := MapError("postgresx.test", original)
 
 	if !errors.Is(mapped, original) {

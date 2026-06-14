@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ZoneCNH/foundationx/pkg/foundationx"
 	"github.com/ZoneCNH/postgresx/pkg/postgresx"
 	"github.com/ZoneCNH/postgresx/test/postgresxtest"
 	"github.com/jackc/pgx/v5"
@@ -242,7 +241,7 @@ func TestP0PoolContract(t *testing.T) {
 	cfg.Host = "127.0.0.1"
 	cfg.Database = "postgres"
 	cfg.User = "postgres"
-	cfg.Password = foundationx.NewSecretString("contract-secret")
+	cfg.Password = postgresx.NewSecretString("contract-secret")
 	cfg.MaxOpenConns = 3
 	cfg.MinIdleConns = 1
 	cfg.ApplicationName = "postgresx-l2-contract"
@@ -302,49 +301,49 @@ func TestP0ErrorMappingContract(t *testing.T) {
 	tests := []struct {
 		contract  string
 		err       error
-		kind      foundationx.ErrorKind
+		kind      postgresx.ErrorKind
 		retryable bool
 	}{
 		{
 			contract:  "sql.not_found",
 			err:       pgx.ErrNoRows,
-			kind:      foundationx.ErrorKindNotFound,
+			kind:      postgresx.ErrorKindNotFound,
 			retryable: false,
 		},
 		{
 			contract:  "sql.syntax_error",
 			err:       &pgconn.PgError{Code: "42601"},
-			kind:      foundationx.ErrorKindValidation,
+			kind:      postgresx.ErrorKindValidation,
 			retryable: false,
 		},
 		{
 			contract:  "sql.not_found.undefined_table",
 			err:       &pgconn.PgError{Code: "42P01"},
-			kind:      foundationx.ErrorKindNotFound,
+			kind:      postgresx.ErrorKindNotFound,
 			retryable: false,
 		},
 		{
 			contract:  "sql.unique_violation",
 			err:       &pgconn.PgError{Code: "23505"},
-			kind:      foundationx.ErrorKindAlreadyExist,
+			kind:      postgresx.ErrorKindAlreadyExist,
 			retryable: false,
 		},
 		{
 			contract:  "sql.foreign_key_violation",
 			err:       &pgconn.PgError{Code: "23503"},
-			kind:      foundationx.ErrorKindConflict,
+			kind:      postgresx.ErrorKindConflict,
 			retryable: false,
 		},
 		{
 			contract:  "sql.context_timeout",
 			err:       context.DeadlineExceeded,
-			kind:      foundationx.ErrorKindTimeout,
+			kind:      postgresx.ErrorKindTimeout,
 			retryable: true,
 		},
 		{
 			contract:  "pool.exhaustion",
 			err:       &pgconn.PgError{Code: "53300"},
-			kind:      foundationx.ErrorKindUnavailable,
+			kind:      postgresx.ErrorKindUnavailable,
 			retryable: true,
 		},
 	}
@@ -352,7 +351,7 @@ func TestP0ErrorMappingContract(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.contract, func(t *testing.T) {
 			err := postgresx.MapError(tt.contract, tt.err)
-			if !foundationx.IsKind(err, tt.kind) {
+			if !postgresx.IsKind(err, tt.kind) {
 				t.Fatalf("MapError() = %v, want kind %s", err, tt.kind)
 			}
 			if got := postgresx.IsRetryable(err); got != tt.retryable {
